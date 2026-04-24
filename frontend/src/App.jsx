@@ -82,18 +82,18 @@ export default function App() {
           <p>No results yet.</p>
         ) : (
           <ul className="results">
-            {nonFollowers.map((username) => (
-              <li key={username}>
-                <span>{username}</span>
-                <a
-                  href={`${IG_PROFILE_BASE_URL}${encodeURIComponent(username)}/`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open profile
-                </a>
-              </li>
-            ))}
+            {nonFollowers.map((username) => {
+              const profileUrl = `${IG_PROFILE_BASE_URL}${encodeURIComponent(username)}/`;
+
+              return (
+                <li key={username}>
+                  <span>{username}</span>
+                  <a href={profileUrl} target="_blank" rel="noreferrer">
+                    {profileUrl}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
