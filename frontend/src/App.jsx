@@ -48,7 +48,7 @@ function NonFollowersPage() {
 
   return (
     <section className="container">
-      <h1>Instagram Non-Followers Checker</h1>
+      <h1>ig-wrapped</h1>
       <p>Upload your two Instagram export JSON files to compare accounts.</p>
 
       <form onSubmit={handleSubmit} className="card">
@@ -135,7 +135,7 @@ export default function App() {
     <main className="app-shell">
       <header className="top-nav">
         <div className="top-nav__inner">
-          <h1 className="top-nav__title">Instagram Tools</h1>
+          <h1 className="top-nav__title">ig-wrapped</h1>
           <nav className="top-nav__links" aria-label="Primary">
             <button
               type="button"

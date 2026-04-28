@@ -1,4 +1,4 @@
-# Instagram Non-Followers Checker
+# ig-wrapped
 
 Full-stack app to upload Instagram export JSON files and find accounts you follow that do not follow you back.
 
