@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import HeatmapPage from "./pages/HeatmapPage.jsx";
 
 const API_URL = "http://localhost:4000/upload";
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
 
-export default function App() {
+function NonFollowersPage() {
   const [followersFile, setFollowersFile] = useState(null);
   const [followingFile, setFollowingFile] = useState(null);
   const [nonFollowers, setNonFollowers] = useState([]);
@@ -46,7 +47,7 @@ export default function App() {
   }
 
   return (
-    <main className="container">
+    <section className="container">
       <h1>Instagram Non-Followers Checker</h1>
       <p>Upload your two Instagram export JSON files to compare accounts.</p>
 
@@ -97,6 +98,64 @@ export default function App() {
           </ul>
         )}
       </section>
+    </section>
+  );
+}
+
+function normalizePath(pathname) {
+  if (!pathname || pathname === "/") {
+    return "/";
+  }
+  if (pathname.startsWith("/heatmap")) {
+    return "/heatmap";
+  }
+  return "/";
+}
+
+export default function App() {
+  const [route, setRoute] = useState(normalizePath(window.location.pathname));
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setRoute(normalizePath(window.location.pathname));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function navigateTo(path) {
+    if (window.location.pathname === path) {
+      return;
+    }
+    window.history.pushState({}, "", path);
+    setRoute(path);
+  }
+
+  return (
+    <main className="app-shell">
+      <header className="top-nav">
+        <div className="top-nav__inner">
+          <h1 className="top-nav__title">Instagram Tools</h1>
+          <nav className="top-nav__links" aria-label="Primary">
+            <button
+              type="button"
+              className={route === "/" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/")}
+            >
+              Non-Followers
+            </button>
+            <button
+              type="button"
+              className={route === "/heatmap" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/heatmap")}
+            >
+              Comment Heatmap
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      {route === "/heatmap" ? <HeatmapPage /> : <NonFollowersPage />}
     </main>
   );
 }
