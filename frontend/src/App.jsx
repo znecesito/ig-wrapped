@@ -149,7 +149,7 @@ export default function App() {
               className={route === "/heatmap" ? "nav-link is-active" : "nav-link"}
               onClick={() => navigateTo("/heatmap")}
             >
-              Comment Heatmap
+              Activity Heatmap
             </button>
           </nav>
         </div>

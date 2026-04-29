@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from "react";
 import {
+  activityCellColor,
   buildHeatmapData,
-  discoverCommentFiles,
+  discoverActivityFiles,
+  getActivityFamilyLegend,
+  getActivitySources,
   getAvailableTimezones,
-  heatColor,
-  parseCommentTimestamps
+  parseActivityEvents
 } from "../utils/commentHeatmap.js";
 
-function WeekdayHourHeatmap({ data }) {
+function WeekdayHourHeatmap({ data, colorMode }) {
   const maxCount = Math.max(0, ...data.weekdayHourCounts.flat());
 
   return (
@@ -26,11 +28,19 @@ function WeekdayHourHeatmap({ data }) {
           <React.Fragment key={label}>
             <div className="weekday-grid__day-label">{label}</div>
             {data.weekdayHourCounts[dayIndex].map((count, hour) => (
+              // Detail buckets let us color by dominant family in breakdown mode.
               <div
                 key={`${label}-${hour}`}
                 className="weekday-cell"
-                title={`${label} ${String(hour).padStart(2, "0")}:00 - ${count} comments`}
-                style={{ backgroundColor: heatColor(count, maxCount) }}
+                title={`${label} ${String(hour).padStart(2, "0")}:00 - ${count} activities`}
+                style={{
+                  backgroundColor: activityCellColor({
+                    count,
+                    maxCount,
+                    mode: colorMode,
+                    dominantFamily: data.weekdayHourDetails[dayIndex][hour].dominantFamily
+                  })
+                }}
               />
             ))}
           </React.Fragment>
@@ -40,7 +50,7 @@ function WeekdayHourHeatmap({ data }) {
   );
 }
 
-function CalendarHeatmap({ data }) {
+function CalendarHeatmap({ data, colorMode }) {
   const maxCount = Math.max(0, ...data.calendarDays.map((item) => item.count));
 
   return (
@@ -51,8 +61,15 @@ function CalendarHeatmap({ data }) {
           <div
             key={item.dateKey}
             className="calendar-cell"
-            title={`${item.dateKey}: ${item.count} comments`}
-            style={{ backgroundColor: heatColor(item.count, maxCount) }}
+            title={`${item.dateKey}: ${item.count} activities`}
+            style={{
+              backgroundColor: activityCellColor({
+                count: item.count,
+                maxCount,
+                mode: colorMode,
+                dominantFamily: item.dominantFamily
+              })
+            }}
           >
             <span>{item.dateKey.slice(-2)}</span>
           </div>
@@ -63,14 +80,20 @@ function CalendarHeatmap({ data }) {
 }
 
 export default function HeatmapPage() {
+  const sources = useMemo(() => getActivitySources(), []);
+  const defaultSourceIds = useMemo(() => sources.map((source) => source.id), [sources]);
+  const familyLegend = useMemo(() => getActivityFamilyLegend(), []);
   const [timezone, setTimezone] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
   );
-  const [status, setStatus] = useState("Select your exported folder to build a comment heatmap.");
+  const [status, setStatus] = useState("Select your exported folder to build an activity heatmap.");
   const [validationError, setValidationError] = useState("");
   const [parseWarnings, setParseWarnings] = useState([]);
   const [heatmapData, setHeatmapData] = useState(null);
-  const [rawTimestamps, setRawTimestamps] = useState([]);
+  const [rawEvents, setRawEvents] = useState([]);
+  const [enabledSourceIds, setEnabledSourceIds] = useState(defaultSourceIds);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [colorMode, setColorMode] = useState("intensity");
   const [debugInfo, setDebugInfo] = useState(null);
 
   const timezoneOptions = useMemo(() => getAvailableTimezones(), []);
@@ -80,63 +103,119 @@ export default function HeatmapPage() {
     setValidationError("");
     setParseWarnings([]);
     setHeatmapData(null);
-    setRawTimestamps([]);
+    setRawEvents([]);
+    setEnabledSourceIds(defaultSourceIds);
     setDebugInfo(null);
 
-    const discovery = discoverCommentFiles(files);
+    const discovery = discoverActivityFiles(files);
     setStatus(
-      `Scanned ${discovery.allFiles.length} file(s), found ${discovery.commentFiles.length} file(s) under your_instagram_activity/comments, parse targets: ${discovery.parseTargetFiles.length}.`
+      `Scanned ${discovery.allFiles.length} file(s), found ${discovery.activityFiles.length} file(s) under your_instagram_activity, parse targets: ${discovery.parseTargetFiles.length}.`
     );
     setDebugInfo({
-      matchedCommentFiles: discovery.commentFilePaths,
-      parseTargets: discovery.parseTargetFiles.map((file) => file.webkitRelativePath || file.name),
+      matchedCommentFiles: discovery.matchedFilesByFolder.comments.map(
+        (file) => file.webkitRelativePath || file.name
+      ),
+      matchedLikeFiles: discovery.matchedFilesByFolder.likes.map(
+        (file) => file.webkitRelativePath || file.name
+      ),
+      parseTargets: discovery.parseTargetPaths,
       parserStats: {
         filesParsed: 0,
-        commentsSeen: 0,
+        itemsSeen: 0,
         validTimestamps: 0,
-        skippedComments: 0
+        skippedItems: 0
       }
     });
 
-    if (discovery.commentFiles.length === 0) {
+    if (discovery.activityFiles.length === 0) {
       setValidationError(
-        "Missing your_instagram_activity/comments in selected folder. Please choose the root export folder."
+        "Missing your_instagram_activity in selected folder. Please choose the root export folder."
       );
       return;
     }
 
-    if (!discovery.hypeFile && discovery.postCommentFiles.length === 0) {
-      setValidationError("No comment files found. Expected hype.json or post_comments_*.json.");
+    if (discovery.parseTargetFiles.length === 0) {
+      setValidationError(
+        "No supported activity files found. Expected hype.json, post_comments_*.json, liked_comments.json, or liked_posts.json."
+      );
       return;
     }
 
-    const parseResult = await parseCommentTimestamps(discovery);
+    const parseResult = await parseActivityEvents(discovery);
     setParseWarnings(parseResult.errors);
     setDebugInfo((current) => ({
       ...(current || {}),
-      parserStats: parseResult.stats
+      parserStats: parseResult.stats.total
     }));
 
-    if (parseResult.timestampsMs.length === 0) {
-      setValidationError("No valid comment timestamps were parsed from the selected files.");
+    if (parseResult.events.length === 0) {
+      setValidationError("No valid activity timestamps were parsed from the selected files.");
       return;
     }
 
-    setRawTimestamps(parseResult.timestampsMs);
-    setHeatmapData(buildHeatmapData(parseResult.timestampsMs, timezone));
+    setRawEvents(parseResult.events);
+    setHeatmapData(
+      buildHeatmapData(parseResult.events, timezone, {
+        enabledSourceIds: defaultSourceIds
+      })
+    );
   }
 
   function handleTimezoneChange(nextTimezone) {
     setTimezone(nextTimezone);
-    if (rawTimestamps.length > 0) {
-      setHeatmapData(buildHeatmapData(rawTimestamps, nextTimezone));
+    if (rawEvents.length > 0) {
+      setHeatmapData(
+        buildHeatmapData(rawEvents, nextTimezone, {
+          enabledSourceIds
+        })
+      );
     }
+  }
+
+  function updateEnabledSources(nextSourceIds) {
+    setEnabledSourceIds(nextSourceIds);
+    if (rawEvents.length > 0) {
+      setHeatmapData(
+        buildHeatmapData(rawEvents, timezone, {
+          enabledSourceIds: nextSourceIds
+        })
+      );
+    }
+  }
+
+  function handleFamilyToggle(family) {
+    const familySourceIds = sources
+      .filter((source) => source.family === family)
+      .map((source) => source.id);
+    const allEnabled = familySourceIds.every((sourceId) => enabledSourceIds.includes(sourceId));
+    const next = allEnabled
+      ? enabledSourceIds.filter((sourceId) => !familySourceIds.includes(sourceId))
+      : Array.from(new Set([...enabledSourceIds, ...familySourceIds]));
+    updateEnabledSources(next);
+  }
+
+  function handleSourceToggle(sourceId) {
+    const isEnabled = enabledSourceIds.includes(sourceId);
+    const next = isEnabled
+      ? enabledSourceIds.filter((id) => id !== sourceId)
+      : [...enabledSourceIds, sourceId];
+    updateEnabledSources(next);
+  }
+
+  function isFamilyEnabled(family) {
+    const familySourceIds = sources
+      .filter((source) => source.family === family)
+      .map((source) => source.id);
+    return familySourceIds.every((sourceId) => enabledSourceIds.includes(sourceId));
   }
 
   return (
     <section className="container heatmap-page">
-      <h1>Instagram Comment Heatmap</h1>
-      <p>Upload your export folder to visualize comment activity by weekday/hour and by calendar day.</p>
+      <h1>Instagram Activity Heatmap</h1>
+      <p>
+        Upload your export folder to visualize comments and likes by weekday/hour and by calendar
+        day.
+      </p>
 
       <div className="card heatmap-controls">
         <label>
@@ -186,6 +265,12 @@ export default function HeatmapPage() {
               <li key={`matched-${filePath}`}>{filePath}</li>
             ))}
           </ul>
+          <p className="muted">Matched in likes folder:</p>
+          <ul className="mono-list">
+            {debugInfo.matchedLikeFiles.map((filePath) => (
+              <li key={`likes-${filePath}`}>{filePath}</li>
+            ))}
+          </ul>
           <p className="muted">Files selected for parsing:</p>
           <ul className="mono-list">
             {debugInfo.parseTargets.map((filePath) => (
@@ -193,20 +278,84 @@ export default function HeatmapPage() {
             ))}
           </ul>
           <p className="muted">
-            Parsed files: {debugInfo.parserStats?.filesParsed || 0} | Comments seen:{" "}
-            {debugInfo.parserStats?.commentsSeen || 0} | Valid timestamps:{" "}
-            {debugInfo.parserStats?.validTimestamps || 0} | Skipped comments:{" "}
-            {debugInfo.parserStats?.skippedComments || 0}
+            Parsed files: {debugInfo.parserStats?.filesParsed || 0} | Items seen:{" "}
+            {debugInfo.parserStats?.itemsSeen || 0} | Valid timestamps:{" "}
+            {debugInfo.parserStats?.validTimestamps || 0} | Skipped items:{" "}
+            {debugInfo.parserStats?.skippedItems || 0}
           </p>
         </div>
       ) : null}
 
       {heatmapData ? (
         <>
+          <section className="card activity-filters">
+            <div className="activity-filters__row">
+              <button
+                type="button"
+                className={`chip ${enabledSourceIds.length === sources.length ? "is-active" : ""}`}
+                onClick={() => updateEnabledSources(defaultSourceIds)}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`chip ${isFamilyEnabled("comments") ? "is-active" : ""}`}
+                onClick={() => handleFamilyToggle("comments")}
+              >
+                Comments
+              </button>
+              <button
+                type="button"
+                className={`chip ${isFamilyEnabled("likes") ? "is-active" : ""}`}
+                onClick={() => handleFamilyToggle("likes")}
+              >
+                Likes
+              </button>
+              <button
+                type="button"
+                className="chip chip-muted"
+                onClick={() => setShowAdvancedFilters((value) => !value)}
+              >
+                {showAdvancedFilters ? "Hide details" : "Advanced filters"}
+              </button>
+            </div>
+            {showAdvancedFilters ? (
+              <div className="activity-filters__row">
+                {sources.map((source) => (
+                  <button
+                    key={source.id}
+                    type="button"
+                    className={`chip ${enabledSourceIds.includes(source.id) ? "is-active" : ""}`}
+                    onClick={() => handleSourceToggle(source.id)}
+                  >
+                    {source.label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className="activity-filters__row">
+              <span className="muted">Color mode</span>
+              <button
+                type="button"
+                className={`chip ${colorMode === "intensity" ? "is-active" : ""}`}
+                onClick={() => setColorMode("intensity")}
+              >
+                Intensity
+              </button>
+              <button
+                type="button"
+                className={`chip ${colorMode === "breakdown" ? "is-active" : ""}`}
+                onClick={() => setColorMode("breakdown")}
+              >
+                Breakdown
+              </button>
+            </div>
+          </section>
+
           <section className="summary-grid">
             <div className="card summary-card">
-              <span className="summary-label">Total comments</span>
-              <strong>{heatmapData.totalComments}</strong>
+              <span className="summary-label">Total activity</span>
+              <strong>{heatmapData.totalActivities}</strong>
             </div>
             <div className="card summary-card">
               <span className="summary-label">Most active day</span>
@@ -223,13 +372,33 @@ export default function HeatmapPage() {
           </section>
 
           <div className="heat-legend card">
-            <span>Less</span>
-            <div className="heat-legend__bar" />
-            <span>More</span>
+            {colorMode === "intensity" ? (
+              <>
+                <span>Less</span>
+                <div className="heat-legend__bar" />
+                <span>More</span>
+              </>
+            ) : (
+              <>
+                <span>Breakdown</span>
+                <div className="family-legend">
+                  {familyLegend.map((item) => (
+                    <span key={item.family} className="family-legend__item">
+                      <span
+                        className="family-legend__dot"
+                        style={{ backgroundColor: item.color }}
+                        aria-hidden
+                      />
+                      {item.family}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          <WeekdayHourHeatmap data={heatmapData} />
-          <CalendarHeatmap data={heatmapData} />
+          <WeekdayHourHeatmap data={heatmapData} colorMode={colorMode} />
+          <CalendarHeatmap data={heatmapData} colorMode={colorMode} />
         </>
       ) : null}
     </section>

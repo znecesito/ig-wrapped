@@ -1,4 +1,4 @@
-const COMMENTS_FOLDER_SEGMENTS = ["your_instagram_activity", "comments"];
+const ACTIVITY_ROOT_SEGMENT = "your_instagram_activity";
 
 const TIMESTAMP_KEYS = [
   "timestamp",
@@ -12,35 +12,122 @@ const TIMESTAMP_KEYS = [
 const MIN_PLAUSIBLE_UNIX_SECONDS = 946684800; // 2000-01-01
 const MAX_PLAUSIBLE_UNIX_SECONDS = 4102444800; // 2100-01-01
 
-export function discoverCommentFiles(fileList) {
+function coerceCollection(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value);
+  }
+  return null;
+}
+
+const ACTIVITY_SOURCE_DESCRIPTORS = [
+  {
+    id: "comments.story",
+    family: "comments",
+    label: "Story comments",
+    folder: "comments",
+    matchFile: (fileName) => fileName.toLowerCase() === "hype.json",
+    parsePayload: (payload) => payload?.comments_story_comments
+  },
+  {
+    id: "comments.post",
+    family: "comments",
+    label: "Post comments",
+    folder: "comments",
+    matchFile: (fileName) => /^post_comments_.*\.json$/i.test(fileName),
+    parsePayload: (payload) => payload
+  },
+  {
+    id: "likes.comment",
+    family: "likes",
+    label: "Liked comments",
+    folder: "likes",
+    matchFile: (fileName) => fileName.toLowerCase() === "liked_comments.json",
+    parsePayload: (payload) => coerceCollection(payload?.likes_comment_likes)
+  },
+  {
+    id: "likes.post",
+    family: "likes",
+    label: "Liked posts",
+    folder: "likes",
+    matchFile: (fileName) => fileName.toLowerCase() === "liked_posts.json",
+    parsePayload: (payload) => coerceCollection(payload?.likes_media_likes ?? payload)
+  }
+];
+
+const FAMILY_COLORS = {
+  comments: "#4f46e5",
+  likes: "#dc2626"
+};
+
+const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function fileBelongsToActivityFolder(file, folderName) {
+  const relativePath = String(file.webkitRelativePath || "").toLowerCase();
+  const normalizedPath = relativePath.replace(/\\/g, "/");
+  const pathParts = normalizedPath.split("/");
+  const activityIndex = pathParts.indexOf(ACTIVITY_ROOT_SEGMENT);
+  if (activityIndex < 0) {
+    return false;
+  }
+  return pathParts[activityIndex + 1] === folderName;
+}
+
+function createEmptySourceStats() {
+  return {
+    filesParsed: 0,
+    itemsSeen: 0,
+    validTimestamps: 0,
+    skippedItems: 0
+  };
+}
+
+export function getActivitySources() {
+  return ACTIVITY_SOURCE_DESCRIPTORS.map((source) => ({
+    id: source.id,
+    family: source.family,
+    label: source.label
+  }));
+}
+
+export function discoverActivityFiles(fileList) {
   const files = Array.from(fileList || []);
-  const inCommentsFolder = files.filter((file) => {
+  const activityFiles = files.filter((file) => {
     const relativePath = String(file.webkitRelativePath || "").toLowerCase();
-    const normalizedPath = relativePath.replace(/\\/g, "/");
-    const pathParts = normalizedPath.split("/");
-
-    const activityIndex = pathParts.indexOf(COMMENTS_FOLDER_SEGMENTS[0]);
-    if (activityIndex < 0) {
-      return false;
-    }
-
-    return pathParts[activityIndex + 1] === COMMENTS_FOLDER_SEGMENTS[1];
+    return relativePath.includes(`${ACTIVITY_ROOT_SEGMENT}/`);
   });
 
-  const hypeFile = inCommentsFolder.find((file) =>
-    (file.name || "").toLowerCase() === "hype.json"
-  );
-  const postCommentFiles = inCommentsFolder.filter((file) =>
-    /^post_comments_.*\.json$/i.test(file.name || "")
-  );
+  const sourceMatches = ACTIVITY_SOURCE_DESCRIPTORS.map((descriptor) => {
+    const matchedFiles = files.filter(
+      (file) =>
+        fileBelongsToActivityFolder(file, descriptor.folder) &&
+        descriptor.matchFile(String(file.name || ""))
+    );
+    return {
+      id: descriptor.id,
+      family: descriptor.family,
+      label: descriptor.label,
+      folder: descriptor.folder,
+      files: matchedFiles
+    };
+  });
+
+  const matchedFilesByFolder = {
+    comments: files.filter((file) => fileBelongsToActivityFolder(file, "comments")),
+    likes: files.filter((file) => fileBelongsToActivityFolder(file, "likes"))
+  };
 
   return {
     allFiles: files,
-    commentFiles: inCommentsFolder,
-    commentFilePaths: inCommentsFolder.map((file) => file.webkitRelativePath || file.name),
-    hypeFile,
-    postCommentFiles,
-    parseTargetFiles: [hypeFile, ...postCommentFiles].filter(Boolean)
+    activityFiles,
+    matchedFilesByFolder,
+    sourceMatches,
+    parseTargetFiles: sourceMatches.flatMap((source) => source.files),
+    parseTargetPaths: sourceMatches.flatMap((source) =>
+      source.files.map((file) => file.webkitRelativePath || file.name)
+    )
   };
 }
 
@@ -127,17 +214,17 @@ function extractTimestampFromValue(input) {
   return null;
 }
 
-function extractCommentTimestampMs(comment) {
-  if (!comment || typeof comment !== "object") {
+function extractTimestampMs(activityItem) {
+  if (!activityItem || typeof activityItem !== "object") {
     return null;
   }
 
   const directCandidates = [
-    comment.timestamp,
-    comment.time,
-    comment.date,
-    comment.created_at,
-    comment.created_time
+    activityItem.timestamp,
+    activityItem.time,
+    activityItem.date,
+    activityItem.created_at,
+    activityItem.created_time
   ];
 
   for (const candidate of directCandidates) {
@@ -147,61 +234,67 @@ function extractCommentTimestampMs(comment) {
     }
   }
 
-  return extractTimestampFromValue(comment.string_map_data);
+  return extractTimestampFromValue(activityItem.string_map_data ?? activityItem);
 }
 
-function pushCommentTimestamps(comments, source, output, errors, stats) {
-  if (!Array.isArray(comments)) {
-    errors.push(`${source}: expected an array of comments.`);
+function pushSourceEvents(items, sourceDescriptor, sourceId, output, errors, stats) {
+  if (!Array.isArray(items)) {
+    errors.push(`${sourceDescriptor.label}: expected an array of activity items.`);
     return;
   }
 
-  stats.commentsSeen += comments.length;
+  stats.total.itemsSeen += items.length;
+  stats.bySource[sourceId].itemsSeen += items.length;
 
-  for (const comment of comments) {
-    const timestampMs = extractCommentTimestampMs(comment);
+  for (const item of items) {
+    const timestampMs = extractTimestampMs(item);
     if (timestampMs != null) {
-      output.push(timestampMs);
-      stats.validTimestamps += 1;
+      output.push({
+        sourceId: sourceDescriptor.id,
+        family: sourceDescriptor.family,
+        timestampMs
+      });
+      stats.total.validTimestamps += 1;
+      stats.bySource[sourceId].validTimestamps += 1;
     } else {
-      stats.skippedComments += 1;
+      stats.total.skippedItems += 1;
+      stats.bySource[sourceId].skippedItems += 1;
     }
   }
 }
 
-export async function parseCommentTimestamps(discovery) {
-  const timestampsMs = [];
+export async function parseActivityEvents(discovery) {
+  const events = [];
   const errors = [];
   const stats = {
-    filesParsed: 0,
-    commentsSeen: 0,
-    validTimestamps: 0,
-    skippedComments: 0
+    total: createEmptySourceStats(),
+    bySource: {}
   };
 
-  if (discovery.hypeFile) {
-    try {
-      const payload = await parseJsonFile(discovery.hypeFile);
-      const storyComments = payload?.comments_story_comments;
-      stats.filesParsed += 1;
-      pushCommentTimestamps(storyComments, "hype.json", timestampsMs, errors, stats);
-    } catch (error) {
-      errors.push(error.message);
-    }
+  for (const descriptor of ACTIVITY_SOURCE_DESCRIPTORS) {
+    stats.bySource[descriptor.id] = createEmptySourceStats();
   }
 
-  for (const file of discovery.postCommentFiles) {
-    try {
-      const payload = await parseJsonFile(file);
-      stats.filesParsed += 1;
-      pushCommentTimestamps(payload, file.name, timestampsMs, errors, stats);
-    } catch (error) {
-      errors.push(error.message);
+  for (const source of discovery.sourceMatches || []) {
+    const descriptor = ACTIVITY_SOURCE_DESCRIPTORS.find((item) => item.id === source.id);
+    if (!descriptor) {
+      continue;
+    }
+    for (const file of source.files) {
+      try {
+        const payload = await parseJsonFile(file);
+        const items = descriptor.parsePayload(payload);
+        stats.total.filesParsed += 1;
+        stats.bySource[source.id].filesParsed += 1;
+        pushSourceEvents(items, descriptor, source.id, events, errors, stats);
+      } catch (error) {
+        errors.push(error.message);
+      }
     }
   }
 
   return {
-    timestampsMs,
+    events,
     errors,
     stats
   };
@@ -240,30 +333,59 @@ function getDatePartsInTimezone(timestampMs, timezone) {
   };
 }
 
-const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export function buildHeatmapData(events, timezone, options = {}) {
+  const enabledSourceIds = options.enabledSourceIds || [];
+  const enabledSet = enabledSourceIds.length > 0 ? new Set(enabledSourceIds) : null;
+  const filteredEvents = (events || []).filter(
+    (eventItem) => !enabledSet || enabledSet.has(eventItem.sourceId)
+  );
 
-export function buildHeatmapData(timestampsMs, timezone) {
   const weekdayHourCounts = Array.from({ length: 7 }, () => Array(24).fill(0));
+  const weekdayHourDetails = Array.from({ length: 7 }, () =>
+    Array.from({ length: 24 }, () => ({ familyCounts: {}, sourceCounts: {} }))
+  );
   const calendarDayMap = new Map();
+  const totalsByFamily = {};
+  const totalsBySource = {};
 
   let minTimestamp = null;
   let maxTimestamp = null;
 
-  for (const timestampMs of timestampsMs) {
+  for (const eventItem of filteredEvents) {
+    const { timestampMs, family, sourceId } = eventItem;
     const parts = getDatePartsInTimezone(timestampMs, timezone);
     const weekdayIndex = WEEKDAY_ORDER.indexOf(parts.weekdayLabel);
     if (weekdayIndex >= 0 && parts.hour >= 0 && parts.hour <= 23) {
       weekdayHourCounts[weekdayIndex][parts.hour] += 1;
+      const weekdayCell = weekdayHourDetails[weekdayIndex][parts.hour];
+      weekdayCell.familyCounts[family] = (weekdayCell.familyCounts[family] || 0) + 1;
+      weekdayCell.sourceCounts[sourceId] = (weekdayCell.sourceCounts[sourceId] || 0) + 1;
     }
 
-    calendarDayMap.set(parts.dateKey, (calendarDayMap.get(parts.dateKey) || 0) + 1);
+    const currentDay = calendarDayMap.get(parts.dateKey) || {
+      count: 0,
+      familyCounts: {},
+      sourceCounts: {}
+    };
+    currentDay.count += 1;
+    currentDay.familyCounts[family] = (currentDay.familyCounts[family] || 0) + 1;
+    currentDay.sourceCounts[sourceId] = (currentDay.sourceCounts[sourceId] || 0) + 1;
+    calendarDayMap.set(parts.dateKey, currentDay);
+
+    totalsByFamily[family] = (totalsByFamily[family] || 0) + 1;
+    totalsBySource[sourceId] = (totalsBySource[sourceId] || 0) + 1;
 
     minTimestamp = minTimestamp == null ? timestampMs : Math.min(minTimestamp, timestampMs);
     maxTimestamp = maxTimestamp == null ? timestampMs : Math.max(maxTimestamp, timestampMs);
   }
 
   const calendarDays = Array.from(calendarDayMap.entries())
-    .map(([dateKey, count]) => ({ dateKey, count }))
+    .map(([dateKey, value]) => ({
+      dateKey,
+      ...value,
+      dominantFamily: getDominantKey(value.familyCounts),
+      dominantSourceId: getDominantKey(value.sourceCounts)
+    }))
     .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
 
   let activeWeekdayIndex = -1;
@@ -296,8 +418,17 @@ export function buildHeatmapData(timestampsMs, timezone) {
 
   return {
     timezone,
-    totalComments: timestampsMs.length,
+    totalActivities: filteredEvents.length,
+    totalsByFamily,
+    totalsBySource,
     weekdayHourCounts,
+    weekdayHourDetails: weekdayHourDetails.map((row) =>
+      row.map((cell) => ({
+        ...cell,
+        dominantFamily: getDominantKey(cell.familyCounts),
+        dominantSourceId: getDominantKey(cell.sourceCounts)
+      }))
+    ),
     calendarDays,
     weekdayLabels: WEEKDAY_ORDER,
     activeWeekdayLabel: activeWeekdayIndex >= 0 ? WEEKDAY_ORDER[activeWeekdayIndex] : "-",
@@ -323,3 +454,47 @@ export function heatColor(count, maxCount) {
   if (ratio < 0.8) return "#6366f1";
   return "#4338ca";
 }
+
+function getDominantKey(countMap) {
+  return Object.entries(countMap || {}).reduce(
+    (best, current) => (current[1] > best[1] ? current : best),
+    ["", 0]
+  )[0];
+}
+
+function toRgb(hexColor) {
+  const safeHex = hexColor.replace("#", "");
+  const value = Number.parseInt(safeHex, 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255
+  };
+}
+
+export function activityCellColor({ count, maxCount, mode = "intensity", dominantFamily }) {
+  if (mode !== "breakdown") {
+    return heatColor(count, maxCount);
+  }
+
+  if (!count || maxCount <= 0) {
+    return "#f1f5f9";
+  }
+
+  const baseColor = FAMILY_COLORS[dominantFamily] || "#475569";
+  const rgb = toRgb(baseColor);
+  const ratio = Math.max(0.15, Math.min(1, count / maxCount));
+  const alpha = 0.2 + ratio * 0.7;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha.toFixed(2)})`;
+}
+
+export function getActivityFamilyLegend() {
+  return Object.entries(FAMILY_COLORS).map(([family, color]) => ({ family, color }));
+}
+
+/*
+ Add future activity types by appending to ACTIVITY_SOURCE_DESCRIPTORS:
+ - include unique id/family/label/folder
+ - match file names in that folder
+ - map raw payload shape to an array via parsePayload
+*/
