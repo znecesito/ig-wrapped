@@ -430,6 +430,8 @@ export function buildHeatmapData(events, timezone, options = {}) {
       }))
     ),
     calendarDays,
+    calendarMinTimestampMs: minTimestamp,
+    calendarMaxTimestampMs: maxTimestamp,
     weekdayLabels: WEEKDAY_ORDER,
     activeWeekdayLabel: activeWeekdayIndex >= 0 ? WEEKDAY_ORDER[activeWeekdayIndex] : "-",
     activeHourLabel: activeHour >= 0 ? `${String(activeHour).padStart(2, "0")}:00` : "-",
@@ -442,17 +444,157 @@ export function buildHeatmapData(events, timezone, options = {}) {
   };
 }
 
+/** Instagram-style intensity gradient (yellow → coral → pink → purple). */
 export function heatColor(count, maxCount) {
   if (!count || maxCount <= 0) {
-    return "#eef2ff";
+    return "#fdf8f3";
   }
 
   const ratio = Math.min(1, count / maxCount);
-  if (ratio < 0.2) return "#c7d2fe";
-  if (ratio < 0.4) return "#a5b4fc";
-  if (ratio < 0.6) return "#818cf8";
-  if (ratio < 0.8) return "#6366f1";
-  return "#4338ca";
+  if (ratio < 0.2) return "#fff4d6";
+  if (ratio < 0.4) return "#ffd4a8";
+  if (ratio < 0.6) return "#ff9ebd";
+  if (ratio < 0.8) return "#e879f9";
+  return "#c026d3";
+}
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+
+function parseDateKey(dateKey) {
+  const [y, m, d] = String(dateKey).split("-").map(Number);
+  return { y, m, d };
+}
+
+function nextDateKey(dateKey, timezone) {
+  const { y, m, d } = parseDateKey(dateKey);
+  const t = Date.UTC(y, m - 1, d, 12, 0, 0) + 86400000;
+  return getDatePartsInTimezone(t, timezone).dateKey;
+}
+
+function enumerateDateKeysInRange(minKey, maxKey, timezone) {
+  const out = [];
+  let k = minKey;
+  let guard = 0;
+  while (k && k <= maxKey && guard < 4000) {
+    out.push(k);
+    if (k === maxKey) break;
+    k = nextDateKey(k, timezone);
+    guard += 1;
+  }
+  return out;
+}
+
+/**
+ * Month grids (Sun–Sat) with empty padding cells, for the date range in timezone.
+ */
+export function buildCalendarMonthGrids(heatmapData) {
+  const {
+    calendarDays,
+    calendarMinTimestampMs,
+    calendarMaxTimestampMs,
+    timezone
+  } = heatmapData;
+  if (
+    calendarMinTimestampMs == null ||
+    calendarMaxTimestampMs == null ||
+    !Array.isArray(calendarDays)
+  ) {
+    return [];
+  }
+
+  const countByKey = new Map();
+  const metaByKey = new Map();
+  for (const item of calendarDays) {
+    countByKey.set(item.dateKey, item.count);
+    metaByKey.set(item.dateKey, {
+      dominantFamily: item.dominantFamily,
+      dominantSourceId: item.dominantSourceId
+    });
+  }
+
+  const minKey = getDatePartsInTimezone(calendarMinTimestampMs, timezone).dateKey;
+  const maxKey = getDatePartsInTimezone(calendarMaxTimestampMs, timezone).dateKey;
+  if (minKey > maxKey) {
+    return [];
+  }
+  const allKeys = enumerateDateKeysInRange(minKey, maxKey, timezone);
+  if (allKeys.length === 0) {
+    return [];
+  }
+
+  const byMonth = new Map();
+  for (const dateKey of allKeys) {
+    const { y, m } = parseDateKey(dateKey);
+    const monthId = `${y}-${String(m).padStart(2, "0")}`;
+    if (!byMonth.has(monthId)) {
+      byMonth.set(monthId, []);
+    }
+    byMonth.get(monthId).push(dateKey);
+  }
+
+  const sortedMonthIds = Array.from(byMonth.keys()).sort();
+  const grids = [];
+
+  for (const monthId of sortedMonthIds) {
+    const keys = byMonth.get(monthId);
+    const { y, m, d: firstD } = parseDateKey(keys[0]);
+    const firstVisibleTs = Date.UTC(y, m - 1, firstD, 12, 0, 0);
+    const firstParts = getDatePartsInTimezone(firstVisibleTs, timezone);
+    const startWeekdayIndex = WEEKDAY_ORDER.indexOf(firstParts.weekdayLabel);
+    const paddingStart = startWeekdayIndex >= 0 ? startWeekdayIndex : 0;
+
+    const weeks = [];
+    let row = [];
+    for (let i = 0; i < paddingStart; i += 1) {
+      row.push({ type: "empty" });
+    }
+    for (const dateKey of keys) {
+      const { d } = parseDateKey(dateKey);
+      const count = countByKey.get(dateKey) || 0;
+      const meta = metaByKey.get(dateKey) || { dominantFamily: "", dominantSourceId: "" };
+      row.push({
+        type: "day",
+        dateKey,
+        dayNumber: d,
+        count,
+        dominantFamily: meta.dominantFamily,
+        dominantSourceId: meta.dominantSourceId
+      });
+      if (row.length === 7) {
+        weeks.push(row);
+        row = [];
+      }
+    }
+    if (row.length > 0) {
+      while (row.length < 7) {
+        row.push({ type: "empty" });
+      }
+      weeks.push(row);
+    }
+
+    grids.push({
+      monthId,
+      year: y,
+      monthIndex: m,
+      title: `${MONTH_NAMES[m - 1]} ${y}`,
+      weeks
+    });
+  }
+
+  return grids;
 }
 
 function getDominantKey(countMap) {
@@ -478,7 +620,7 @@ export function activityCellColor({ count, maxCount, mode = "intensity", dominan
   }
 
   if (!count || maxCount <= 0) {
-    return "#f1f5f9";
+    return "#fdf8f3";
   }
 
   const baseColor = FAMILY_COLORS[dominantFamily] || "#475569";

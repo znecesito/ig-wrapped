@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   activityCellColor,
+  buildCalendarMonthGrids,
   buildHeatmapData,
   discoverActivityFiles,
   getActivityFamilyLegend,
@@ -50,28 +51,79 @@ function WeekdayHourHeatmap({ data, colorMode }) {
   );
 }
 
+const CALENDAR_WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 function CalendarHeatmap({ data, colorMode }) {
-  const maxCount = Math.max(0, ...data.calendarDays.map((item) => item.count));
+  const monthGrids = useMemo(() => buildCalendarMonthGrids(data), [data]);
+  const maxCount = useMemo(() => {
+    let max = 0;
+    for (const month of monthGrids) {
+      for (const week of month.weeks) {
+        for (const cell of week) {
+          if (cell.type === "day" && cell.count > max) {
+            max = cell.count;
+          }
+        }
+      }
+    }
+    return max;
+  }, [monthGrids]);
+
+  if (monthGrids.length === 0) {
+    return (
+      <section className="card heatmap-card">
+        <h2>Activity calendar</h2>
+        <p className="muted">No date range to show for the current filters.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="card heatmap-card">
-      <h2>Calendar Intensity</h2>
-      <div className="calendar-grid">
-        {data.calendarDays.map((item) => (
-          <div
-            key={item.dateKey}
-            className="calendar-cell"
-            title={`${item.dateKey}: ${item.count} activities`}
-            style={{
-              backgroundColor: activityCellColor({
-                count: item.count,
-                maxCount,
-                mode: colorMode,
-                dominantFamily: item.dominantFamily
-              })
-            }}
-          >
-            <span>{item.dateKey.slice(-2)}</span>
+      <h2>Activity calendar</h2>
+      <p className="muted">
+        Each month shows every day in your activity range (lighter days had no events). Week starts
+        on Sunday.
+      </p>
+      <div className="calendar-year">
+        {monthGrids.map((month) => (
+          <div key={month.monthId} className="calendar-month">
+            <h3 className="calendar-month__title">{month.title}</h3>
+            <div className="calendar-month__weekdays">
+              {CALENDAR_WEEKDAY_HEADERS.map((label) => (
+                <div key={label} className="calendar-month__weekday">
+                  {label}
+                </div>
+              ))}
+            </div>
+            <div className="calendar-month__grid">
+              {month.weeks.flatMap((week, wi) =>
+                week.map((cell, di) => {
+                  const key = `${month.monthId}-${wi}-${di}`;
+                  if (cell.type === "empty") {
+                    return <div key={key} className="calendar-day calendar-day--empty" aria-hidden />;
+                  }
+                  const title = `${cell.dateKey}: ${cell.count} activities`;
+                  return (
+                    <div
+                      key={key}
+                      className={`calendar-day ${cell.count === 0 ? "calendar-day--zero" : ""}`}
+                      title={title}
+                      style={{
+                        backgroundColor: activityCellColor({
+                          count: cell.count,
+                          maxCount: maxCount || 1,
+                          mode: colorMode,
+                          dominantFamily: cell.dominantFamily
+                        })
+                      }}
+                    >
+                      <span className="calendar-day__num">{cell.dayNumber}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -94,7 +146,6 @@ export default function HeatmapPage() {
   const [enabledSourceIds, setEnabledSourceIds] = useState(defaultSourceIds);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [colorMode, setColorMode] = useState("intensity");
-  const [debugInfo, setDebugInfo] = useState(null);
 
   const timezoneOptions = useMemo(() => getAvailableTimezones(), []);
 
@@ -105,29 +156,23 @@ export default function HeatmapPage() {
     setHeatmapData(null);
     setRawEvents([]);
     setEnabledSourceIds(defaultSourceIds);
-    setDebugInfo(null);
+    setStatus("Reading your export folder…");
 
     const discovery = discoverActivityFiles(files);
-    setStatus(
-      `Scanned ${discovery.allFiles.length} file(s), found ${discovery.activityFiles.length} file(s) under your_instagram_activity, parse targets: ${discovery.parseTargetFiles.length}.`
-    );
-    setDebugInfo({
-      matchedCommentFiles: discovery.matchedFilesByFolder.comments.map(
-        (file) => file.webkitRelativePath || file.name
-      ),
-      matchedLikeFiles: discovery.matchedFilesByFolder.likes.map(
-        (file) => file.webkitRelativePath || file.name
-      ),
+
+    // Diagnostics for developers only (not shown in UI)
+    console.info("[heatmap] discovery", {
+      scannedFiles: discovery.allFiles.length,
+      activityFolderFiles: discovery.activityFiles.length,
       parseTargets: discovery.parseTargetPaths,
-      parserStats: {
-        filesParsed: 0,
-        itemsSeen: 0,
-        validTimestamps: 0,
-        skippedItems: 0
-      }
+      commentsFolderMatches: discovery.matchedFilesByFolder.comments.map(
+        (f) => f.webkitRelativePath || f.name
+      ),
+      likesFolderMatches: discovery.matchedFilesByFolder.likes.map((f) => f.webkitRelativePath || f.name)
     });
 
     if (discovery.activityFiles.length === 0) {
+      setStatus("Select your exported folder to build an activity heatmap.");
       setValidationError(
         "Missing your_instagram_activity in selected folder. Please choose the root export folder."
       );
@@ -135,6 +180,7 @@ export default function HeatmapPage() {
     }
 
     if (discovery.parseTargetFiles.length === 0) {
+      setStatus("Select your exported folder to build an activity heatmap.");
       setValidationError(
         "No supported activity files found. Expected hype.json, post_comments_*.json, liked_comments.json, or liked_posts.json."
       );
@@ -143,12 +189,16 @@ export default function HeatmapPage() {
 
     const parseResult = await parseActivityEvents(discovery);
     setParseWarnings(parseResult.errors);
-    setDebugInfo((current) => ({
-      ...(current || {}),
-      parserStats: parseResult.stats.total
-    }));
+
+    console.info("[heatmap] parse", {
+      errors: parseResult.errors,
+      statsTotal: parseResult.stats.total,
+      statsBySource: parseResult.stats.bySource,
+      eventCount: parseResult.events.length
+    });
 
     if (parseResult.events.length === 0) {
+      setStatus("Select your exported folder to build an activity heatmap.");
       setValidationError("No valid activity timestamps were parsed from the selected files.");
       return;
     }
@@ -159,6 +209,7 @@ export default function HeatmapPage() {
         enabledSourceIds: defaultSourceIds
       })
     );
+    setStatus("");
   }
 
   function handleTimezoneChange(nextTimezone) {
@@ -240,7 +291,7 @@ export default function HeatmapPage() {
           </select>
         </label>
 
-        <p className="muted">{status}</p>
+        {status ? <p className="muted heatmap-controls__status">{status}</p> : null}
       </div>
 
       {validationError ? <div className="error">{validationError}</div> : null}
@@ -256,38 +307,34 @@ export default function HeatmapPage() {
         </div>
       ) : null}
 
-      {debugInfo ? (
-        <div className="card debug-card">
-          <h2>File discovery details</h2>
-          <p className="muted">Matched in comments folder:</p>
-          <ul className="mono-list">
-            {debugInfo.matchedCommentFiles.map((filePath) => (
-              <li key={`matched-${filePath}`}>{filePath}</li>
-            ))}
-          </ul>
-          <p className="muted">Matched in likes folder:</p>
-          <ul className="mono-list">
-            {debugInfo.matchedLikeFiles.map((filePath) => (
-              <li key={`likes-${filePath}`}>{filePath}</li>
-            ))}
-          </ul>
-          <p className="muted">Files selected for parsing:</p>
-          <ul className="mono-list">
-            {debugInfo.parseTargets.map((filePath) => (
-              <li key={`target-${filePath}`}>{filePath}</li>
-            ))}
-          </ul>
-          <p className="muted">
-            Parsed files: {debugInfo.parserStats?.filesParsed || 0} | Items seen:{" "}
-            {debugInfo.parserStats?.itemsSeen || 0} | Valid timestamps:{" "}
-            {debugInfo.parserStats?.validTimestamps || 0} | Skipped items:{" "}
-            {debugInfo.parserStats?.skippedItems || 0}
-          </p>
-        </div>
-      ) : null}
-
       {heatmapData ? (
         <>
+          <div className="upload-success card" role="status">
+            <div className="upload-success__icon" aria-hidden>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M8.5 12.5L11 15L16 9"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div>
+              <strong className="upload-success__title">You&apos;re all set</strong>
+              <p className="upload-success__text muted">
+                Your export was read successfully and activity is shown below. Use filters to focus
+                on comments or likes.
+              </p>
+            </div>
+          </div>
+
           <section className="card activity-filters">
             <div className="activity-filters__row">
               <button
