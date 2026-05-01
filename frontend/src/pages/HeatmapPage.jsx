@@ -168,7 +168,8 @@ export default function HeatmapPage() {
       commentsFolderMatches: discovery.matchedFilesByFolder.comments.map(
         (f) => f.webkitRelativePath || f.name
       ),
-      likesFolderMatches: discovery.matchedFilesByFolder.likes.map((f) => f.webkitRelativePath || f.name)
+      likesFolderMatches: discovery.matchedFilesByFolder.likes.map((f) => f.webkitRelativePath || f.name),
+      mediaFolderMatches: discovery.matchedFilesByFolder.media.map((f) => f.webkitRelativePath || f.name)
     });
 
     if (discovery.activityFiles.length === 0) {
@@ -182,7 +183,7 @@ export default function HeatmapPage() {
     if (discovery.parseTargetFiles.length === 0) {
       setStatus("Select your exported folder to build an activity heatmap.");
       setValidationError(
-        "No supported activity files found. Expected hype.json, post_comments_*.json, liked_comments.json, or liked_posts.json."
+        "No supported activity files found. Expected comments/likes/media activity files like hype.json, post_comments_*.json, liked_comments.json, liked_posts.json, profile_photos.json, reels.json, or stories.json."
       );
       return;
     }
@@ -264,8 +265,8 @@ export default function HeatmapPage() {
     <section className="container heatmap-page">
       <h1>Instagram Activity Heatmap</h1>
       <p>
-        Upload your export folder to visualize comments and likes by weekday/hour and by calendar
-        day.
+        Upload your export folder to visualize comments, likes, and media activity by weekday/hour
+        and by calendar day.
       </p>
 
       <div className="card heatmap-controls">
@@ -330,7 +331,7 @@ export default function HeatmapPage() {
               <strong className="upload-success__title">You&apos;re all set</strong>
               <p className="upload-success__text muted">
                 Your export was read successfully and activity is shown below. Use filters to focus
-                on comments or likes.
+                on comments, likes, or media.
               </p>
             </div>
           </div>
@@ -357,6 +358,13 @@ export default function HeatmapPage() {
                 onClick={() => handleFamilyToggle("likes")}
               >
                 Likes
+              </button>
+              <button
+                type="button"
+                className={`chip ${isFamilyEnabled("media") ? "is-active" : ""}`}
+                onClick={() => handleFamilyToggle("media")}
+              >
+                Media
               </button>
               <button
                 type="button"

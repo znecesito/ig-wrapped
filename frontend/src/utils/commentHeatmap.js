@@ -6,6 +6,7 @@ const TIMESTAMP_KEYS = [
   "date",
   "created_at",
   "created_time",
+  "creation_timestamp",
   "value"
 ];
 
@@ -54,12 +55,37 @@ const ACTIVITY_SOURCE_DESCRIPTORS = [
     folder: "likes",
     matchFile: (fileName) => fileName.toLowerCase() === "liked_posts.json",
     parsePayload: (payload) => coerceCollection(payload?.likes_media_likes ?? payload)
+  },
+  {
+    id: "media.profile_photos",
+    family: "media",
+    label: "Profile photos",
+    folder: "media",
+    matchFile: (fileName) => fileName.toLowerCase() === "profile_photos.json",
+    parsePayload: (payload) => coerceCollection(payload?.ig_profile_picture ?? payload)
+  },
+  {
+    id: "media.reels",
+    family: "media",
+    label: "Reels",
+    folder: "media",
+    matchFile: (fileName) => fileName.toLowerCase() === "reels.json",
+    parsePayload: (payload) => coerceCollection(payload?.ig_reels_media ?? payload)
+  },
+  {
+    id: "media.stories",
+    family: "media",
+    label: "Stories",
+    folder: "media",
+    matchFile: (fileName) => fileName.toLowerCase() === "stories.json",
+    parsePayload: (payload) => coerceCollection(payload?.ig_stories ?? payload)
   }
 ];
 
 const FAMILY_COLORS = {
   comments: "#4f46e5",
-  likes: "#dc2626"
+  likes: "#dc2626",
+  media: "#0ea5a4"
 };
 
 const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -116,7 +142,8 @@ export function discoverActivityFiles(fileList) {
 
   const matchedFilesByFolder = {
     comments: files.filter((file) => fileBelongsToActivityFolder(file, "comments")),
-    likes: files.filter((file) => fileBelongsToActivityFolder(file, "likes"))
+    likes: files.filter((file) => fileBelongsToActivityFolder(file, "likes")),
+    media: files.filter((file) => fileBelongsToActivityFolder(file, "media"))
   };
 
   return {
@@ -224,7 +251,8 @@ function extractTimestampMs(activityItem) {
     activityItem.time,
     activityItem.date,
     activityItem.created_at,
-    activityItem.created_time
+    activityItem.created_time,
+    activityItem.creation_timestamp
   ];
 
   for (const candidate of directCandidates) {
@@ -239,7 +267,9 @@ function extractTimestampMs(activityItem) {
 
 function pushSourceEvents(items, sourceDescriptor, sourceId, output, errors, stats) {
   if (!Array.isArray(items)) {
-    errors.push(`${sourceDescriptor.label}: expected an array of activity items.`);
+    errors.push(
+      `${sourceDescriptor.label} (${sourceId}): expected an array of activity items.`
+    );
     return;
   }
 
