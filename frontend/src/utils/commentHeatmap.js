@@ -79,13 +79,50 @@ const ACTIVITY_SOURCE_DESCRIPTORS = [
     folder: "media",
     matchFile: (fileName) => fileName.toLowerCase() === "stories.json",
     parsePayload: (payload) => coerceCollection(payload?.ig_stories ?? payload)
+  },
+  {
+    id: "storyInteractions.polls",
+    family: "storyInteractions",
+    label: "Story polls",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "polls.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_polls)
+  },
+  {
+    id: "storyInteractions.stories_viewed",
+    family: "storyInteractions",
+    label: "Stories viewed",
+    folder: "story_interactions",
+    matchFile: (fileName) => {
+      const n = fileName.toLowerCase();
+      return n === "stories_viewed.json" || n === "stories_view.json";
+    },
+    parsePayload: (payload) => (Array.isArray(payload) ? payload : null)
+  },
+  {
+    id: "storyInteractions.story_likes",
+    family: "storyInteractions",
+    label: "Story likes",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "story_likes.json",
+    parsePayload: (payload) => (Array.isArray(payload) ? payload : null)
   }
 ];
 
 const FAMILY_COLORS = {
   comments: "#4f46e5",
   likes: "#dc2626",
-  media: "#0ea5a4"
+  media: "#0ea5a4",
+  storyInteractions: "#ca8a04"
+};
+
+export const ACTIVITY_FAMILY_COLORS = FAMILY_COLORS;
+
+const FAMILY_LEGEND_LABELS = {
+  comments: "Comments",
+  likes: "Likes",
+  media: "Media",
+  storyInteractions: "Story interactions"
 };
 
 const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -143,7 +180,10 @@ export function discoverActivityFiles(fileList) {
   const matchedFilesByFolder = {
     comments: files.filter((file) => fileBelongsToActivityFolder(file, "comments")),
     likes: files.filter((file) => fileBelongsToActivityFolder(file, "likes")),
-    media: files.filter((file) => fileBelongsToActivityFolder(file, "media"))
+    media: files.filter((file) => fileBelongsToActivityFolder(file, "media")),
+    story_interactions: files.filter((file) =>
+      fileBelongsToActivityFolder(file, "story_interactions")
+    )
   };
 
   return {
@@ -262,7 +302,21 @@ function extractTimestampMs(activityItem) {
     }
   }
 
-  return extractTimestampFromValue(activityItem.string_map_data ?? activityItem);
+  if (activityItem.string_list_data != null) {
+    const fromList = extractTimestampFromValue(activityItem.string_list_data);
+    if (fromList != null) {
+      return fromList;
+    }
+  }
+
+  if (activityItem.string_map_data != null) {
+    const fromMap = extractTimestampFromValue(activityItem.string_map_data);
+    if (fromMap != null) {
+      return fromMap;
+    }
+  }
+
+  return extractTimestampFromValue(activityItem);
 }
 
 function pushSourceEvents(items, sourceDescriptor, sourceId, output, errors, stats) {
@@ -661,12 +715,9 @@ export function activityCellColor({ count, maxCount, mode = "intensity", dominan
 }
 
 export function getActivityFamilyLegend() {
-  return Object.entries(FAMILY_COLORS).map(([family, color]) => ({ family, color }));
+  return Object.entries(FAMILY_COLORS).map(([family, color]) => ({
+    family,
+    color,
+    label: FAMILY_LEGEND_LABELS[family] || family
+  }));
 }
-
-/*
- Add future activity types by appending to ACTIVITY_SOURCE_DESCRIPTORS:
- - include unique id/family/label/folder
- - match file names in that folder
- - map raw payload shape to an array via parsePayload
-*/

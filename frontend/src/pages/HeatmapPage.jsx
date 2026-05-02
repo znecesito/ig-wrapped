@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
+  ACTIVITY_FAMILY_COLORS,
   activityCellColor,
   buildCalendarMonthGrids,
   buildHeatmapData,
@@ -169,7 +170,10 @@ export default function HeatmapPage() {
         (f) => f.webkitRelativePath || f.name
       ),
       likesFolderMatches: discovery.matchedFilesByFolder.likes.map((f) => f.webkitRelativePath || f.name),
-      mediaFolderMatches: discovery.matchedFilesByFolder.media.map((f) => f.webkitRelativePath || f.name)
+      mediaFolderMatches: discovery.matchedFilesByFolder.media.map((f) => f.webkitRelativePath || f.name),
+      storyInteractionsFolderMatches: discovery.matchedFilesByFolder.story_interactions.map(
+        (f) => f.webkitRelativePath || f.name
+      )
     });
 
     if (discovery.activityFiles.length === 0) {
@@ -183,7 +187,7 @@ export default function HeatmapPage() {
     if (discovery.parseTargetFiles.length === 0) {
       setStatus("Select your exported folder to build an activity heatmap.");
       setValidationError(
-        "No supported activity files found. Expected comments/likes/media activity files like hype.json, post_comments_*.json, liked_comments.json, liked_posts.json, profile_photos.json, reels.json, or stories.json."
+        "No supported activity files found. Expected activity JSON under your_instagram_activity (e.g. comments, likes, media, or story_interactions: polls.json, stories_viewed.json, story_likes.json)."
       );
       return;
     }
@@ -265,8 +269,8 @@ export default function HeatmapPage() {
     <section className="container heatmap-page">
       <h1>Instagram Activity Heatmap</h1>
       <p>
-        Upload your export folder to visualize comments, likes, and media activity by weekday/hour
-        and by calendar day.
+        Upload your export folder to visualize comments, likes, media, and story interactions by
+        weekday/hour and by calendar day.
       </p>
 
       <div className="card heatmap-controls">
@@ -331,7 +335,7 @@ export default function HeatmapPage() {
               <strong className="upload-success__title">You&apos;re all set</strong>
               <p className="upload-success__text muted">
                 Your export was read successfully and activity is shown below. Use filters to focus
-                on comments, likes, or media.
+                on comments, likes, media, or story interactions.
               </p>
             </div>
           </div>
@@ -345,27 +349,17 @@ export default function HeatmapPage() {
               >
                 All
               </button>
-              <button
-                type="button"
-                className={`chip ${isFamilyEnabled("comments") ? "is-active" : ""}`}
-                onClick={() => handleFamilyToggle("comments")}
-              >
-                Comments
-              </button>
-              <button
-                type="button"
-                className={`chip ${isFamilyEnabled("likes") ? "is-active" : ""}`}
-                onClick={() => handleFamilyToggle("likes")}
-              >
-                Likes
-              </button>
-              <button
-                type="button"
-                className={`chip ${isFamilyEnabled("media") ? "is-active" : ""}`}
-                onClick={() => handleFamilyToggle("media")}
-              >
-                Media
-              </button>
+              {familyLegend.map(({ family, label, color }) => (
+                <button
+                  key={family}
+                  type="button"
+                  className={`chip chip--family ${isFamilyEnabled(family) ? "is-active" : ""}`}
+                  style={{ "--family-accent": color }}
+                  onClick={() => handleFamilyToggle(family)}
+                >
+                  {label}
+                </button>
+              ))}
               <button
                 type="button"
                 className="chip chip-muted"
@@ -380,7 +374,8 @@ export default function HeatmapPage() {
                   <button
                     key={source.id}
                     type="button"
-                    className={`chip ${enabledSourceIds.includes(source.id) ? "is-active" : ""}`}
+                    className={`chip chip--family ${enabledSourceIds.includes(source.id) ? "is-active" : ""}`}
+                    style={{ "--family-accent": ACTIVITY_FAMILY_COLORS[source.family] }}
                     onClick={() => handleSourceToggle(source.id)}
                   >
                     {source.label}
@@ -444,7 +439,7 @@ export default function HeatmapPage() {
                         style={{ backgroundColor: item.color }}
                         aria-hidden
                       />
-                      {item.family}
+                      {item.label}
                     </span>
                   ))}
                 </div>

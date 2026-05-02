@@ -197,7 +197,7 @@ button:disabled {
   font-weight: 600;
 }
 
-.chip.is-active {
+.chip.is-active:not(.chip--family) {
   border-color: #c026d3;
   background: linear-gradient(135deg, #fff4f8 0%, #fce7f3 100%);
   color: #86198f;
@@ -206,6 +206,16 @@ button:disabled {
 .chip.chip-muted {
   background: #fff;
   color: #475569;
+}
+
+.chip.chip--family.is-active {
+  border-color: var(--family-accent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--family-accent) 16%, white) 0%,
+    color-mix(in srgb, var(--family-accent) 24%, white) 100%
+  );
+  color: color-mix(in srgb, var(--family-accent) 78%, black);
 }
 
 .summary-card {
@@ -399,7 +409,7 @@ button:disabled {
   gap: 0.35rem;
   font-size: 0.85rem;
   color: #334155;
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 .family-legend__dot {
