@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HeatmapPage from "./pages/HeatmapPage.jsx";
+import SocialGraphPage from "./pages/SocialGraphPage.jsx";
 
 const API_URL = "http://localhost:4000/upload";
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
@@ -109,6 +110,9 @@ function normalizePath(pathname) {
   if (pathname.startsWith("/heatmap")) {
     return "/heatmap";
   }
+  if (pathname.startsWith("/social-graph")) {
+    return "/social-graph";
+  }
   return "/";
 }
 
@@ -151,11 +155,24 @@ export default function App() {
             >
               Activity Heatmap
             </button>
+            <button
+              type="button"
+              className={route === "/social-graph" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/social-graph")}
+            >
+              Social Graph
+            </button>
           </nav>
         </div>
       </header>
 
-      {route === "/heatmap" ? <HeatmapPage /> : <NonFollowersPage />}
+      {route === "/heatmap" ? (
+        <HeatmapPage />
+      ) : route === "/social-graph" ? (
+        <SocialGraphPage />
+      ) : (
+        <NonFollowersPage />
+      )}
     </main>
   );
 }
