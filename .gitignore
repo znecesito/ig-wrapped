@@ -6,3 +6,7 @@
 .env.*
 !.env.example
 .vscode/
+
+# Local Cursor mirror (committed rules live in .cursor/rules/)
+.cursorrules
+.cursorrules.local

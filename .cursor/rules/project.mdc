@@ -1,0 +1,36 @@
+---
+description: Stack, layout, and conventions for ig-wrapped (full-stack Instagram export tools)
+alwaysApply: true
+---
+
+# ig-wrapped
+
+## Stack
+
+- **Backend:** Node.js (ESM), Express 4, Multer, CORS.
+- **Frontend:** React 18, Vite 5.
+- **Language:** JavaScript only (no TypeScript in this repo).
+
+## Run
+
+- **Backend:** `cd backend` → `npm install` → `npm run dev` → `http://localhost:4000`
+- **Frontend:** `cd frontend` → `npm install` → `npm run dev` → `http://localhost:5173`
+
+## Folder map
+
+- **`backend/src/`** — `server.js`, `app.js`; **`routes/upload.js`** (multipart upload); **`services/compareUsers.js`**; **`parsers/instagramParsers.js`**; **`middleware/errorHandler.js`**
+- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`; **`styles.css`**
+
+## API
+
+- **`POST /upload`** (`multipart/form-data`): `followersFile`, `followingFile` (Instagram export JSON) → JSON `{ "non_followers": ["user1", ...] }`
+
+## Conventions
+
+- Match existing style: focused diffs, no unrelated refactors.
+- **Non-Followers** flow uses the backend API; **Activity Heatmap** and **Social Graph** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses).
+- When adding Instagram export parsing, reuse patterns from **`frontend/src/utils/commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
+
+## Optional scoped rules
+
+Add separate `.mdc` files with `globs` (e.g. `frontend/**/*.jsx`, `backend/**/*.js`) if you need frontend-only or backend-only guidance beyond this file.
