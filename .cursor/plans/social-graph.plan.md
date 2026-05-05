@@ -48,7 +48,7 @@ Exclude interactions where the **media owner** is the **same person as the user*
 ## Original behavior (unchanged except filtering above)
 
 - Discovery under `your_instagram_activity/comments`: `post_comments_*.json` (array root), `hype.json` → `comments_story_comments`.
-- Toggles: **Comments** category + **Post comments** / **Reels comments** sub-sources.
+- Toggles: **Comments** category + **Post comments** / **Story comments** sub-sources (for `hype.json` / `comments_story_comments`—these are **story** comments, not reels; label in UI must say **Story comments**, not “Reels comments”).
 - Reuse path helpers / descriptors pattern already in [`socialInteractionGraph.js`](frontend/src/utils/socialInteractionGraph.js).
 
 ---

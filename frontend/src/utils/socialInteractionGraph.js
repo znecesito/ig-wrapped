@@ -45,7 +45,7 @@ export const SOCIAL_INTERACTION_DESCRIPTORS = [
   {
     id: "comments.story",
     categoryId: "comments",
-    label: "Reels comments",
+    label: "Story comments",
     folder: "comments",
     matchFile: (fileName) => fileName.toLowerCase() === "hype.json",
     parsePayload: (payload) => {
