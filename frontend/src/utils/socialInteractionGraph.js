@@ -4,7 +4,32 @@ const ACTIVITY_ROOT_SEGMENT = "your_instagram_activity";
 export const PERSONAL_INFORMATION_JSON_SUFFIX =
   "personal_information/personal_information/personal_information.json";
 
-/** @typedef {{ id: string, categoryId: string, label: string, folder: string, matchFile: (name: string) => boolean, parsePayload: (payload: unknown) => unknown }} SocialInteractionDescriptor */
+/**
+ * @typedef {{
+ *   id: string,
+ *   categoryId: string,
+ *   label: string,
+ *   folder: string,
+ *   matchFile: (name: string) => boolean,
+ *   parsePayload: (payload: unknown) => unknown,
+ *   extractTargetUsername: (item: unknown) => string | null
+ * }} SocialInteractionDescriptor
+ */
+
+/**
+ * Matches [`commentHeatmap.js`](commentHeatmap.js) `coerceCollection` so payload shapes align.
+ * @param {unknown} value
+ * @returns {unknown[] | null}
+ */
+export function coerceCollection(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value);
+  }
+  return null;
+}
 
 /** @type {SocialInteractionDescriptor[]} */
 export const SOCIAL_INTERACTION_DESCRIPTORS = [
@@ -14,7 +39,8 @@ export const SOCIAL_INTERACTION_DESCRIPTORS = [
     label: "Post comments",
     folder: "comments",
     matchFile: (fileName) => /^post_comments_.*\.json$/i.test(fileName),
-    parsePayload: (payload) => (Array.isArray(payload) ? payload : [])
+    parsePayload: (payload) => (Array.isArray(payload) ? payload : []),
+    extractTargetUsername: extractMediaOwnerUsername
   },
   {
     id: "comments.story",
@@ -30,7 +56,56 @@ export const SOCIAL_INTERACTION_DESCRIPTORS = [
           ? /** @type {{ comments_story_comments?: unknown }} */ (payload).comments_story_comments
           : null;
       return Array.isArray(raw) ? raw : [];
-    }
+    },
+    extractTargetUsername: extractMediaOwnerUsername
+  },
+  {
+    id: "likes.post",
+    categoryId: "likes",
+    label: "Liked posts",
+    folder: "likes",
+    matchFile: (fileName) => fileName.toLowerCase() === "liked_posts.json",
+    parsePayload: (payload) => coerceCollection(payload?.likes_media_likes ?? payload),
+    extractTargetUsername: extractLikedPostOwnerUsername
+  },
+  {
+    id: "likes.comment",
+    categoryId: "likes",
+    label: "Liked comments",
+    folder: "likes",
+    matchFile: (fileName) => fileName.toLowerCase() === "liked_comments.json",
+    parsePayload: (payload) => coerceCollection(payload?.likes_comment_likes),
+    extractTargetUsername: extractLikedCommentUsername
+  },
+  {
+    id: "storyInteractions.polls",
+    categoryId: "storyInteractions",
+    label: "Story polls",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "polls.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_polls),
+    extractTargetUsername: extractStoryInteractionTargetUsername
+  },
+  {
+    id: "storyInteractions.stories_viewed",
+    categoryId: "storyInteractions",
+    label: "Stories viewed",
+    folder: "story_interactions",
+    matchFile: (fileName) => {
+      const n = fileName.toLowerCase();
+      return n === "stories_viewed.json" || n === "stories_view.json";
+    },
+    parsePayload: (payload) => (Array.isArray(payload) ? payload : null),
+    extractTargetUsername: extractStoryInteractionTargetUsername
+  },
+  {
+    id: "storyInteractions.story_likes",
+    categoryId: "storyInteractions",
+    label: "Story likes",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "story_likes.json",
+    parsePayload: (payload) => (Array.isArray(payload) ? payload : null),
+    extractTargetUsername: extractStoryInteractionTargetUsername
   }
 ];
 
@@ -67,6 +142,146 @@ export function extractMediaOwnerUsername(item) {
   }
   const trimmed = value.trim();
   return trimmed || null;
+}
+
+const MAX_LABEL_WALK_DEPTH = 40;
+
+/**
+ * @param {unknown} node
+ * @param {number} [depth]
+ * @returns {string | null}
+ */
+function findUsernameLabelPairRecursive(node, depth = 0) {
+  if (depth > MAX_LABEL_WALK_DEPTH || node == null) {
+    return null;
+  }
+  if (Array.isArray(node)) {
+    for (const el of node) {
+      const found = findUsernameLabelPairRecursive(el, depth + 1);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+  if (typeof node !== "object") {
+    return null;
+  }
+  const o = /** @type {Record<string, unknown>} */ (node);
+  const lbl = o.label;
+  const val = o.value;
+  if (
+    typeof lbl === "string" &&
+    lbl.trim().toLowerCase() === "username" &&
+    typeof val === "string"
+  ) {
+    const t = val.trim();
+    if (t) {
+      return t;
+    }
+  }
+  for (const v of Object.values(o)) {
+    const found = findUsernameLabelPairRecursive(v, depth + 1);
+    if (found) {
+      return found;
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {unknown} node
+ * @param {number} [depth]
+ * @returns {string | null}
+ */
+function findUsernameUnderOwnerBlock(node, depth = 0) {
+  if (depth > MAX_LABEL_WALK_DEPTH || !node || typeof node !== "object") {
+    return null;
+  }
+  const lv = /** @type {{ label_values?: unknown[] }} */ (node).label_values;
+  if (!Array.isArray(lv)) {
+    return null;
+  }
+  const ownerBlock = lv.find(
+    (b) =>
+      b &&
+      typeof b === "object" &&
+      String(/** @type {{ title?: unknown }} */ (b).title ?? "")
+        .trim()
+        .toLowerCase() === "owner"
+  );
+  if (!ownerBlock || typeof ownerBlock !== "object") {
+    return null;
+  }
+  return findUsernameLabelPairRecursive(ownerBlock, depth + 1);
+}
+
+/**
+ * @param {unknown} item
+ * @returns {string | null}
+ */
+function extractLikedPostOwnerUsername(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+  const underOwner = findUsernameUnderOwnerBlock(item);
+  if (underOwner) {
+    return underOwner;
+  }
+  return findUsernameLabelPairRecursive(item);
+}
+
+/**
+ * @param {unknown} item
+ * @returns {string | null}
+ */
+function extractLikedCommentUsername(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+  const t = /** @type {{ title?: unknown }} */ (item).title;
+  if (typeof t !== "string") {
+    return null;
+  }
+  const trimmed = t.trim();
+  return trimmed || null;
+}
+
+/**
+ * @param {unknown} item
+ * @returns {string | null}
+ */
+function extractStoryInteractionTargetUsername(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+  const map = /** @type {{ string_map_data?: Record<string, unknown> }} */ (item).string_map_data;
+  if (map && typeof map === "object") {
+    for (const key of ["Media Owner", "Title", "Username"]) {
+      const block = map[key];
+      if (block && typeof block === "object") {
+        const value = /** @type {{ value?: unknown }} */ (block).value;
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed) {
+            return trimmed;
+          }
+        }
+      }
+    }
+  }
+  const fromLabelValues = extractLikedPostOwnerUsername(item);
+  if (fromLabelValues) {
+    return fromLabelValues;
+  }
+  const title = /** @type {{ title?: unknown }} */ (item).title;
+  if (typeof title === "string") {
+    const trimmed = title.trim();
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+  return extractMediaOwnerUsername(item);
 }
 
 /**
@@ -215,7 +430,9 @@ export function getSocialSources() {
 }
 
 const CATEGORY_LABELS = {
-  comments: "Comments"
+  comments: "Comments",
+  likes: "Likes",
+  storyInteractions: "Story interactions"
 };
 
 /** Categories for chip rows: one Comments row toggling all comment sources. */
@@ -308,7 +525,7 @@ export async function parseSocialInteractionCounts(discovery, options = {}) {
         itemsSeen += items.length;
 
         for (const item of items) {
-          const username = extractMediaOwnerUsername(item);
+          const username = descriptor.extractTargetUsername(item);
           if (!username) {
             skippedMissingOwner += 1;
             continue;

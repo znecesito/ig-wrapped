@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { heatColor } from "../utils/commentHeatmap.js";
+import { ACTIVITY_FAMILY_COLORS, heatColor } from "../utils/commentHeatmap.js";
 import {
   buildTopInteractions,
   discoverSocialInteractionFiles,
@@ -83,7 +83,7 @@ export default function SocialGraphPage() {
     if (discovery.parseTargetFiles.length === 0) {
       setStatus("Select your exported folder to see top accounts you interact with.");
       setValidationError(
-        "No comment JSON found under your_instagram_activity/comments (e.g. post_comments_*.json, hype.json)."
+        "No matching activity JSON under your_instagram_activity. Expected files under comments (e.g. post_comments_*.json, hype.json), likes (liked_posts.json, liked_comments.json), or story_interactions (polls.json, stories_viewed.json or stories_view.json, story_likes.json)."
       );
       return;
     }
@@ -93,14 +93,14 @@ export default function SocialGraphPage() {
 
     if (result.stats.itemsSeen === 0) {
       setStatus("Select your exported folder to see top accounts you interact with.");
-      setValidationError("No rows found in the selected comment JSON files.");
+      setValidationError("No rows found in the selected activity JSON files.");
       return;
     }
 
     if (result.stats.skippedMissingOwner === result.stats.itemsSeen) {
       setStatus("Select your exported folder to see top accounts you interact with.");
       setValidationError(
-        "No Media Owner usernames were found in the selected comment files. Check that your export format matches."
+        "No account usernames could be extracted from the selected files. Check that your export format matches."
       );
       return;
     }
@@ -171,7 +171,8 @@ export default function SocialGraphPage() {
     return cat.sourceIds.every((id) => enabledSourceIds.includes(id));
   }
 
-  const commentsAccent = "#4f46e5";
+  const categoryAccent = (categoryId) =>
+    ACTIVITY_FAMILY_COLORS[categoryId] ?? ACTIVITY_FAMILY_COLORS.comments ?? "#4f46e5";
   const skippedSelf = parseStats?.skippedSelfAccount ?? 0;
 
   return (
@@ -180,8 +181,9 @@ export default function SocialGraphPage() {
       <p>
         Select your full Instagram data export folder (the one that contains both{" "}
         <code className="social-graph-page__code">your_instagram_activity</code> and{" "}
-        <code className="social-graph-page__code">personal_information</code>) so we can find your
-        comments and detect your username to exclude interactions on your own posts and reels.
+        <code className="social-graph-page__code">personal_information</code>) so we can load your
+        comments, likes, and story interactions, and detect your username to exclude interactions with
+        your own account.
       </p>
 
       <div className="card heatmap-controls">
@@ -238,7 +240,7 @@ export default function SocialGraphPage() {
             {!effectiveSelfUsername ? (
               <p className="social-graph-hint--warn">
                 We couldn&apos;t read your username from personal_information.json. Enter it above to
-                exclude comments on your own content; otherwise those replies may appear in the chart.
+                exclude interactions with your own account; otherwise those may appear in the chart.
               </p>
             ) : null}
           </div>
@@ -263,11 +265,10 @@ export default function SocialGraphPage() {
             <div>
               <strong className="upload-success__title">Data loaded</strong>
               <p className="upload-success__text muted">
-                {parseStats.countedInteractions} comment interaction(s) counted toward other
-                accounts&rsquo; media (from {parseStats.filesParsed} file(s)). Toggle sources to change
-                the chart.
+                {parseStats.countedInteractions} interaction(s) counted toward other accounts&rsquo;
+                content (from {parseStats.filesParsed} file(s)). Toggle sources to change the chart.
                 {parseStats.skippedMissingOwner > 0
-                  ? ` ${parseStats.skippedMissingOwner} row(s) skipped (no Media Owner).`
+                  ? ` ${parseStats.skippedMissingOwner} row(s) skipped (no target username).`
                   : ""}
                 {skippedSelf > 0
                   ? ` ${skippedSelf} interaction(s) on your own content excluded.`
@@ -280,7 +281,7 @@ export default function SocialGraphPage() {
             <div className="card social-graph-empty-banner">
               <p>
                 No interactions on other people&apos;s content matched your filters. Every parsed row
-                with a Media Owner was treated as your own account, or turn on more comment sources.
+                may have been attributed to your own account, or try enabling more sources.
               </p>
             </div>
           ) : null}
@@ -299,7 +300,7 @@ export default function SocialGraphPage() {
                   key={cat.id}
                   type="button"
                   className={`chip chip--family ${isCategoryFullyEnabled(cat.id) ? "is-active" : ""}`}
-                  style={{ "--family-accent": commentsAccent }}
+                  style={{ "--family-accent": categoryAccent(cat.id) }}
                   onClick={() => handleCategoryToggle(cat.id)}
                 >
                   {cat.label}
@@ -307,13 +308,13 @@ export default function SocialGraphPage() {
               ))}
             </div>
             <div className="activity-filters__row activity-filters__row--nested">
-              <span className="muted social-graph-page__subheading">Comment sources</span>
+              <span className="muted social-graph-page__subheading">Sources</span>
               {sources.map((source) => (
                 <button
                   key={source.id}
                   type="button"
                   className={`chip chip--family ${enabledSourceIds.includes(source.id) ? "is-active" : ""}`}
-                  style={{ "--family-accent": commentsAccent }}
+                  style={{ "--family-accent": categoryAccent(source.categoryId) }}
                   onClick={() => handleSourceToggle(source.id)}
                 >
                   {source.label}
@@ -324,7 +325,7 @@ export default function SocialGraphPage() {
 
           <section className="card social-graph-chart">
             <h2>Top accounts you interact with</h2>
-            <p className="muted">Ranked by comment interactions (enabled sources merged).</p>
+            <p className="muted">Ranked by interactions (enabled sources merged).</p>
 
             {topRows.length === 0 ? (
               <p className="muted social-graph-chart__empty">Enable at least one source to see results.</p>
