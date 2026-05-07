@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HeatmapPage from "./pages/HeatmapPage.jsx";
+import MessagesPage from "./pages/MessagesPage.jsx";
 import SocialGraphPage from "./pages/SocialGraphPage.jsx";
 
 const API_URL = "http://localhost:4000/upload";
@@ -113,6 +114,9 @@ function normalizePath(pathname) {
   if (pathname.startsWith("/social-graph")) {
     return "/social-graph";
   }
+  if (pathname.startsWith("/messages")) {
+    return "/messages";
+  }
   return "/";
 }
 
@@ -162,6 +166,13 @@ export default function App() {
             >
               Social Graph
             </button>
+            <button
+              type="button"
+              className={route === "/messages" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/messages")}
+            >
+              Messages
+            </button>
           </nav>
         </div>
       </header>
@@ -170,6 +181,8 @@ export default function App() {
         <HeatmapPage />
       ) : route === "/social-graph" ? (
         <SocialGraphPage />
+      ) : route === "/messages" ? (
+        <MessagesPage />
       ) : (
         <NonFollowersPage />
       )}

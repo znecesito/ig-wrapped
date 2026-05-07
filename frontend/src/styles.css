@@ -564,3 +564,26 @@ button:disabled {
   transition: width 0.25s ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
+
+.messages-page h1 {
+  margin-bottom: 0.35rem;
+}
+
+.messages-page__code {
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.messages-page .messages-page__thread-label {
+  cursor: default;
+  text-decoration: none;
+}
+
+.messages-page .messages-page__thread-label:hover {
+  color: #0f172a;
+  text-decoration: none;
+}
