@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-04 (manual)
+**Last updated:** 2026-05-06 (manual)
 
 Short “where we left off” for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
@@ -14,13 +14,16 @@ Short “where we left off” for contributors and AI assistants. For invariant 
 
 **Social Graph (`/social-graph`)** — Client-only: user picks an exported folder; the app discovers social-interaction style files, parses per-account counts by source category, can infer the owner username from `personal_information` (with optional manual override), and shows top accounts with bar visualization and self-exclusion from rankings. Implemented via `frontend/src/utils/socialInteractionGraph.js` and `SocialGraphPage.jsx`.
 
+**Messages (`/messages`)** — Client-only: user picks an exported folder; the app discovers `your_instagram_activity/messages/inbox/**/message_*.json`, merges per-thread counts across message parts, supports username detection/override for participant-aware labels, and shows top threads as a heat-colored bar list. Implemented via `frontend/src/utils/messageFrequency.js` and `MessagesPage.jsx`.
+
 ---
 
 ## Key files touched recently (optional)
 
 - `frontend/src/utils/socialInteractionGraph.js` — discovery, parsing, top interactions, self-username handling.
+- `frontend/src/utils/messageFrequency.js` — inbox thread discovery, per-thread message aggregation, labeling heuristics.
 - `frontend/src/utils/commentHeatmap.js` — activity discovery, heatmap data, shared color helpers with the social graph.
-- `frontend/src/pages/SocialGraphPage.jsx`, `HeatmapPage.jsx`, `App.jsx` — nav and page wiring.
+- `frontend/src/pages/MessagesPage.jsx`, `SocialGraphPage.jsx`, `HeatmapPage.jsx`, `App.jsx` — nav and page wiring.
 
 ---
 
