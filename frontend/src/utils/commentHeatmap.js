@@ -41,6 +41,14 @@ const ACTIVITY_SOURCE_DESCRIPTORS = [
     parsePayload: (payload) => payload
   },
   {
+    id: "comments.reels",
+    family: "comments",
+    label: "Reels comments",
+    folder: "comments",
+    matchFile: (fileName) => fileName.toLowerCase() === "reels_comments.json",
+    parsePayload: (payload) => coerceCollection(payload?.comments_reels_comments)
+  },
+  {
     id: "likes.comment",
     family: "likes",
     label: "Liked comments",
@@ -81,6 +89,22 @@ const ACTIVITY_SOURCE_DESCRIPTORS = [
     parsePayload: (payload) => coerceCollection(payload?.ig_stories ?? payload)
   },
   {
+    id: "media.archived_posts",
+    family: "media",
+    label: "Archived posts",
+    folder: "media",
+    matchFile: (fileName) => fileName.toLowerCase() === "archived_posts.json",
+    parsePayload: (payload) => coerceCollection(payload?.ig_archived_post_media)
+  },
+  {
+    id: "media.posts",
+    family: "media",
+    label: "Posts",
+    folder: "media",
+    matchFile: (fileName) => /^posts_\d+\.json$/i.test(fileName),
+    parsePayload: (payload) => coerceCollection(payload)
+  },
+  {
     id: "storyInteractions.polls",
     family: "storyInteractions",
     label: "Story polls",
@@ -106,6 +130,32 @@ const ACTIVITY_SOURCE_DESCRIPTORS = [
     folder: "story_interactions",
     matchFile: (fileName) => fileName.toLowerCase() === "story_likes.json",
     parsePayload: (payload) => (Array.isArray(payload) ? payload : null)
+  },
+  {
+    id: "storyInteractions.questions",
+    family: "storyInteractions",
+    label: "Story questions",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "questions.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_questions)
+  },
+  {
+    id: "storyInteractions.quizzes",
+    family: "storyInteractions",
+    label: "Story quizzes",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "quizzes.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_quizzes)
+  },
+  {
+    id: "storyInteractions.reaction_sticker_reactions",
+    family: "storyInteractions",
+    label: "Story sticker reactions",
+    folder: "story_interactions",
+    matchFile: (fileName) =>
+      fileName.toLowerCase() === "story_reaction_sticker_reactions.json",
+    parsePayload: (payload) =>
+      coerceCollection(payload?.story_activities_reaction_sticker_reactions)
   }
 ];
 

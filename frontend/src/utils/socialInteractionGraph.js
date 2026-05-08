@@ -60,6 +60,15 @@ export const SOCIAL_INTERACTION_DESCRIPTORS = [
     extractTargetUsername: extractMediaOwnerUsername
   },
   {
+    id: "comments.reels",
+    categoryId: "comments",
+    label: "Reels comments",
+    folder: "comments",
+    matchFile: (fileName) => fileName.toLowerCase() === "reels_comments.json",
+    parsePayload: (payload) => coerceCollection(payload?.comments_reels_comments),
+    extractTargetUsername: extractMediaOwnerUsername
+  },
+  {
     id: "likes.post",
     categoryId: "likes",
     label: "Liked posts",
@@ -105,6 +114,35 @@ export const SOCIAL_INTERACTION_DESCRIPTORS = [
     folder: "story_interactions",
     matchFile: (fileName) => fileName.toLowerCase() === "story_likes.json",
     parsePayload: (payload) => (Array.isArray(payload) ? payload : null),
+    extractTargetUsername: extractStoryInteractionTargetUsername
+  },
+  {
+    id: "storyInteractions.questions",
+    categoryId: "storyInteractions",
+    label: "Story questions",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "questions.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_questions),
+    extractTargetUsername: extractStoryInteractionTargetUsername
+  },
+  {
+    id: "storyInteractions.quizzes",
+    categoryId: "storyInteractions",
+    label: "Story quizzes",
+    folder: "story_interactions",
+    matchFile: (fileName) => fileName.toLowerCase() === "quizzes.json",
+    parsePayload: (payload) => coerceCollection(payload?.story_activities_quizzes),
+    extractTargetUsername: extractStoryInteractionTargetUsername
+  },
+  {
+    id: "storyInteractions.reaction_sticker_reactions",
+    categoryId: "storyInteractions",
+    label: "Story sticker reactions",
+    folder: "story_interactions",
+    matchFile: (fileName) =>
+      fileName.toLowerCase() === "story_reaction_sticker_reactions.json",
+    parsePayload: (payload) =>
+      coerceCollection(payload?.story_activities_reaction_sticker_reactions),
     extractTargetUsername: extractStoryInteractionTargetUsername
   }
 ];
