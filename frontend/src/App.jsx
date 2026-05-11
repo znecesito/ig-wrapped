@@ -4,7 +4,8 @@ import MessagesPage from "./pages/MessagesPage.jsx";
 import MostUsedWordsPage from "./pages/MostUsedWordsPage.jsx";
 import SocialGraphPage from "./pages/SocialGraphPage.jsx";
 
-const API_URL = "http://localhost:4000/upload";
+const UPLOAD_URL =
+  import.meta.env.VITE_API_URL ?? "http://localhost:4000/upload";
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
 
 function NonFollowersPage() {
@@ -31,7 +32,7 @@ function NonFollowersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(UPLOAD_URL, {
         method: "POST",
         body: formData
       });
