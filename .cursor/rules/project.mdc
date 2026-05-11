@@ -19,7 +19,7 @@ alwaysApply: true
 ## Folder map
 
 - **`backend/src/`** — `server.js`, `app.js`; **`routes/upload.js`** (multipart upload); **`services/compareUsers.js`**; **`parsers/instagramParsers.js`**; **`middleware/errorHandler.js`**
-- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`; **`styles.css`**
+- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`; **`styles.css`**
 
 ## API
 
@@ -28,7 +28,7 @@ alwaysApply: true
 ## Conventions
 
 - Match existing style: focused diffs, no unrelated refactors.
-- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, and **Messages** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses).
+- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, **Messages**, and **Most used words** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses).
 - When adding Instagram export parsing, reuse patterns from **`frontend/src/utils/commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
 
 ## Optional scoped rules

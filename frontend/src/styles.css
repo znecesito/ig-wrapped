@@ -587,3 +587,45 @@ button:disabled {
   color: #0f172a;
   text-decoration: none;
 }
+
+.most-used-words-page__code {
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.most-used-words-controls {
+  margin-bottom: 1rem;
+}
+
+.most-used-words-controls__label {
+  margin: 0 0 0.5rem;
+}
+
+.most-used-words-controls__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.most-used-words-controls__hint {
+  font-size: 0.85rem;
+}
+
+.most-used-words-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.chip.chip--readonly {
+  cursor: default;
+  opacity: 0.92;
+  pointer-events: none;
+  border-style: dashed;
+}

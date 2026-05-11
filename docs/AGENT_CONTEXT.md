@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-06 (manual)
+**Last updated:** 2026-05-10 (manual)
 
 Short “where we left off” for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
@@ -16,14 +16,17 @@ Short “where we left off” for contributors and AI assistants. For invariant 
 
 **Messages (`/messages`)** — Client-only: user picks an exported folder; the app discovers `your_instagram_activity/messages/inbox/**/message_*.json`, merges per-thread counts across message parts, supports username detection/override for participant-aware labels, and shows top threads as a heat-colored bar list. Implemented via `frontend/src/utils/messageFrequency.js` and `MessagesPage.jsx`.
 
+**Most used words (`/most-used-words`)** — Client-only: user picks an exported folder; the app discovers media JSON under `your_instagram_activity/media` (posts, archived posts, reels, stories), extracts captions with mojibake repair where needed, filters stopwords, and shows separate Top word and Top hashtag bar lists. Implemented via `frontend/src/utils/mostUsedWords.js` and `MostUsedWordsPage.jsx`.
+
 ---
 
 ## Key files touched recently (optional)
 
-- `frontend/src/utils/socialInteractionGraph.js` — discovery, parsing, top interactions, self-username handling.
-- `frontend/src/utils/messageFrequency.js` — inbox thread discovery, per-thread message aggregation, labeling heuristics.
-- `frontend/src/utils/commentHeatmap.js` — activity discovery, heatmap data, shared color helpers with the social graph.
-- `frontend/src/pages/MessagesPage.jsx`, `SocialGraphPage.jsx`, `HeatmapPage.jsx`, `App.jsx` — nav and page wiring.
+- `frontend/src/utils/mostUsedWords.js` — media caption discovery, token/hashtag aggregation, encoding repair.
+- `frontend/src/pages/MostUsedWordsPage.jsx`, `App.jsx` — route `/most-used-words` and nav.
+- `frontend/src/utils/commentHeatmap.js`, `socialInteractionGraph.js` — extra export sources (e.g. reels comments, story questions/quizzes, posts/archive media for heatmap).
+- `frontend/src/utils/messageFrequency.js` — inbox thread discovery and aggregation.
+- `frontend/src/pages/MessagesPage.jsx`, `SocialGraphPage.jsx`, `HeatmapPage.jsx` — feature wiring.
 
 ---
 
@@ -31,6 +34,7 @@ Short “where we left off” for contributors and AI assistants. For invariant 
 
 - Expand or harden parsers as Instagram export shapes change; keep client and server parser behavior aligned where both touch the same export types.
 - Any new visualization should follow existing CSS and “no new heavy chart deps” unless the project explicitly adds one.
+- Optional: user-editable stopword list for Most used words.
 
 ---
 

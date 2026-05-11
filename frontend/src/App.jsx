@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import HeatmapPage from "./pages/HeatmapPage.jsx";
 import MessagesPage from "./pages/MessagesPage.jsx";
+import MostUsedWordsPage from "./pages/MostUsedWordsPage.jsx";
 import SocialGraphPage from "./pages/SocialGraphPage.jsx";
 
 const API_URL = "http://localhost:4000/upload";
@@ -117,6 +118,9 @@ function normalizePath(pathname) {
   if (pathname.startsWith("/messages")) {
     return "/messages";
   }
+  if (pathname.startsWith("/most-used-words")) {
+    return "/most-used-words";
+  }
   return "/";
 }
 
@@ -173,6 +177,13 @@ export default function App() {
             >
               Messages
             </button>
+            <button
+              type="button"
+              className={route === "/most-used-words" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/most-used-words")}
+            >
+              Most Used Words
+            </button>
           </nav>
         </div>
       </header>
@@ -183,6 +194,8 @@ export default function App() {
         <SocialGraphPage />
       ) : route === "/messages" ? (
         <MessagesPage />
+      ) : route === "/most-used-words" ? (
+        <MostUsedWordsPage />
       ) : (
         <NonFollowersPage />
       )}
