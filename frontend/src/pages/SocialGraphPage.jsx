@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FolderPicker from "../components/FolderPicker.jsx";
+import { useExportData } from "../context/ExportDataContext.jsx";
 import { ACTIVITY_FAMILY_COLORS, heatColor } from "../utils/commentHeatmap.js";
 import {
   buildTopInteractions,
@@ -6,27 +8,35 @@ import {
   getEffectiveSelfUsername,
   getSocialCategories,
   getSocialSources,
-  parsePersonalInformationUsername,
   parseSocialInteractionCounts
 } from "../utils/socialInteractionGraph.js";
 
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
 
 export default function SocialGraphPage() {
+  const {
+    files,
+    detectedUsername,
+    socialGraphCache,
+    setSocialGraphCache
+  } = useExportData();
   const sources = useMemo(() => getSocialSources(), []);
   const categories = useMemo(() => getSocialCategories(), []);
   const defaultSourceIds = useMemo(() => sources.map((s) => s.id), [sources]);
 
-  const [status, setStatus] = useState("Select your exported folder to see top accounts you interact with.");
+  const [status, setStatus] = useState(
+    socialGraphCache ? "" : "Select your exported folder to see top accounts you interact with."
+  );
   const [validationError, setValidationError] = useState("");
-  const [parseErrors, setParseErrors] = useState([]);
-  const [countsBySource, setCountsBySource] = useState(null);
-  const [parseStats, setParseStats] = useState(null);
-  const [enabledSourceIds, setEnabledSourceIds] = useState(defaultSourceIds);
+  const [parseErrors, setParseErrors] = useState(socialGraphCache?.parseErrors ?? []);
+  const [countsBySource, setCountsBySource] = useState(socialGraphCache?.countsBySource ?? null);
+  const [parseStats, setParseStats] = useState(socialGraphCache?.parseStats ?? null);
+  const [enabledSourceIds, setEnabledSourceIds] = useState(
+    socialGraphCache?.enabledSourceIds ?? defaultSourceIds
+  );
 
-  const [pickedFiles, setPickedFiles] = useState(null);
-  const [detectedUsername, setDetectedUsername] = useState(null);
   const [manualUsername, setManualUsername] = useState("");
+  const parsedFilesRef = useRef(socialGraphCache ? files : null);
 
   const effectiveSelfUsername = useMemo(
     () => getEffectiveSelfUsername(detectedUsername, manualUsername),
@@ -53,69 +63,81 @@ export default function SocialGraphPage() {
     parseStats.itemsSeen > 0 &&
     parseStats.skippedMissingOwner < parseStats.itemsSeen;
 
-  async function handleFolderPick(event) {
-    const files = event.target.files;
-    const fileArray = Array.from(files || []);
+  const parseFiles = useCallback(
+    async (fileArray) => {
+      if (parsedFilesRef.current === fileArray) {
+        return;
+      }
+      parsedFilesRef.current = fileArray;
 
-    setValidationError("");
-    setParseErrors([]);
-    setCountsBySource(null);
-    setParseStats(null);
-    setEnabledSourceIds(defaultSourceIds);
-    setManualUsername("");
-    setDetectedUsername(null);
-    setPickedFiles(fileArray.length ? fileArray : null);
-    setStatus("Reading your export folder…");
+      setValidationError("");
+      setParseErrors([]);
+      setCountsBySource(null);
+      setParseStats(null);
+      setEnabledSourceIds(defaultSourceIds);
+      setManualUsername("");
+      setStatus("Reading your export folder…");
 
-    const pi = await parsePersonalInformationUsername(fileArray);
-    setDetectedUsername(pi.username);
+      const discovery = discoverSocialInteractionFiles(fileArray);
 
-    const discovery = discoverSocialInteractionFiles(fileArray);
+      if (discovery.activityFiles.length === 0) {
+        setStatus("Select your exported folder to see top accounts you interact with.");
+        setValidationError(
+          "Missing your_instagram_activity in selected folder. Please choose the root Instagram export folder."
+        );
+        return;
+      }
 
-    if (discovery.activityFiles.length === 0) {
-      setStatus("Select your exported folder to see top accounts you interact with.");
-      setValidationError(
-        "Missing your_instagram_activity in selected folder. Please choose the root Instagram export folder."
-      );
-      return;
+      if (discovery.parseTargetFiles.length === 0) {
+        setStatus("Select your exported folder to see top accounts you interact with.");
+        setValidationError(
+          "No matching activity JSON under your_instagram_activity. Expected files under comments (e.g. post_comments_*.json, hype.json), likes (liked_posts.json, liked_comments.json), or story_interactions (polls.json, stories_viewed.json or stories_view.json, story_likes.json)."
+        );
+        return;
+      }
+
+      const self = getEffectiveSelfUsername(detectedUsername, "");
+      const result = await parseSocialInteractionCounts(discovery, { selfUsername: self });
+
+      if (result.stats.itemsSeen === 0) {
+        setStatus("Select your exported folder to see top accounts you interact with.");
+        setValidationError("No rows found in the selected activity JSON files.");
+        return;
+      }
+
+      if (result.stats.skippedMissingOwner === result.stats.itemsSeen) {
+        setStatus("Select your exported folder to see top accounts you interact with.");
+        setValidationError(
+          "No account usernames could be extracted from the selected files. Check that your export format matches."
+        );
+        return;
+      }
+
+      setParseErrors(result.errors);
+      setParseStats(result.stats);
+      setCountsBySource(result.countsBySource);
+      setSocialGraphCache({
+        countsBySource: result.countsBySource,
+        parseStats: result.stats,
+        parseErrors: result.errors,
+        enabledSourceIds: defaultSourceIds
+      });
+      setStatus("");
+    },
+    [defaultSourceIds, detectedUsername, setSocialGraphCache]
+  );
+
+  useEffect(() => {
+    if (files && !socialGraphCache) {
+      parseFiles(files);
     }
-
-    if (discovery.parseTargetFiles.length === 0) {
-      setStatus("Select your exported folder to see top accounts you interact with.");
-      setValidationError(
-        "No matching activity JSON under your_instagram_activity. Expected files under comments (e.g. post_comments_*.json, hype.json), likes (liked_posts.json, liked_comments.json), or story_interactions (polls.json, stories_viewed.json or stories_view.json, story_likes.json)."
-      );
-      return;
-    }
-
-    const self = getEffectiveSelfUsername(pi.username, "");
-    const result = await parseSocialInteractionCounts(discovery, { selfUsername: self });
-
-    if (result.stats.itemsSeen === 0) {
-      setStatus("Select your exported folder to see top accounts you interact with.");
-      setValidationError("No rows found in the selected activity JSON files.");
-      return;
-    }
-
-    if (result.stats.skippedMissingOwner === result.stats.itemsSeen) {
-      setStatus("Select your exported folder to see top accounts you interact with.");
-      setValidationError(
-        "No account usernames could be extracted from the selected files. Check that your export format matches."
-      );
-      return;
-    }
-
-    setParseErrors(result.errors);
-    setParseStats(result.stats);
-    setCountsBySource(result.countsBySource);
-    setStatus("");
-  }
+  }, [files, socialGraphCache, parseFiles]);
 
   async function handleManualUsernameBlur() {
-    if (!pickedFiles?.length) {
+    if (!files?.length) {
       return;
     }
-    const discovery = discoverSocialInteractionFiles(pickedFiles);
+    const discovery = discoverSocialInteractionFiles(files);
     if (discovery.parseTargetFiles.length === 0) {
       return;
     }
@@ -132,11 +154,20 @@ export default function SocialGraphPage() {
     setParseErrors(result.errors);
     setParseStats(result.stats);
     setCountsBySource(result.countsBySource);
+    setSocialGraphCache({
+      countsBySource: result.countsBySource,
+      parseStats: result.stats,
+      parseErrors: result.errors,
+      enabledSourceIds
+    });
     setStatus("");
   }
 
   function updateEnabledSources(nextSourceIds) {
     setEnabledSourceIds(nextSourceIds);
+    if (countsBySource) {
+      setSocialGraphCache((prev) => prev ? { ...prev, enabledSourceIds: nextSourceIds } : prev);
+    }
   }
 
   function handleSelectAllSources() {
@@ -187,16 +218,7 @@ export default function SocialGraphPage() {
       </p>
 
       <div className="card heatmap-controls">
-        <label>
-          Upload export folder
-          <input
-            type="file"
-            directory=""
-            webkitdirectory=""
-            multiple
-            onChange={handleFolderPick}
-          />
-        </label>
+        <FolderPicker onFilesReady={parseFiles} />
         {status ? <p className="muted heatmap-controls__status">{status}</p> : null}
       </div>
 

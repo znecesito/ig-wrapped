@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FolderPicker from "../components/FolderPicker.jsx";
+import { useExportData } from "../context/ExportDataContext.jsx";
 import {
   ACTIVITY_FAMILY_COLORS,
   activityCellColor,
@@ -133,109 +135,132 @@ function CalendarHeatmap({ data, colorMode }) {
 }
 
 export default function HeatmapPage() {
+  const { files, heatmapCache, setHeatmapCache } = useExportData();
   const sources = useMemo(() => getActivitySources(), []);
   const defaultSourceIds = useMemo(() => sources.map((source) => source.id), [sources]);
   const familyLegend = useMemo(() => getActivityFamilyLegend(), []);
   const [timezone, setTimezone] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
   );
-  const [status, setStatus] = useState("Select your exported folder to build an activity heatmap.");
+  const [status, setStatus] = useState(
+    heatmapCache ? "" : "Select your exported folder to build an activity heatmap."
+  );
   const [validationError, setValidationError] = useState("");
-  const [parseWarnings, setParseWarnings] = useState([]);
-  const [heatmapData, setHeatmapData] = useState(null);
-  const [rawEvents, setRawEvents] = useState([]);
-  const [enabledSourceIds, setEnabledSourceIds] = useState(defaultSourceIds);
+  const [parseWarnings, setParseWarnings] = useState(heatmapCache?.parseWarnings ?? []);
+  const [heatmapData, setHeatmapData] = useState(heatmapCache?.heatmapData ?? null);
+  const [rawEvents, setRawEvents] = useState(heatmapCache?.rawEvents ?? []);
+  const [enabledSourceIds, setEnabledSourceIds] = useState(
+    heatmapCache?.enabledSourceIds ?? defaultSourceIds
+  );
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [colorMode, setColorMode] = useState("intensity");
+  const parsedFilesRef = useRef(heatmapCache ? files : null);
 
   const timezoneOptions = useMemo(() => getAvailableTimezones(), []);
 
-  async function handleFolderPick(event) {
-    const files = event.target.files;
-    setValidationError("");
-    setParseWarnings([]);
-    setHeatmapData(null);
-    setRawEvents([]);
-    setEnabledSourceIds(defaultSourceIds);
-    setStatus("Reading your export folder…");
+  const parseFiles = useCallback(
+    async (fileArray) => {
+      if (parsedFilesRef.current === fileArray) {
+        return;
+      }
+      parsedFilesRef.current = fileArray;
 
-    const discovery = discoverActivityFiles(files);
+      setValidationError("");
+      setParseWarnings([]);
+      setHeatmapData(null);
+      setRawEvents([]);
+      setEnabledSourceIds(defaultSourceIds);
+      setStatus("Reading your export folder…");
 
-    // Diagnostics for developers only (not shown in UI)
-    console.info("[heatmap] discovery", {
-      scannedFiles: discovery.allFiles.length,
-      activityFolderFiles: discovery.activityFiles.length,
-      parseTargets: discovery.parseTargetPaths,
-      commentsFolderMatches: discovery.matchedFilesByFolder.comments.map(
-        (f) => f.webkitRelativePath || f.name
-      ),
-      likesFolderMatches: discovery.matchedFilesByFolder.likes.map((f) => f.webkitRelativePath || f.name),
-      mediaFolderMatches: discovery.matchedFilesByFolder.media.map((f) => f.webkitRelativePath || f.name),
-      storyInteractionsFolderMatches: discovery.matchedFilesByFolder.story_interactions.map(
-        (f) => f.webkitRelativePath || f.name
-      )
-    });
+      const discovery = discoverActivityFiles(fileArray);
 
-    if (discovery.activityFiles.length === 0) {
-      setStatus("Select your exported folder to build an activity heatmap.");
-      setValidationError(
-        "Missing your_instagram_activity in selected folder. Please choose the root export folder."
-      );
-      return;
-    }
+      console.info("[heatmap] discovery", {
+        scannedFiles: discovery.allFiles.length,
+        activityFolderFiles: discovery.activityFiles.length,
+        parseTargets: discovery.parseTargetPaths,
+        commentsFolderMatches: discovery.matchedFilesByFolder.comments.map(
+          (f) => f.webkitRelativePath || f.name
+        ),
+        likesFolderMatches: discovery.matchedFilesByFolder.likes.map(
+          (f) => f.webkitRelativePath || f.name
+        ),
+        mediaFolderMatches: discovery.matchedFilesByFolder.media.map(
+          (f) => f.webkitRelativePath || f.name
+        ),
+        storyInteractionsFolderMatches: discovery.matchedFilesByFolder.story_interactions.map(
+          (f) => f.webkitRelativePath || f.name
+        )
+      });
 
-    if (discovery.parseTargetFiles.length === 0) {
-      setStatus("Select your exported folder to build an activity heatmap.");
-      setValidationError(
-        "No supported activity files found. Expected activity JSON under your_instagram_activity (e.g. comments, likes, media, or story_interactions: polls.json, stories_viewed.json, story_likes.json)."
-      );
-      return;
-    }
+      if (discovery.activityFiles.length === 0) {
+        setStatus("Select your exported folder to build an activity heatmap.");
+        setValidationError(
+          "Missing your_instagram_activity in selected folder. Please choose the root export folder."
+        );
+        return;
+      }
 
-    const parseResult = await parseActivityEvents(discovery);
-    setParseWarnings(parseResult.errors);
+      if (discovery.parseTargetFiles.length === 0) {
+        setStatus("Select your exported folder to build an activity heatmap.");
+        setValidationError(
+          "No supported activity files found. Expected activity JSON under your_instagram_activity (e.g. comments, likes, media, or story_interactions: polls.json, stories_viewed.json, story_likes.json)."
+        );
+        return;
+      }
 
-    console.info("[heatmap] parse", {
-      errors: parseResult.errors,
-      statsTotal: parseResult.stats.total,
-      statsBySource: parseResult.stats.bySource,
-      eventCount: parseResult.events.length
-    });
+      const parseResult = await parseActivityEvents(discovery);
+      setParseWarnings(parseResult.errors);
 
-    if (parseResult.events.length === 0) {
-      setStatus("Select your exported folder to build an activity heatmap.");
-      setValidationError("No valid activity timestamps were parsed from the selected files.");
-      return;
-    }
+      console.info("[heatmap] parse", {
+        errors: parseResult.errors,
+        statsTotal: parseResult.stats.total,
+        statsBySource: parseResult.stats.bySource,
+        eventCount: parseResult.events.length
+      });
 
-    setRawEvents(parseResult.events);
-    setHeatmapData(
-      buildHeatmapData(parseResult.events, timezone, {
+      if (parseResult.events.length === 0) {
+        setStatus("Select your exported folder to build an activity heatmap.");
+        setValidationError("No valid activity timestamps were parsed from the selected files.");
+        return;
+      }
+
+      const hd = buildHeatmapData(parseResult.events, timezone, {
         enabledSourceIds: defaultSourceIds
-      })
-    );
-    setStatus("");
-  }
+      });
+      setRawEvents(parseResult.events);
+      setHeatmapData(hd);
+      setHeatmapCache({
+        rawEvents: parseResult.events,
+        heatmapData: hd,
+        enabledSourceIds: defaultSourceIds,
+        parseWarnings: parseResult.errors
+      });
+      setStatus("");
+    },
+    [defaultSourceIds, timezone, setHeatmapCache]
+  );
+
+  useEffect(() => {
+    if (files && !heatmapCache) {
+      parseFiles(files);
+    }
+  }, [files, heatmapCache, parseFiles]);
 
   function handleTimezoneChange(nextTimezone) {
     setTimezone(nextTimezone);
     if (rawEvents.length > 0) {
-      setHeatmapData(
-        buildHeatmapData(rawEvents, nextTimezone, {
-          enabledSourceIds
-        })
-      );
+      const hd = buildHeatmapData(rawEvents, nextTimezone, { enabledSourceIds });
+      setHeatmapData(hd);
+      setHeatmapCache({ rawEvents, heatmapData: hd, enabledSourceIds, parseWarnings });
     }
   }
 
   function updateEnabledSources(nextSourceIds) {
     setEnabledSourceIds(nextSourceIds);
     if (rawEvents.length > 0) {
-      setHeatmapData(
-        buildHeatmapData(rawEvents, timezone, {
-          enabledSourceIds: nextSourceIds
-        })
-      );
+      const hd = buildHeatmapData(rawEvents, timezone, { enabledSourceIds: nextSourceIds });
+      setHeatmapData(hd);
+      setHeatmapCache({ rawEvents, heatmapData: hd, enabledSourceIds: nextSourceIds, parseWarnings });
     }
   }
 
@@ -274,16 +299,7 @@ export default function HeatmapPage() {
       </p>
 
       <div className="card heatmap-controls">
-        <label>
-          Upload export folder
-          <input
-            type="file"
-            directory=""
-            webkitdirectory=""
-            multiple
-            onChange={handleFolderPick}
-          />
-        </label>
+        <FolderPicker onFilesReady={parseFiles} />
 
         <label>
           Timezone

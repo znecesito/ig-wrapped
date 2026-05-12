@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ExportDataProvider, useExportData } from "./context/ExportDataContext.jsx";
 import HeatmapPage from "./pages/HeatmapPage.jsx";
 import MessagesPage from "./pages/MessagesPage.jsx";
 import MostUsedWordsPage from "./pages/MostUsedWordsPage.jsx";
@@ -125,7 +126,8 @@ function normalizePath(pathname) {
   return "/";
 }
 
-export default function App() {
+function AppInner() {
+  const { files, clearFiles } = useExportData();
   const [route, setRoute] = useState(normalizePath(window.location.pathname));
 
   useEffect(() => {
@@ -185,6 +187,17 @@ export default function App() {
             >
               Most Used Words
             </button>
+            {files ? (
+              <>
+                <span className="nav-data-indicator">
+                  <span className="nav-data-indicator__dot" aria-hidden />
+                  Data loaded
+                </span>
+                <button type="button" className="nav-clear-btn" onClick={clearFiles}>
+                  Clear
+                </button>
+              </>
+            ) : null}
           </nav>
         </div>
       </header>
@@ -201,5 +214,13 @@ export default function App() {
         <NonFollowersPage />
       )}
     </main>
+  );
+}
+
+export default function App() {
+  return (
+    <ExportDataProvider>
+      <AppInner />
+    </ExportDataProvider>
   );
 }

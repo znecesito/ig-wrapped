@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FolderPicker from "../components/FolderPicker.jsx";
+import { useExportData } from "../context/ExportDataContext.jsx";
 import { heatColor } from "../utils/commentHeatmap.js";
 import {
   analyzeMostUsedWordsFromFiles,
@@ -8,14 +10,17 @@ import {
 const IG_TAG_BASE_URL = "https://www.instagram.com/explore/tags/";
 
 export default function MostUsedWordsPage() {
+  const { files, wordsCache, setWordsCache } = useExportData();
+
   const [status, setStatus] = useState(
-    "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
+    wordsCache ? "" : "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
   );
   const [validationError, setValidationError] = useState("");
-  const [pickedFiles, setPickedFiles] = useState(null);
-  const [topN, setTopN] = useState(5);
-  const [minWordLength, setMinWordLength] = useState(2);
-  const [result, setResult] = useState(null);
+  const [pickedFiles, setPickedFiles] = useState(wordsCache?.pickedFiles ?? null);
+  const [topN, setTopN] = useState(wordsCache?.topN ?? 5);
+  const [minWordLength, setMinWordLength] = useState(wordsCache?.minWordLength ?? 2);
+  const [result, setResult] = useState(wordsCache?.result ?? null);
+  const parsedFilesRef = useRef(wordsCache ? files : null);
 
   useEffect(() => {
     if (!pickedFiles?.length) {
@@ -36,6 +41,7 @@ export default function MostUsedWordsPage() {
           "No captions with text were found in the expected media files. Empty titles only will not contribute."
         );
         setResult(null);
+        setWordsCache(null);
         setStatus(
           "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
         );
@@ -43,54 +49,66 @@ export default function MostUsedWordsPage() {
       }
       setValidationError("");
       setResult(analysis);
+      setWordsCache({ result: analysis, pickedFiles, topN, minWordLength });
       setStatus("");
     })();
     return () => {
       cancelled = true;
     };
-  }, [pickedFiles, topN, minWordLength]);
+  }, [pickedFiles, topN, minWordLength, setWordsCache]);
 
-  async function handleFolderPick(event) {
-    const files = event.target.files;
-    const fileArray = Array.from(files || []);
+  const parseFiles = useCallback(
+    (fileArray) => {
+      if (parsedFilesRef.current === fileArray) {
+        return;
+      }
+      parsedFilesRef.current = fileArray;
 
-    setValidationError("");
-    setResult(null);
-    setPickedFiles(null);
+      setValidationError("");
+      setResult(null);
+      setPickedFiles(null);
 
-    if (!fileArray.length) {
-      setStatus(
-        "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
-      );
-      return;
+      if (!fileArray?.length) {
+        setStatus(
+          "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
+        );
+        return;
+      }
+
+      setStatus("Reading media captions from your export…");
+
+      const discovery = discoverMostUsedWordsMediaFiles(fileArray);
+
+      if (discovery.activityFiles.length === 0) {
+        setStatus(
+          "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
+        );
+        setValidationError(
+          "Missing your_instagram_activity in selected folder. Please choose the root Instagram export folder."
+        );
+        return;
+      }
+
+      if (discovery.parseTargetFiles.length === 0) {
+        setStatus(
+          "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
+        );
+        setValidationError(
+          "No caption JSON found under your_instagram_activity/media. Expected posts_*.json, archived_posts.json, reels.json, and/or stories.json."
+        );
+        return;
+      }
+
+      setPickedFiles(fileArray);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (files && !wordsCache) {
+      parseFiles(files);
     }
-
-    setStatus("Reading media captions from your export…");
-
-    const discovery = discoverMostUsedWordsMediaFiles(fileArray);
-
-    if (discovery.activityFiles.length === 0) {
-      setStatus(
-        "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
-      );
-      setValidationError(
-        "Missing your_instagram_activity in selected folder. Please choose the root Instagram export folder."
-      );
-      return;
-    }
-
-    if (discovery.parseTargetFiles.length === 0) {
-      setStatus(
-        "Select your exported folder to analyze captions from posts, reels, stories, and archived posts."
-      );
-      setValidationError(
-        "No caption JSON found under your_instagram_activity/media. Expected posts_*.json, archived_posts.json, reels.json, and/or stories.json."
-      );
-      return;
-    }
-
-    setPickedFiles(fileArray);
-  }
+  }, [files, wordsCache, parseFiles]);
 
   const maxWordCount = useMemo(() => {
     if (!result?.topWords?.length) {
@@ -120,16 +138,7 @@ export default function MostUsedWordsPage() {
       </p>
 
       <div className="card heatmap-controls">
-        <label>
-          Upload export folder
-          <input
-            type="file"
-            directory=""
-            webkitdirectory=""
-            multiple
-            onChange={handleFolderPick}
-          />
-        </label>
+        <FolderPicker onFilesReady={parseFiles} />
         {status ? <p className="muted heatmap-controls__status">{status}</p> : null}
       </div>
 

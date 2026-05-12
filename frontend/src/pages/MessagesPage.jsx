@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FolderPicker from "../components/FolderPicker.jsx";
+import { useExportData } from "../context/ExportDataContext.jsx";
 import { heatColor } from "../utils/commentHeatmap.js";
 import {
   discoverMessageThreads,
@@ -6,24 +8,21 @@ import {
   parseAndAggregateThreads,
   relabelMessageThreadRows
 } from "../utils/messageFrequency.js";
-import {
-  getEffectiveSelfUsername,
-  parsePersonalInformationUsername
-} from "../utils/socialInteractionGraph.js";
+import { getEffectiveSelfUsername } from "../utils/socialInteractionGraph.js";
 
 export default function MessagesPage() {
+  const { files, detectedUsername, messagesCache, setMessagesCache } = useExportData();
+
   const [status, setStatus] = useState(
-    "Select your exported folder to see message totals per DM thread."
+    messagesCache ? "" : "Select your exported folder to see message totals per DM thread."
   );
   const [validationError, setValidationError] = useState("");
-  const [parseWarnings, setParseWarnings] = useState([]);
-  const [rows, setRows] = useState(null);
-  const [stats, setStats] = useState(null);
-  const [threadBuckets, setThreadBuckets] = useState(null);
-
-  const [pickedFiles, setPickedFiles] = useState(null);
-  const [detectedUsername, setDetectedUsername] = useState(null);
+  const [parseWarnings, setParseWarnings] = useState(messagesCache?.parseWarnings ?? []);
+  const [rows, setRows] = useState(messagesCache?.rows ?? null);
+  const [stats, setStats] = useState(messagesCache?.stats ?? null);
+  const [threadBuckets, setThreadBuckets] = useState(messagesCache?.threadBuckets ?? null);
   const [manualUsername, setManualUsername] = useState("");
+  const parsedFilesRef = useRef(messagesCache ? files : null);
 
   const effectiveSelfUsername = useMemo(
     () => getEffectiveSelfUsername(detectedUsername, manualUsername),
@@ -46,67 +45,79 @@ export default function MessagesPage() {
 
   const showChartUi = stats != null && stats.threadsWithMessages > 0 && rows != null;
 
-  async function handleFolderPick(event) {
-    const files = event.target.files;
-    const fileArray = Array.from(files || []);
+  const parseFiles = useCallback(
+    async (fileArray) => {
+      if (parsedFilesRef.current === fileArray) {
+        return;
+      }
+      parsedFilesRef.current = fileArray;
 
-    setValidationError("");
-    setParseWarnings([]);
-    setRows(null);
-    setStats(null);
-    setThreadBuckets(null);
-    setManualUsername("");
-    setDetectedUsername(null);
-    setPickedFiles(fileArray.length ? fileArray : null);
-    setStatus("Reading your export folder…");
+      setValidationError("");
+      setParseWarnings([]);
+      setRows(null);
+      setStats(null);
+      setThreadBuckets(null);
+      setManualUsername("");
+      setStatus("Reading your export folder…");
 
-    const pi = await parsePersonalInformationUsername(fileArray);
-    setDetectedUsername(pi.username);
+      const discovery = discoverMessageThreads(fileArray);
 
-    const discovery = discoverMessageThreads(fileArray);
+      if (discovery.activityFiles.length === 0) {
+        setStatus("Select your exported folder to see message totals per DM thread.");
+        setValidationError(
+          "Missing your_instagram_activity in selected folder. Choose the Instagram export root (the folder that contains your_instagram_activity)."
+        );
+        return;
+      }
 
-    if (discovery.activityFiles.length === 0) {
-      setStatus("Select your exported folder to see message totals per DM thread.");
-      setValidationError(
-        "Missing your_instagram_activity in selected folder. Choose the Instagram export root (the folder that contains your_instagram_activity)."
-      );
-      return;
-    }
+      if (discovery.inboxMessageFiles.length === 0) {
+        setStatus("Select your exported folder to see message totals per DM thread.");
+        setValidationError(
+          "No message JSON files found. Expected paths like your_instagram_activity/messages/inbox/&lt;thread&gt;/message_*.json."
+        );
+        return;
+      }
 
-    if (discovery.inboxMessageFiles.length === 0) {
-      setStatus("Select your exported folder to see message totals per DM thread.");
-      setValidationError(
-        "No message JSON files found. Expected paths like your_instagram_activity/messages/inbox/&lt;thread&gt;/message_*.json."
-      );
-      return;
-    }
+      const self = getEffectiveSelfUsername(detectedUsername, "");
+      const parsed = await parseAndAggregateThreads(discovery.threadBuckets, {
+        selfUsername: self
+      });
 
-    const self = getEffectiveSelfUsername(pi.username, "");
-    const parsed = await parseAndAggregateThreads(discovery.threadBuckets, {
-      selfUsername: self
-    });
+      setParseWarnings(parsed.warnings);
 
-    setParseWarnings(parsed.warnings);
+      if (parsed.stats.threadsWithMessages === 0) {
+        setStatus("Select your exported folder to see message totals per DM thread.");
+        setValidationError(
+          parsed.stats.filesSkipped > 0
+            ? "Message files were present but none could be read (missing messages arrays or invalid JSON). See warnings below."
+            : "No messages were counted in any thread."
+        );
+        setStats(parsed.stats);
+        return;
+      }
 
-    if (parsed.stats.threadsWithMessages === 0) {
-      setStatus("Select your exported folder to see message totals per DM thread.");
-      setValidationError(
-        parsed.stats.filesSkipped > 0
-          ? "Message files were present but none could be read (missing messages arrays or invalid JSON). See warnings below."
-          : "No messages were counted in any thread."
-      );
+      setThreadBuckets(discovery.threadBuckets);
+      setRows(parsed.rows);
       setStats(parsed.stats);
-      return;
-    }
+      setMessagesCache({
+        rows: parsed.rows,
+        stats: parsed.stats,
+        threadBuckets: discovery.threadBuckets,
+        parseWarnings: parsed.warnings
+      });
+      setStatus("");
+    },
+    [detectedUsername, setMessagesCache]
+  );
 
-    setThreadBuckets(discovery.threadBuckets);
-    setRows(parsed.rows);
-    setStats(parsed.stats);
-    setStatus("");
-  }
+  useEffect(() => {
+    if (files && !messagesCache) {
+      parseFiles(files);
+    }
+  }, [files, messagesCache, parseFiles]);
 
   async function handleManualUsernameBlur() {
-    if (!pickedFiles?.length || !threadBuckets || !rows?.length) {
+    if (!files?.length || !threadBuckets || !rows?.length) {
       return;
     }
 
@@ -116,6 +127,7 @@ export default function MessagesPage() {
       selfUsername: self
     });
     setRows(nextRows);
+    setMessagesCache((prev) => prev ? { ...prev, rows: nextRows } : prev);
     setStatus("");
   }
 
@@ -131,16 +143,7 @@ export default function MessagesPage() {
       </p>
 
       <div className="card heatmap-controls">
-        <label>
-          Upload export folder
-          <input
-            type="file"
-            directory=""
-            webkitdirectory=""
-            multiple
-            onChange={handleFolderPick}
-          />
-        </label>
+        <FolderPicker onFilesReady={parseFiles} />
         {status ? <p className="muted heatmap-controls__status">{status}</p> : null}
       </div>
 
