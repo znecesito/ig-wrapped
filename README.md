@@ -79,4 +79,4 @@ Response:
 
 - **Rolling context:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) — recent features, notable files, and open corners (update after meaningful changes).
 - **Stable conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc) — stack, folder map, API summary, coding expectations.
-- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap** and **Social Graph** only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`).
+- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap**, **Social Graph**, **Messages**, and **Most Used Words** only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`).

@@ -1,8 +1,8 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-10 (manual)
+**Last updated:** 2026-05-12
 
-Short “where we left off” for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
+Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
 ---
 
@@ -20,21 +20,34 @@ Short “where we left off” for contributors and AI assistants. For invariant 
 
 ---
 
-## Key files touched recently (optional)
+## Hosting and CI/CD (shipped 2026-05-12)
 
-- `frontend/src/utils/mostUsedWords.js` — media caption discovery, token/hashtag aggregation, encoding repair.
-- `frontend/src/pages/MostUsedWordsPage.jsx`, `App.jsx` — route `/most-used-words` and nav.
-- `frontend/src/utils/commentHeatmap.js`, `socialInteractionGraph.js` — extra export sources (e.g. reels comments, story questions/quizzes, posts/archive media for heatmap).
-- `frontend/src/utils/messageFrequency.js` — inbox thread discovery and aggregation.
-- `frontend/src/pages/MessagesPage.jsx`, `SocialGraphPage.jsx`, `HeatmapPage.jsx` — feature wiring.
+- **Frontend** deployed on **Vercel** (static Vite build, root directory `frontend`). SPA rewrites via `frontend/vercel.json`.
+- **Backend** deployed on **Render** web service (root directory `backend`, `npm start`). Listens on `process.env.PORT || 4000`.
+- `VITE_API_URL` env var (set in Vercel dashboard) tells the frontend where to `POST /upload`. Baked in at build time; redeploy frontend after changing.
+- `frontend/.env.example` documents the env var for local dev.
+- `App.jsx` uses `import.meta.env.VITE_API_URL ?? "http://localhost:4000/upload"` so local dev works without any `.env` file.
+- GitHub Actions workflow `.github/workflows/frontend-ci.yml` runs `npm ci && npm run build` on PRs touching `frontend/**`.
+- Backend exposes `GET /health` for smoke tests; `cors()` allows cross-origin requests from the Vercel origin.
+
+---
+
+## Key files touched recently
+
+- `frontend/src/App.jsx` — `VITE_API_URL` env-var integration (was hardcoded `localhost:4000`).
+- `frontend/.env.example` — new file documenting `VITE_API_URL`.
+- `frontend/vercel.json` — new file; SPA catch-all rewrite.
+- `.github/workflows/frontend-ci.yml` — new file; PR build gate.
+- `README.md` — deploy docs, env-var table.
 
 ---
 
 ## Known gaps / next ideas (optional)
 
 - Expand or harden parsers as Instagram export shapes change; keep client and server parser behavior aligned where both touch the same export types.
-- Any new visualization should follow existing CSS and “no new heavy chart deps” unless the project explicitly adds one.
+- Any new visualization should follow existing CSS and "no new heavy chart deps" unless the project explicitly adds one.
 - Optional: user-editable stopword list for Most used words.
+- Consider adding a backend health-check CI step or uptime monitor for Render.
 
 ---
 

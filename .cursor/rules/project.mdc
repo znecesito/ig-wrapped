@@ -11,19 +11,31 @@ alwaysApply: true
 - **Frontend:** React 18, Vite 5.
 - **Language:** JavaScript only (no TypeScript in this repo).
 
-## Run
+## Run (local)
 
 - **Backend:** `cd backend` → `npm install` → `npm run dev` → `http://localhost:4000`
 - **Frontend:** `cd frontend` → `npm install` → `npm run dev` → `http://localhost:5173`
+
+## Hosting
+
+- **Frontend:** Vercel — static Vite build. Root directory **`frontend`**, framework preset Vite, output `dist`.
+- **Backend:** Render Web Service — Root directory **`backend`**, start command `npm start`, listens on `process.env.PORT || 4000`.
+- **`VITE_API_URL`** env var (set in Vercel dashboard, Production + Preview) gives the frontend the backend upload URL. Baked in at **build time** — redeploy frontend after changing it.
+- **`frontend/vercel.json`** — SPA catch-all rewrite so deep links to `/heatmap`, `/social-graph`, etc. work on refresh.
+- **`.github/workflows/frontend-ci.yml`** — runs `npm ci && npm run build` on PRs touching `frontend/**`.
 
 ## Folder map
 
 - **`backend/src/`** — `server.js`, `app.js`; **`routes/upload.js`** (multipart upload); **`services/compareUsers.js`**; **`parsers/instagramParsers.js`**; **`middleware/errorHandler.js`**
 - **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`; **`styles.css`**
+- **`frontend/.env.example`** — documents `VITE_API_URL`
+- **`frontend/vercel.json`** — SPA rewrite rule
 
 ## API
 
 - **`POST /upload`** (`multipart/form-data`): `followersFile`, `followingFile` (Instagram export JSON) → JSON `{ "non_followers": ["user1", ...] }`
+- **`GET /health`** → `{ "ok": true }`
+- Upload URL in frontend: `import.meta.env.VITE_API_URL ?? "http://localhost:4000/upload"`
 
 ## Conventions
 
