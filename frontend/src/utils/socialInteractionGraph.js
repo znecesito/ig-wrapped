@@ -622,3 +622,40 @@ export function buildTopInteractions(countsBySource, enabledSourceIds, limit = 5
 
   return entries.slice(0, limit).map(([username, count]) => ({ username, count }));
 }
+
+/**
+ * Top accounts per social category (comments / likes / story interactions), merging all source ids in each category.
+ *
+ * @param {Record<string, Record<string, number>>} countsBySource
+ * @param {number} [limitPerCategory]
+ * @returns {{ categoryId: string, categoryLabel: string, rows: { username: string, count: number }[], maxCount: number }[]}
+ */
+export function buildTopAccountsByCategory(countsBySource, limitPerCategory = 5) {
+  const lim = Number(limitPerCategory) > 0 ? Number(limitPerCategory) : 5;
+  const categories = getSocialCategories();
+  const out = [];
+  for (const cat of categories) {
+    const merged = new Map();
+    for (const sourceId of cat.sourceIds) {
+      const bucket = countsBySource[sourceId];
+      if (!bucket) {
+        continue;
+      }
+      for (const [username, count] of Object.entries(bucket)) {
+        merged.set(username, (merged.get(username) || 0) + count);
+      }
+    }
+    const rows = [...merged.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, lim)
+      .map(([username, count]) => ({ username, count }));
+    const maxCount = rows.length > 0 ? Math.max(...rows.map((r) => r.count)) : 0;
+    out.push({
+      categoryId: cat.id,
+      categoryLabel: cat.label,
+      rows,
+      maxCount
+    });
+  }
+  return out;
+}

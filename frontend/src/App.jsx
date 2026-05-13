@@ -4,6 +4,7 @@ import HeatmapPage from "./pages/HeatmapPage.jsx";
 import MessagesPage from "./pages/MessagesPage.jsx";
 import MostUsedWordsPage from "./pages/MostUsedWordsPage.jsx";
 import SocialGraphPage from "./pages/SocialGraphPage.jsx";
+import WrappedPage from "./pages/WrappedPage.jsx";
 
 const UPLOAD_URL =
   import.meta.env.VITE_API_URL ?? "http://localhost:4000/upload";
@@ -120,6 +121,9 @@ function normalizePath(pathname) {
   if (pathname.startsWith("/messages")) {
     return "/messages";
   }
+  if (pathname.startsWith("/wrapped")) {
+    return "/wrapped";
+  }
   if (pathname.startsWith("/most-used-words")) {
     return "/most-used-words";
   }
@@ -182,6 +186,13 @@ function AppInner() {
             </button>
             <button
               type="button"
+              className={route === "/wrapped" ? "nav-link is-active" : "nav-link"}
+              onClick={() => navigateTo("/wrapped")}
+            >
+              Wrapped
+            </button>
+            <button
+              type="button"
               className={route === "/most-used-words" ? "nav-link is-active" : "nav-link"}
               onClick={() => navigateTo("/most-used-words")}
             >
@@ -208,6 +219,8 @@ function AppInner() {
         <SocialGraphPage />
       ) : route === "/messages" ? (
         <MessagesPage />
+      ) : route === "/wrapped" ? (
+        <WrappedPage />
       ) : route === "/most-used-words" ? (
         <MostUsedWordsPage />
       ) : (

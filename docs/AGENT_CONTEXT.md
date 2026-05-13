@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-12
+**Last updated:** 2026-05-13
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
@@ -18,6 +18,8 @@ Short "where we left off" for contributors and AI assistants. For invariant stac
 
 **Most used words (`/most-used-words`)** — Client-only: user picks an exported folder; the app discovers media JSON under `your_instagram_activity/media` (posts, archived posts, reels, stories), extracts captions with mojibake repair where needed, filters stopwords, and shows separate Top word and Top hashtag bar lists. Implemented via `frontend/src/utils/mostUsedWords.js` and `MostUsedWordsPage.jsx`.
 
+**Wrapped (`/wrapped`)** — Client-only story view after an export folder is loaded in context: intro; activity date span; activity card with four main totals (comments, likes, media, story interactions — heatmap family semantics) plus busiest weekday/hour; **Your most liked creators** (top accounts merged from liked-post + liked-comment sources only, with a playful footer); top DM threads with a footer for the #1 thread; **Profile searches** card (`logged_information/recent_searches/profile_searches.json`); **Privacy** card after the fun slides; Phase B teaser for creator insights. Slide order: … → DMs → profile searches → privacy → teaser. Orchestration: `frontend/src/utils/wrappedData.js` (`loadWrappedBaseline`, `formatActivityBreakdownForWrapped`), `frontend/src/utils/profileSearches.js`; likes leaderboard uses `buildTopInteractions` with the likes category source ids from `getSocialCategories()`. Reads or fills `heatmapCache`, `socialGraphCache`, and `messagesCache` like other tabs. **Date range wording:** span comes from parsed activity event timestamps in this export (not a full calendar-year guarantee and not every file in the zip).
+
 ---
 
 ## Hosting and CI/CD (shipped 2026-05-12)
@@ -34,6 +36,7 @@ Short "where we left off" for contributors and AI assistants. For invariant stac
 
 ## Key files touched recently
 
+- `frontend/src/pages/WrappedPage.jsx`, `frontend/src/utils/wrappedData.js`, `frontend/src/utils/profileSearches.js` — Wrapped route, baseline loader, family-level activity breakdown, most-liked-creators (`buildTopInteractions` + likes source ids), profile search parser.
 - `frontend/src/App.jsx` — `VITE_API_URL` env-var integration (was hardcoded `localhost:4000`).
 - `frontend/.env.example` — new file documenting `VITE_API_URL`.
 - `frontend/vercel.json` — new file; SPA catch-all rewrite.
