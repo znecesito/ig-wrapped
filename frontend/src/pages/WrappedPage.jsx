@@ -140,6 +140,31 @@ export default function WrappedPage() {
   }, [baseline, loading, files]);
 
   useEffect(() => {
+    const root = scrollerRef.current;
+    if (!root) {
+      return undefined;
+    }
+    const cards = cardRefs.current.filter(Boolean);
+    if (cards.length === 0) {
+      return undefined;
+    }
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("wrapped-card--visible");
+          }
+        }
+      },
+      { root, threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+    );
+    for (const c of cards) {
+      revealObserver.observe(c);
+    }
+    return () => revealObserver.disconnect();
+  }, [baseline, loading, files]);
+
+  useEffect(() => {
     function onKeyDown(e) {
       if (!files?.length || loading || !baseline) {
         return;
