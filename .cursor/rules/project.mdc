@@ -21,13 +21,13 @@ alwaysApply: true
 - **Frontend:** Vercel — static Vite build. Root directory **`frontend`**, framework preset Vite, output `dist`.
 - **Backend:** Render Web Service — Root directory **`backend`**, start command `npm start`, listens on `process.env.PORT || 4000`.
 - **`VITE_API_URL`** env var (set in Vercel dashboard, Production + Preview) gives the frontend the backend upload URL. Baked in at **build time** — redeploy frontend after changing it.
-- **`frontend/vercel.json`** — SPA catch-all rewrite so deep links to `/heatmap`, `/social-graph`, etc. work on refresh.
+- **`frontend/vercel.json`** — SPA catch-all rewrite so deep links to `/heatmap`, `/social-graph`, `/wrapped`, etc. work on refresh.
 - **`.github/workflows/frontend-ci.yml`** — runs `npm ci && npm run build` on PRs touching `frontend/**`.
 
 ## Folder map
 
 - **`backend/src/`** — `server.js`, `app.js`; **`routes/upload.js`** (multipart upload); **`services/compareUsers.js`**; **`parsers/instagramParsers.js`**; **`middleware/errorHandler.js`**
-- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`; **`styles.css`**
+- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`, `/wrapped`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`, `wrappedData.js`, `profileSearches.js`; **`styles.css`**
 - **`frontend/.env.example`** — documents `VITE_API_URL`
 - **`frontend/vercel.json`** — SPA rewrite rule
 
@@ -40,7 +40,7 @@ alwaysApply: true
 ## Conventions
 
 - Match existing style: focused diffs, no unrelated refactors.
-- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, **Messages**, and **Most used words** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses).
+- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, **Messages**, **Most used words**, and **Wrapped** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses). **Wrapped** (`/wrapped`) is a client-only swipeable recap (activity + three social leaderboards + DMs + searches + privacy) once the export folder is loaded in context.
 - When adding Instagram export parsing, reuse patterns from **`frontend/src/utils/commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
 
 ## Optional scoped rules

@@ -21,7 +21,8 @@ import {
   parseAndAggregateThreads
 } from "./messageFrequency.js";
 
-export const WRAPPED_MOST_LIKED_CREATORS_LIMIT = 5;
+/** Shared cap for likes / comments / story-interaction leaderboards on Wrapped. */
+export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 5;
 export const WRAPPED_THREAD_CARD_LIMIT = 5;
 
 const ACTIVITY_FAMILY_ORDER = ["comments", "likes", "media", "storyInteractions"];
@@ -215,21 +216,34 @@ export async function loadWrappedBaseline({
     }
   }
 
-  const likesSourceIds =
-    getSocialCategories().find((c) => c.id === "likes")?.sourceIds ?? [];
-  const mostLikedCreators =
-    socialCountsBySource != null && likesSourceIds.length > 0
-      ? buildTopInteractions(
-          socialCountsBySource,
-          likesSourceIds,
-          WRAPPED_MOST_LIKED_CREATORS_LIMIT
-        )
-      : [];
+  const socialCategories = getSocialCategories();
+  const likesSourceIds = socialCategories.find((c) => c.id === "likes")?.sourceIds ?? [];
+  const commentsCategorySourceIds =
+    socialCategories.find((c) => c.id === "comments")?.sourceIds ?? [];
+  const storyInteractionsCategorySourceIds =
+    socialCategories.find((c) => c.id === "storyInteractions")?.sourceIds ?? [];
+
+  function buildSocialLeaderboard(sourceIds) {
+    if (socialCountsBySource == null || sourceIds.length === 0) {
+      return [];
+    }
+    return buildTopInteractions(
+      socialCountsBySource,
+      sourceIds,
+      WRAPPED_SOCIAL_LEADERBOARD_LIMIT
+    );
+  }
+
+  const mostLikedCreators = buildSocialLeaderboard(likesSourceIds);
+  const mostCommentedCreators = buildSocialLeaderboard(commentsCategorySourceIds);
+  const mostStoryCreators = buildSocialLeaderboard(storyInteractionsCategorySourceIds);
 
   return {
     heatmapData,
     topThreads,
     mostLikedCreators,
+    mostCommentedCreators,
+    mostStoryCreators,
     profileSearches,
     messagesTopN: MESSAGE_FREQUENCY_TOP_N,
     warnings: dedupeStrings(warnings)

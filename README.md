@@ -55,7 +55,7 @@ Confirm `POST https://<your-host>/upload` works (e.g. with curl or Postman). Rai
 4. Add **Environment Variable** `VITE_API_URL` = `https://<your-render-host>/upload` (match your real API URL, including `/upload`).
 5. Deploy. Production and PR **Preview** builds will embed that URL at build time.
 
-`frontend/vercel.json` rewrites unknown paths to `index.html` so deep links and refresh on routes like `/heatmap` work.
+`frontend/vercel.json` rewrites unknown paths to `index.html` so deep links and refresh on routes like `/heatmap`, `/wrapped`, and `/social-graph` work.
 
 ### 3. After the API URL changes
 
@@ -79,4 +79,4 @@ Response:
 
 - **Rolling context:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) — recent features, notable files, and open corners (update after meaningful changes).
 - **Stable conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc) — stack, folder map, API summary, coding expectations.
-- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap**, **Social Graph**, **Messages**, and **Most Used Words** only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`).
+- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap**, **Social Graph**, **Messages**, **Most Used Words**, and **Wrapped** (`/wrapped`) only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`). **Wrapped** is a swipeable story of highlights (activity span, three social leaderboards, DMs, profile searches, privacy note); it needs the same folder loaded in the nav ("Data loaded") and does not upload your export for that view.

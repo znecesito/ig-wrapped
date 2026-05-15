@@ -1024,7 +1024,9 @@ button:disabled {
 }
 
 .wrapped-card--activity,
-.wrapped-card--liked {
+.wrapped-card--liked,
+.wrapped-card--comments,
+.wrapped-card--stories {
   justify-content: flex-start;
 }
 

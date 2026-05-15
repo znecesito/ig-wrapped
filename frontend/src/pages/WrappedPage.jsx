@@ -27,7 +27,7 @@ function formatPrimaryDmThreadName(label) {
   }
   return t;
 }
-const WRAPPED_CARD_COUNT = 8;
+const WRAPPED_CARD_COUNT = 10;
 
 export default function WrappedPage() {
   const {
@@ -186,6 +186,20 @@ export default function WrappedPage() {
       return 0;
     }
     return Math.max(...baseline.mostLikedCreators.map((r) => r.count));
+  }, [baseline]);
+
+  const maxMostCommentedCount = useMemo(() => {
+    if (!baseline?.mostCommentedCreators?.length) {
+      return 0;
+    }
+    return Math.max(...baseline.mostCommentedCreators.map((r) => r.count));
+  }, [baseline]);
+
+  const maxMostStoryCount = useMemo(() => {
+    if (!baseline?.mostStoryCreators?.length) {
+      return 0;
+    }
+    return Math.max(...baseline.mostStoryCreators.map((r) => r.count));
   }, [baseline]);
 
   const maxThreadCount = useMemo(() => {
@@ -456,9 +470,145 @@ export default function WrappedPage() {
             </article>
 
             <article
-              className="wrapped-card card"
+              className="wrapped-card card wrapped-card--comments"
               ref={(el) => {
                 cardRefs.current[4] = el;
+              }}
+            >
+              <p className="wrapped-card__eyebrow">Typing energy</p>
+              <h2 className="wrapped-card__title">Your most commented creators</h2>
+              <p className="wrapped-card__body muted">
+                Comments on posts, reels, and stories in this export, rolled up by whose content you
+                commented on.
+              </p>
+              {baseline.mostCommentedCreators.length > 0 ? (
+                <ul className="wrapped-card__bars" aria-label="Most commented creators">
+                  {baseline.mostCommentedCreators.map((row, index) => {
+                    const widthPct =
+                      maxMostCommentedCount > 0 ? (row.count / maxMostCommentedCount) * 100 : 0;
+                    const fillColor = heatColor(row.count, maxMostCommentedCount);
+                    const profileUrl = `${IG_PROFILE_BASE_URL}${encodeURIComponent(row.username)}/`;
+                    return (
+                      <li key={row.username} className="wrapped-bar-row">
+                        <div className="wrapped-bar-row__header">
+                          <a
+                            className="wrapped-bar-row__name"
+                            href={profileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {row.username}
+                          </a>
+                          <span className="wrapped-bar-row__rank" aria-hidden>
+                            #{index + 1}
+                          </span>
+                          <span className="wrapped-bar-row__count">{row.count}</span>
+                        </div>
+                        <div className="wrapped-bar-row__track" role="presentation">
+                          <div
+                            className="wrapped-bar-row__fill"
+                            style={{ width: `${widthPct}%`, backgroundColor: fillColor }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="wrapped-card__body muted">
+                  No comment interactions were counted for this export (or Social Graph data wasn&apos;t
+                  loaded yet).
+                </p>
+              )}
+              {baseline.mostCommentedCreators.length > 0 ? (
+                <p className="wrapped-card__footer">
+                  The comment box remembers —{" "}
+                  <a
+                    className="wrapped-card__footer-link"
+                    href={`${IG_PROFILE_BASE_URL}${encodeURIComponent(baseline.mostCommentedCreators[0].username)}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    @{String(baseline.mostCommentedCreators[0].username).replace(/^@/, "")}
+                  </a>{" "}
+                  collected <strong>{baseline.mostCommentedCreators[0].count}</strong> of your replies
+                  here. Caps lock optional; sincerity wasn&apos;t.
+                </p>
+              ) : null}
+            </article>
+
+            <article
+              className="wrapped-card card wrapped-card--stories"
+              ref={(el) => {
+                cardRefs.current[5] = el;
+              }}
+            >
+              <p className="wrapped-card__eyebrow">Rings & stickers</p>
+              <h2 className="wrapped-card__title">Your top story interactions</h2>
+              <p className="wrapped-card__body muted">
+                Polls, quizzes, story likes, views, and sticker reactions in this export, merged by
+                creator.
+              </p>
+              {baseline.mostStoryCreators.length > 0 ? (
+                <ul className="wrapped-card__bars" aria-label="Top story interactions by creator">
+                  {baseline.mostStoryCreators.map((row, index) => {
+                    const widthPct =
+                      maxMostStoryCount > 0 ? (row.count / maxMostStoryCount) * 100 : 0;
+                    const fillColor = heatColor(row.count, maxMostStoryCount);
+                    const profileUrl = `${IG_PROFILE_BASE_URL}${encodeURIComponent(row.username)}/`;
+                    return (
+                      <li key={row.username} className="wrapped-bar-row">
+                        <div className="wrapped-bar-row__header">
+                          <a
+                            className="wrapped-bar-row__name"
+                            href={profileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {row.username}
+                          </a>
+                          <span className="wrapped-bar-row__rank" aria-hidden>
+                            #{index + 1}
+                          </span>
+                          <span className="wrapped-bar-row__count">{row.count}</span>
+                        </div>
+                        <div className="wrapped-bar-row__track" role="presentation">
+                          <div
+                            className="wrapped-bar-row__fill"
+                            style={{ width: `${widthPct}%`, backgroundColor: fillColor }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="wrapped-card__body muted">
+                  No story interactions were counted for this export (or Social Graph data wasn&apos;t
+                  loaded yet).
+                </p>
+              )}
+              {baseline.mostStoryCreators.length > 0 ? (
+                <p className="wrapped-card__footer">
+                  Your story lane had a main character —{" "}
+                  <a
+                    className="wrapped-card__footer-link"
+                    href={`${IG_PROFILE_BASE_URL}${encodeURIComponent(baseline.mostStoryCreators[0].username)}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    @{String(baseline.mostStoryCreators[0].username).replace(/^@/, "")}
+                  </a>{" "}
+                  shows up <strong>{baseline.mostStoryCreators[0].count}</strong> times across polls,
+                  taps, and views here. The ring doesn&apos;t lie.
+                </p>
+              ) : null}
+            </article>
+
+            <article
+              className="wrapped-card card"
+              ref={(el) => {
+                cardRefs.current[6] = el;
               }}
             >
               <p className="wrapped-card__eyebrow">Inbox</p>
@@ -509,7 +659,7 @@ export default function WrappedPage() {
             <article
               className="wrapped-card card"
               ref={(el) => {
-                cardRefs.current[5] = el;
+                cardRefs.current[7] = el;
               }}
             >
               <p className="wrapped-card__eyebrow">Search history</p>
@@ -549,7 +699,7 @@ export default function WrappedPage() {
             <article
               className="wrapped-card card"
               ref={(el) => {
-                cardRefs.current[6] = el;
+                cardRefs.current[8] = el;
               }}
             >
               <p className="wrapped-card__eyebrow">Privacy</p>
@@ -564,7 +714,7 @@ export default function WrappedPage() {
             <article
               className="wrapped-card card wrapped-card--teaser"
               ref={(el) => {
-                cardRefs.current[7] = el;
+                cardRefs.current[9] = el;
               }}
             >
               <p className="wrapped-card__eyebrow">Coming later</p>
