@@ -27,7 +27,7 @@ alwaysApply: true
 ## Folder map
 
 - **`backend/src/`** — `server.js`, `app.js`; **`routes/upload.js`** (multipart upload); **`services/compareUsers.js`**; **`parsers/instagramParsers.js`**; **`middleware/errorHandler.js`**
-- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`, `/wrapped`); **`pages/`** (feature pages); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`, `wrappedData.js`, `profileSearches.js`; **`styles.css`**
+- **`frontend/src/`** — **`App.jsx`** (routes: `/`, `/heatmap`, `/social-graph`, `/messages`, `/most-used-words`, `/wrapped`); **`pages/`** (`WrappedPage.jsx`, `wrappedSlideContent.jsx`, other feature pages); **`components/WrappedSlideChrome.jsx`** (9:16 shell + layout); **`utils/`** — `commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `profileSearches.js`; **`styles.css`** (Wrapped block: `.wrapped-story`, `.wrapped-card`, themes)
 - **`frontend/.env.example`** — documents `VITE_API_URL`
 - **`frontend/vercel.json`** — SPA rewrite rule
 
@@ -40,7 +40,7 @@ alwaysApply: true
 ## Conventions
 
 - Match existing style: focused diffs, no unrelated refactors.
-- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, **Messages**, **Most used words**, and **Wrapped** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses). **Wrapped** (`/wrapped`) is a client-only swipeable recap (activity + three social leaderboards + DMs + searches + privacy) once the export folder is loaded in context.
+- **Non-Followers** flow uses the backend API; **Activity Heatmap**, **Social Graph**, **Messages**, **Most used words**, and **Wrapped** parse export data **entirely in the browser** (folder picker, no extra chart libraries beyond what the app already uses). **Wrapped** (`/wrapped`) is a client-only recap once the export folder is loaded in context: a **vertical column of ten 9:16 story cards** (scroll-snap + Prev/Next/dots/arrow keys; screenshot-friendly), light glass styling with per-slide accent tints, **activity-style stack** charts (heatmap colors on activity; accent-tinted stacks on leaderboards via `wrappedPalette.js`), witty **body quips** immediately after each chart block, and a merged footer (`ig-wrapped` + short stat for #1).
 - When adding Instagram export parsing, reuse patterns from **`frontend/src/utils/commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
 
 ## Optional scoped rules

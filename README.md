@@ -1,6 +1,17 @@
 # ig-wrapped
 
-Full-stack app to upload Instagram export JSON files and find accounts you follow that do not follow you back.
+Tools for your Instagram data export: find non-followers (server upload), explore activity and social patterns in the browser, and get a **Wrapped** story recap—all without sending your full export to a server except for the optional Non-Followers comparison.
+
+## Features (frontend routes)
+
+| Route | What it does |
+| --- | --- |
+| `/` | **Non-Followers** — upload followers + following JSON; backend returns who does not follow back |
+| `/heatmap` | **Activity heatmap** — calendar and weekday×hour views from export activity JSON |
+| `/social-graph` | **Social graph** — top accounts by interaction category |
+| `/messages` | **Messages** — top DM threads by message count |
+| `/most-used-words` | **Most used words** — captions and hashtags from media JSON |
+| `/wrapped` | **Wrapped** — ten 9:16 story cards (scroll or Prev/Next): activity, leaderboards, DMs, profile searches, privacy; client-only after folder load |
 
 ## Project structure
 
@@ -79,4 +90,4 @@ Response:
 
 - **Rolling context:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) — recent features, notable files, and open corners (update after meaningful changes).
 - **Stable conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc) — stack, folder map, API summary, coding expectations.
-- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap**, **Social Graph**, **Messages**, **Most Used Words**, and **Wrapped** (`/wrapped`) only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`). **Wrapped** is a swipeable story of highlights (activity span, three social leaderboards, DMs, profile searches, privacy note); it needs the same folder loaded in the nav ("Data loaded") and does not upload your export for that view.
+- **What runs where:** The **Non-Followers** tab sends files to the backend (`POST /upload`). **Activity Heatmap**, **Social Graph**, **Messages**, **Most Used Words**, and **Wrapped** (`/wrapped`) only use the browser: users pick an Instagram export folder and parsing runs client-side (see `frontend/src/utils/`). **Wrapped** is a column of ten portrait story cards (activity span and stack chart, three social leaderboards with notes under each chart, DMs, profile searches, privacy); it needs the same folder loaded in the nav ("Data loaded") and does not upload your export for that view. Slide UI lives in `WrappedPage.jsx`, `wrappedSlideContent.jsx`, and `WrappedSlideChrome.jsx`.

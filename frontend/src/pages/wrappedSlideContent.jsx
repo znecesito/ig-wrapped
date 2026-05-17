@@ -1,0 +1,457 @@
+import React from "react";
+import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
+import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
+import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
+
+const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
+
+function formatPrimaryDmThreadName(label) {
+  if (!label || typeof label !== "string") {
+    return "this chat";
+  }
+  const t = label.trim();
+  if (!t) {
+    return "this chat";
+  }
+  if (t.includes(",") || /\s+and\s+/i.test(t)) {
+    return t;
+  }
+  const bare = t.startsWith("@") ? t.slice(1) : t;
+  if (/^[\w.]+$/.test(bare)) {
+    return `@${bare}`;
+  }
+  return t;
+}
+
+function formatCount(n) {
+  return typeof n === "number" ? n.toLocaleString() : n;
+}
+
+function truncateLabel(text, max = 16) {
+  if (!text || text.length <= max) {
+    return text;
+  }
+  return `${text.slice(0, max - 1)}…`;
+}
+
+function mergedFooterStat(username, count, unit, { thread = false } = {}) {
+  if (thread) {
+    return (
+      <>
+        <strong>{formatPrimaryDmThreadName(username)}</strong> · {formatCount(count)} {unit}
+      </>
+    );
+  }
+  const handle = `@${String(username).replace(/^@/, "")}`;
+  return (
+    <>
+      <strong>{handle}</strong> · {formatCount(count)} {unit}
+    </>
+  );
+}
+
+function profileLink(username) {
+  return `${IG_PROFILE_BASE_URL}${encodeURIComponent(username)}/`;
+}
+
+function likesFooterQuip(top) {
+  const handle = `@${String(top.username).replace(/^@/, "")}`;
+  return (
+    <p>
+      Rent&apos;s due on your attention span —{" "}
+      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+        {handle}
+      </a>{" "}
+      earned <strong>{formatCount(top.count)}</strong> of your likes here. The algorithm simply watches.
+    </p>
+  );
+}
+
+function commentsFooterQuip(top) {
+  const handle = `@${String(top.username).replace(/^@/, "")}`;
+  return (
+    <p>
+      The comment box remembers —{" "}
+      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+        {handle}
+      </a>{" "}
+      collected <strong>{formatCount(top.count)}</strong> of your replies here. Caps lock optional;
+      sincerity wasn&apos;t.
+    </p>
+  );
+}
+
+function storiesFooterQuip(top) {
+  const handle = `@${String(top.username).replace(/^@/, "")}`;
+  return (
+    <p>
+      Your story lane had a main character —{" "}
+      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+        {handle}
+      </a>{" "}
+      shows up <strong>{formatCount(top.count)}</strong> times across polls, taps, and views here. The
+      ring doesn&apos;t lie.
+    </p>
+  );
+}
+
+function dmsFooterQuip(top) {
+  return (
+    <p>
+      You traded the most messages with <strong>{formatPrimaryDmThreadName(top.label)}</strong> —{" "}
+      <strong>{formatCount(top.messageCount)}</strong> messages. Say hi from us!
+    </p>
+  );
+}
+
+/** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
+function renderActivityStack(families, maxFamilyTotal) {
+  return (
+    <div className="wrapped-activity-stack" aria-label="Breakdown">
+      {families.map((fam, index) => {
+        const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
+        const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+        return (
+          <div
+            key={fam.family ?? fam.username ?? fam.threadKey ?? index}
+            className="wrapped-activity-stack__segment"
+            style={{
+              flexGrow,
+              backgroundColor: fam.color
+            }}
+          >
+            <span className="wrapped-activity-stack__label">{fam.label ?? fam.displayLabel}</span>
+            <span className="wrapped-activity-stack__val">{formatCount(total)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
+  if (!rows.length) {
+    return null;
+  }
+  const [top, ...rest] = rows;
+  const maxCount = Math.max(...rows.map((r) => r.count ?? r.messageCount ?? 0));
+
+  const renderLeadName = () => {
+    if (threadLabels) {
+      return (
+        <span className="wrapped-rank__name wrapped-rank__name--lead" title={top.label}>
+          {formatPrimaryDmThreadName(top.label)}
+        </span>
+      );
+    }
+    return (
+      <a
+        className="wrapped-rank__name wrapped-rank__name--lead"
+        href={profileLink(top.username)}
+        target="_blank"
+        rel="noreferrer"
+      >
+        @{String(top.username).replace(/^@/, "")}
+      </a>
+    );
+  };
+
+  const stackFamilies = rows.map((row, index) => {
+    const total = row.count ?? row.messageCount ?? 0;
+    const label = threadLabels
+      ? `#${index + 1} ${truncateLabel(row.label, 14)}`
+      : `#${index + 1} @${truncateLabel(String(row.username).replace(/^@/, ""), 12)}`;
+    return {
+      family: row.username ?? row.threadKey ?? index,
+      label,
+      total,
+      color: stackColorFromAccent(accent, index)
+    };
+  });
+
+  return (
+    <>
+      <div className="wrapped-rank">
+        <div className="wrapped-rank__top">
+          <span className="wrapped-rank__num wrapped-rank__num--lead" aria-hidden>
+            1
+          </span>
+          <div className="wrapped-rank__top-body">
+            {renderLeadName()}
+            <span className="wrapped-rank__count wrapped-rank__count--lead">
+              {formatCount(top.count ?? top.messageCount)}
+            </span>
+          </div>
+        </div>
+        {rest.length > 0 ? (
+          <ol className="wrapped-rank__rest" start={2}>
+            {rest.map((row, i) => (
+              <li key={row.username ?? row.threadKey ?? i} className="wrapped-rank__row">
+                <span className="wrapped-rank__num" aria-hidden>
+                  {i + 2}
+                </span>
+                {threadLabels ? (
+                  <span className="wrapped-rank__name" title={row.label}>
+                    {truncateLabel(row.label, 20)}
+                  </span>
+                ) : (
+                  <a
+                    className="wrapped-rank__name"
+                    href={profileLink(row.username)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    @{String(row.username).replace(/^@/, "")}
+                  </a>
+                )}
+                <span className="wrapped-rank__count">
+                  {formatCount(row.count ?? row.messageCount)}
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : null}
+      </div>
+      {renderActivityStack(stackFamilies, maxCount)}
+    </>
+  );
+}
+
+export function renderWrappedSlide(index, ctx) {
+  const { baseline, handle, activityBreakdown } = ctx;
+
+  switch (index) {
+    case 0:
+      return (
+        <WrappedSlideLayout
+          eyebrow="ig-wrapped"
+          title="Your year in the feed"
+          deck="Screenshot any card for Stories · all local"
+          bodyClassName="wrapped-card__body-zone--hero"
+        >
+          <p className="wrapped-card__hero">{handle}</p>
+          <p className="wrapped-card__body muted">Activity · people · DMs · searches</p>
+        </WrappedSlideLayout>
+      );
+
+    case 1:
+      return (
+        <WrappedSlideLayout
+          eyebrow="In this export"
+          title="Your activity span"
+          deck="Timestamps in this folder — not full IG history"
+          bodyClassName="wrapped-card__body-zone--hero"
+        >
+          {baseline.heatmapData ? (
+            <>
+              <p className="wrapped-card__hero wrapped-card__hero--compact">
+                {baseline.heatmapData.dateRangeLabel}
+              </p>
+              <p className="wrapped-card__body muted">Comments · likes · media · stories</p>
+            </>
+          ) : (
+            <p className="wrapped-card__body muted">No activity timestamps in this folder.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+
+    case 2:
+      return (
+        <WrappedSlideLayout
+          eyebrow="Rhythm"
+          title="Activity"
+          deck="Four main categories in this export"
+          footerStat={
+            baseline.heatmapData?.totalActivities > 0 ? (
+              <>
+                {formatCount(baseline.heatmapData.totalActivities)} total · peak{" "}
+                {baseline.heatmapData.activeWeekdayLabel}
+              </>
+            ) : null
+          }
+        >
+          {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
+            <>
+              <p className="wrapped-card__mega-stat">
+                {formatCount(baseline.heatmapData.totalActivities)}
+              </p>
+              <p className="wrapped-card__mega-label">activities</p>
+              {renderActivityStack(activityBreakdown.families, activityBreakdown.maxFamilyTotal)}
+              <ul className="wrapped-card__stats wrapped-card__stats--inline">
+                <li>
+                  <span className="wrapped-card__label">Busiest weekday</span>
+                  <span className="wrapped-card__value">{baseline.heatmapData.activeWeekdayLabel}</span>
+                </li>
+                <li>
+                  <span className="wrapped-card__label">Busiest hour</span>
+                  <span className="wrapped-card__value">{baseline.heatmapData.activeHourLabel}</span>
+                </li>
+              </ul>
+            </>
+          ) : (
+            <p className="wrapped-card__body muted">No activity data in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+
+    case 3: {
+      const rows = baseline.mostLikedCreators;
+      const top = rows[0];
+      return (
+        <WrappedSlideLayout
+          eyebrow="Hearts"
+          title="Most liked creators"
+          deck="Liked posts & comments · by creator"
+          footerStat={top ? mergedFooterStat(top.username, top.count, "likes") : null}
+          bodyQuip={top ? likesFooterQuip(top) : null}
+        >
+          {rows.length > 0 ? (
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
+          ) : (
+            <p className="wrapped-card__body muted">No likes counted in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+    }
+
+    case 4: {
+      const rows = baseline.mostCommentedCreators;
+      const top = rows[0];
+      return (
+        <WrappedSlideLayout
+          eyebrow="Comments"
+          title="Most commented creators"
+          deck="Posts, reels & stories"
+          footerStat={top ? mergedFooterStat(top.username, top.count, "comments") : null}
+          bodyQuip={top ? commentsFooterQuip(top) : null}
+        >
+          {rows.length > 0 ? (
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
+          ) : (
+            <p className="wrapped-card__body muted">No comments counted in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+    }
+
+    case 5: {
+      const rows = baseline.mostStoryCreators;
+      const top = rows[0];
+      return (
+        <WrappedSlideLayout
+          eyebrow="Stories"
+          title="Top story interactions"
+          deck="Polls · views · reactions"
+          footerStat={top ? mergedFooterStat(top.username, top.count, "interactions") : null}
+          bodyQuip={top ? storiesFooterQuip(top) : null}
+        >
+          {rows.length > 0 ? (
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
+          ) : (
+            <p className="wrapped-card__body muted">No story interactions in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+    }
+
+    case 6: {
+      const rows = baseline.topThreads;
+      const top = rows[0];
+      return (
+        <WrappedSlideLayout
+          eyebrow="Inbox"
+          title="Top DM threads"
+          deck={`Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
+          footerStat={
+            top
+              ? mergedFooterStat(top.label, top.messageCount, "messages", { thread: true })
+              : null
+          }
+          bodyQuip={top ? dmsFooterQuip(top) : null}
+        >
+          {rows.length > 0 ? (
+            renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
+          ) : (
+            <p className="wrapped-card__body muted">No threads in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+    }
+
+    case 7: {
+      const topSearch = baseline.profileSearches?.rows?.[0];
+      return (
+        <WrappedSlideLayout
+          eyebrow="Search history"
+          title="Profile searches"
+          deck="From profile_searches.json"
+          footerStat={
+            topSearch ? (
+              <>
+                @{topSearch.username} · {formatCount(topSearch.count)} searches
+              </>
+            ) : null
+          }
+        >
+          {!baseline.profileSearches?.fileFound ? (
+            <p className="wrapped-card__body muted">No profile_searches.json in this folder.</p>
+          ) : baseline.profileSearches.totalSearchEvents === 0 ||
+            baseline.profileSearches.rows.length === 0 ? (
+            <p className="wrapped-card__body muted">No profile searches in this snapshot.</p>
+          ) : (
+            <>
+              <p className="wrapped-card__hero">@{baseline.profileSearches.rows[0].username}</p>
+              <p className="wrapped-card__mega-stat wrapped-card__mega-stat--sm">
+                {formatCount(baseline.profileSearches.rows[0].count)}
+              </p>
+              <p className="wrapped-card__mega-label">searches</p>
+              {baseline.profileSearches.rows.length > 1 ? (
+                <ul className="wrapped-rank__rest wrapped-rank__rest--plain" aria-label="Other searches">
+                  {baseline.profileSearches.rows.slice(1, 4).map((r, i) => (
+                    <li key={r.username} className="wrapped-rank__row">
+                      <span className="wrapped-rank__num">{i + 2}</span>
+                      <span className="wrapped-rank__name">@{r.username}</span>
+                      <span className="wrapped-rank__count">{r.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </>
+          )}
+        </WrappedSlideLayout>
+      );
+    }
+
+    case 8:
+      return (
+        <WrappedSlideLayout
+          eyebrow="Privacy"
+          title="Local only"
+          deck="Your export is not uploaded for Wrapped"
+          footerStat="Non-Followers is the only server upload"
+        >
+          <ul className="wrapped-card__bullet-list">
+            <li>Runs entirely in your browser</li>
+            <li>Clear data from the nav on shared devices</li>
+          </ul>
+        </WrappedSlideLayout>
+      );
+
+    case 9:
+      return (
+        <WrappedSlideLayout
+          eyebrow="Coming later"
+          title="Creator insights"
+          deck="When insights JSON is in your export"
+        >
+          <p className="wrapped-card__body muted">
+            <code className="wrapped-page__code">past_instagram_insights</code> could power a future
+            slide here.
+          </p>
+        </WrappedSlideLayout>
+      );
+
+    default:
+      return null;
+  }
+}

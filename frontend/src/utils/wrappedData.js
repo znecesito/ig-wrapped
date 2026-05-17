@@ -22,7 +22,7 @@ import {
 } from "./messageFrequency.js";
 
 /** Shared cap for likes / comments / story-interaction leaderboards on Wrapped. */
-export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 5;
+export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 4;
 export const WRAPPED_THREAD_CARD_LIMIT = 5;
 
 const ACTIVITY_FAMILY_ORDER = ["comments", "likes", "media", "storyInteractions"];
