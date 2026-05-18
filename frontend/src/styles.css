@@ -706,8 +706,8 @@ button:disabled {
   --wrapped-muted: #64748b;
   --wrapped-aspect: 9 / 16;
   --wrapped-chrome: 200px;
-  --wrapped-safe-top: 3.5%;
-  --wrapped-safe-bottom: 4%;
+  --wrapped-safe-top: 6%;
+  --wrapped-safe-bottom: 7%;
   --wrapped-frame-width: min(
     calc(100vw - 1.5rem),
     calc((100dvh - var(--wrapped-chrome)) * 9 / 16),
@@ -1056,7 +1056,7 @@ button:disabled {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0.32rem;
 }
 
@@ -1071,11 +1071,12 @@ button:disabled {
 }
 
 .wrapped-card__body-zone {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: stretch;
   gap: 0.28rem;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1088,7 +1089,7 @@ button:disabled {
 
 .wrapped-card__foot {
   flex-shrink: 0;
-  margin-top: auto;
+  margin-top: 0;
   padding-top: 0.2rem;
 }
 
@@ -1226,6 +1227,122 @@ button:disabled {
   color: #334155;
 }
 
+.wrapped-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.wrapped-podium {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(0.35rem, 2.5vw, 0.65rem);
+}
+
+.wrapped-podium__item {
+  flex: 1;
+  min-width: 0;
+  max-width: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.wrapped-podium__item--lead {
+  max-width: 5.25rem;
+}
+
+.wrapped-podium__avatar-link {
+  display: block;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.wrapped-podium__avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2.35rem, 11vw, 2.85rem);
+  height: clamp(2.35rem, 11vw, 2.85rem);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.wrapped-podium__avatar--lead {
+  width: clamp(2.85rem, 13vw, 3.45rem);
+  height: clamp(2.85rem, 13vw, 3.45rem);
+  border-width: 2.5px;
+  border-color: var(--slide-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--slide-accent) 28%, transparent);
+}
+
+.wrapped-podium__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wrapped-podium__initials {
+  font-size: clamp(0.85rem, 3.8vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  z-index: 0;
+}
+
+.wrapped-podium__avatar--lead .wrapped-podium__initials {
+  font-size: clamp(1rem, 4.5vw, 1.15rem);
+}
+
+.wrapped-podium__badge {
+  position: absolute;
+  top: -0.12rem;
+  left: -0.12rem;
+  z-index: 1;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: var(--slide-accent);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.05rem;
+  text-align: center;
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+}
+
+.wrapped-podium__count {
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--wrapped-muted);
+  text-align: center;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wrapped-podium__item--lead .wrapped-podium__count {
+  font-size: 0.68rem;
+  color: var(--wrapped-ink);
+}
+
 .wrapped-rank {
   display: flex;
   flex-direction: column;
@@ -1348,6 +1465,29 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+}
+
+.wrapped-activity-stack__link {
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  min-width: 0;
+}
+
+.wrapped-activity-stack__link:hover {
+  text-decoration: underline;
+  color: #0f172a;
+}
+
+.wrapped-activity-stack__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
   min-width: 0;
 }
 

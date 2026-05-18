@@ -1,4 +1,5 @@
 import React from "react";
+import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
 import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
@@ -104,13 +105,48 @@ function dmsFooterQuip(top) {
   );
 }
 
+function threadStackHref(label) {
+  const t = String(label || "").trim();
+  if (!t || t.includes(",") || /\s+and\s+/i.test(t)) {
+    return null;
+  }
+  const bare = t.startsWith("@") ? t.slice(1) : t;
+  if (/^[\w.]+$/.test(bare)) {
+    return profileLink(bare);
+  }
+  return null;
+}
+
+function stackLinkLabel(row, { threadLabels }) {
+  if (threadLabels) {
+    return truncateLabel(formatPrimaryDmThreadName(row.label), 18);
+  }
+  return `@${truncateLabel(String(row.username).replace(/^@/, ""), 14)}`;
+}
+
 /** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
-function renderActivityStack(families, maxFamilyTotal) {
+function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}) {
   return (
     <div className="wrapped-activity-stack" aria-label="Breakdown">
       {families.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
         const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+        const text = fam.linkLabel ?? fam.label ?? fam.displayLabel;
+        const labelNode =
+          linkable && fam.href ? (
+            <a
+              className="wrapped-activity-stack__link"
+              href={fam.href}
+              target="_blank"
+              rel="noreferrer"
+              title={fam.linkTitle ?? text}
+            >
+              {text}
+            </a>
+          ) : (
+            <span className="wrapped-activity-stack__label-text">{text}</span>
+          );
+
         return (
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
@@ -120,7 +156,7 @@ function renderActivityStack(families, maxFamilyTotal) {
               backgroundColor: fam.color
             }}
           >
-            <span className="wrapped-activity-stack__label">{fam.label ?? fam.displayLabel}</span>
+            <span className="wrapped-activity-stack__label">{labelNode}</span>
             <span className="wrapped-activity-stack__val">{formatCount(total)}</span>
           </div>
         );
@@ -133,87 +169,26 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   if (!rows.length) {
     return null;
   }
-  const [top, ...rest] = rows;
   const maxCount = Math.max(...rows.map((r) => r.count ?? r.messageCount ?? 0));
-
-  const renderLeadName = () => {
-    if (threadLabels) {
-      return (
-        <span className="wrapped-rank__name wrapped-rank__name--lead" title={top.label}>
-          {formatPrimaryDmThreadName(top.label)}
-        </span>
-      );
-    }
-    return (
-      <a
-        className="wrapped-rank__name wrapped-rank__name--lead"
-        href={profileLink(top.username)}
-        target="_blank"
-        rel="noreferrer"
-      >
-        @{String(top.username).replace(/^@/, "")}
-      </a>
-    );
-  };
 
   const stackFamilies = rows.map((row, index) => {
     const total = row.count ?? row.messageCount ?? 0;
-    const label = threadLabels
-      ? `#${index + 1} ${truncateLabel(row.label, 14)}`
-      : `#${index + 1} @${truncateLabel(String(row.username).replace(/^@/, ""), 12)}`;
+    const href = threadLabels ? threadStackHref(row.label) : profileLink(row.username);
     return {
       family: row.username ?? row.threadKey ?? index,
-      label,
+      linkLabel: stackLinkLabel(row, { threadLabels }),
+      linkTitle: threadLabels ? row.label : `@${String(row.username).replace(/^@/, "")}`,
+      href,
       total,
       color: stackColorFromAccent(accent, index)
     };
   });
 
   return (
-    <>
-      <div className="wrapped-rank">
-        <div className="wrapped-rank__top">
-          <span className="wrapped-rank__num wrapped-rank__num--lead" aria-hidden>
-            1
-          </span>
-          <div className="wrapped-rank__top-body">
-            {renderLeadName()}
-            <span className="wrapped-rank__count wrapped-rank__count--lead">
-              {formatCount(top.count ?? top.messageCount)}
-            </span>
-          </div>
-        </div>
-        {rest.length > 0 ? (
-          <ol className="wrapped-rank__rest" start={2}>
-            {rest.map((row, i) => (
-              <li key={row.username ?? row.threadKey ?? i} className="wrapped-rank__row">
-                <span className="wrapped-rank__num" aria-hidden>
-                  {i + 2}
-                </span>
-                {threadLabels ? (
-                  <span className="wrapped-rank__name" title={row.label}>
-                    {truncateLabel(row.label, 20)}
-                  </span>
-                ) : (
-                  <a
-                    className="wrapped-rank__name"
-                    href={profileLink(row.username)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    @{String(row.username).replace(/^@/, "")}
-                  </a>
-                )}
-                <span className="wrapped-rank__count">
-                  {formatCount(row.count ?? row.messageCount)}
-                </span>
-              </li>
-            ))}
-          </ol>
-        ) : null}
-      </div>
-      {renderActivityStack(stackFamilies, maxCount)}
-    </>
+    <div className="wrapped-leaderboard">
+      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
+      {renderActivityStack(stackFamilies, maxCount, { linkable: true })}
+    </div>
   );
 }
 
