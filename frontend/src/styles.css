@@ -39,14 +39,56 @@ body {
 
 .top-nav__links {
   display: flex;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .nav-link {
   background: #334155;
   border-radius: 999px;
-  padding: 0.45rem 0.85rem;
+  padding: 0.5rem 0.85rem;
+  min-height: 2.75rem;
   border: 1px solid #475569;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .top-nav {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  .top-nav__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem 0.75rem;
+  }
+
+  .top-nav__title {
+    font-size: 0.95rem;
+  }
+
+  .top-nav__links {
+    justify-content: flex-start;
+    gap: 0.45rem;
+  }
+
+  .nav-link {
+    flex: 0 1 auto;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .nav-data-indicator,
+  .nav-clear-btn {
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 .nav-link.is-active {
@@ -58,6 +100,7 @@ body {
   max-width: 920px;
   margin: 2rem auto;
   padding: 0 1rem;
+  overflow-x: hidden;
 }
 
 .card {
@@ -1527,4 +1570,173 @@ button:disabled {
     --wrapped-chrome: 220px;
     --wrapped-frame-width: min(calc(100vw - 1.25rem), calc((100dvh - var(--wrapped-chrome)) * 9 / 16));
   }
+}
+
+/* --- Export guide & picker --- */
+
+.guide-page__lede {
+  max-width: 40rem;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+
+.guide-page__picker {
+  margin-top: 1rem;
+}
+
+.guide-page__picker-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.export-guide {
+  margin-top: 1rem;
+}
+
+.export-guide__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.export-guide__lede {
+  margin: 0 0 0.85rem;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.export-guide__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.export-guide__tab {
+  background: #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  min-height: 2.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.export-guide__tab.is-active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.export-guide__steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.65rem;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.export-guide__code {
+  font-size: 0.85em;
+  background: #f1f5f9;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.export-picker-card {
+  margin-top: 1rem;
+}
+
+.export-picker-card__title {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+}
+
+.export-picker__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.export-picker__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.export-picker__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.export-picker__btn--primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.export-picker__btn--secondary {
+  background: #fff;
+}
+
+.export-picker__input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.export-picker__progress {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.export-picker__error {
+  margin-top: 0.75rem;
+}
+
+.export-picker__warn {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: #b45309;
+}
+
+.export-picker--loaded .export-picker__status {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.export-picker__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  flex-shrink: 0;
+}
+
+.export-picker__clear {
+  background: transparent;
+  border: 1px solid #94a3b8;
+  color: #64748b;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
 }

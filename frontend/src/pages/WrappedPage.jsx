@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import FolderPicker from "../components/FolderPicker.jsx";
+import ExportGuide from "../components/ExportGuide.jsx";
+import ExportPicker from "../components/ExportPicker.jsx";
 import { WrappedSlideShell } from "../components/WrappedSlideChrome.jsx";
 import { useExportData } from "../context/ExportDataContext.jsx";
 import {
@@ -190,12 +191,13 @@ export default function WrappedPage() {
     return (
       <section className="container wrapped-page">
         <h1>Wrapped</h1>
-        <p>
-          A short story built from the same data as Activity Heatmap, Social Graph, and Messages.
-          Choose your full Instagram export folder (unzipped on desktop is the smoothest path).
+        <p className="wrapped-page__lede muted">
+          Your Instagram year in story cards — private, in your browser. Load your export below.
         </p>
-        <div className="card heatmap-controls">
-          <FolderPicker />
+        <ExportGuide />
+        <div className="card export-picker-card">
+          <h2 className="export-picker-card__title">Load your export</h2>
+          <ExportPicker />
         </div>
       </section>
     );
