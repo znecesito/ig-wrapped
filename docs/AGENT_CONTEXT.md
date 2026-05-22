@@ -1,67 +1,67 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-18
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
 ---
 
-## Features shipped
+## Product focus (shipped UI)
 
-**Non-Followers (`/`)** — User uploads two Instagram export JSON files (followers + following). The app `POST`s them to the backend and lists usernames the user follows who do not follow back, with profile links.
+The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** only. [`App.jsx`](../frontend/src/App.jsx) renders `WrappedPage` or `GuidePage`; [`resolveRoute`](../frontend/src/config/features.js) sends `/`, `/heatmap`, `/messages`, and other legacy paths to **`/wrapped`**.
 
-**Activity Heatmap (`/heatmap`)** — Client-only: user picks an exported folder; the app discovers activity/comment-related JSON, parses events, and shows calendar and weekday×hour heatmaps (with source toggles, timezone choice, and family/breakdown coloring). Implemented via `frontend/src/utils/commentHeatmap.js` and `HeatmapPage.jsx`.
+**Wrapped (`/wrapped`)** — Client-only Instagram recap after the user loads an export:
 
-**Social Graph (`/social-graph`)** — Client-only: user picks an exported folder; the app discovers social-interaction style files, parses per-account counts by source category, can infer the owner username from `personal_information` (with optional manual override), and shows top accounts with bar visualization and self-exclusion from rankings. Implemented via `frontend/src/utils/socialInteractionGraph.js` and `SocialGraphPage.jsx`.
+- **Ingest:** [`ExportPicker`](../frontend/src/components/ExportPicker.jsx) — **Choose ZIP** (Instagram `.zip`, JSON entries unzipped in-browser via **fflate**) or **Choose folder** (`webkitdirectory`). [`exportIngest.js`](../frontend/src/utils/exportIngest.js) normalizes to `File[]` with `webkitRelativePath`; warns above ~200MB ZIP, hard cap ~600MB. State in [`ExportDataContext`](../frontend/src/context/ExportDataContext.jsx) (`loadExport`, progress, errors).
+- **Onboarding:** [`ExportGuide`](../frontend/src/components/ExportGuide.jsx) on empty Wrapped + [`GuidePage`](../frontend/src/pages/GuidePage.jsx) at `/guide` — Phone vs desktop tabs; recommends export **to device**, format **JSON**, date range **about 6 months to 1 year**.
+- **Story UI:** Ten **9:16** cards in a vertical scroller (scroll-snap, Prev/Next, dots, keyboard). Components: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; themes/palette/avatars in `wrappedThemes.js`, `wrappedPalette.js`, `wrappedAvatars.js`.
+- **Slides:** intro → activity span → activity (family stacks + busiest time) → likes → comments → story interactions → DMs → profile searches → privacy → teaser. Leaderboards capped at `WRAPPED_SOCIAL_LEADERBOARD_LIMIT` (4). Footer merges brand + #1 stat on data slides.
+- **Data:** `wrappedData.js` (`loadWrappedBaseline`) reuses/fills heatmap, social graph, and messages caches. Span wording uses timestamps in the loaded export, not a guaranteed calendar year.
+- **Privacy copy:** Export not uploaded for Wrapped; local browser only.
 
-**Messages (`/messages`)** — Client-only: user picks an exported folder; the app discovers `your_instagram_activity/messages/inbox/**/message_*.json`, merges per-thread counts across message parts, supports username detection/override for participant-aware labels, and shows top threads as a heat-colored bar list. Implemented via `frontend/src/utils/messageFrequency.js` and `MessagesPage.jsx`.
-
-**Most used words (`/most-used-words`)** — Client-only: user picks an exported folder; the app discovers media JSON under `your_instagram_activity/media` (posts, archived posts, reels, stories), extracts captions with mojibake repair where needed, filters stopwords, and shows separate Top word and Top hashtag bar lists. Implemented via `frontend/src/utils/mostUsedWords.js` and `MostUsedWordsPage.jsx`.
-
-**Wrapped (`/wrapped`)** — Client-only recap after an export folder is loaded in context. **Delivery:** a **vertical scroller** of **ten 9:16 story cards** (`.wrapped-story__scroller`, scroll-snap, `IntersectionObserver` for active dot + reveal animations); Prev/Next call `scrollIntoView`, arrow keys work too—intended for **screenshots** or camera-roll “Add to Story.” Each card uses light IG-style glass (Playfair/Outfit), safe-area insets on `.wrapped-card__safe`, and a per-slide accent (`wrappedThemes.js`). Slide order: intro → span → activity → **likes** → **comments** → **story interactions** → DMs → profile searches → privacy → teaser. Content: activity date span; activity card with four main totals (comments, likes, media, story interactions — heatmap family semantics) plus busiest weekday/hour and an **activity-style stack** chart; three social leaderboards (likes → comments on others’ content → story interactions), each with rank list + accent-tinted stack + a witty **body quip** right after the chart (`bodyQuip` on `WrappedSlideLayout`); top DM threads with the same pattern; **Profile searches** (`logged_information/recent_searches/profile_searches.json`); **Privacy** (local-only reminder); Phase B teaser. Footer on data slides: merged **ig-wrapped** brand + short stat for #1 (no separate watermark). Orchestration: `wrappedData.js` (`loadWrappedBaseline`, `formatActivityBreakdownForWrapped`); profile searches via `profileSearches.js`; colors: `wrappedPalette.js` (heatmap family colors on activity stacks, `stackColorFromAccent` on leaderboards). Leaderboards cap `WRAPPED_SOCIAL_LEADERBOARD_LIMIT` = 4. UI split: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, Wrapped block in `styles.css`. Reads or fills `heatmapCache`, `socialGraphCache`, and `messagesCache` like other tabs. **Date range wording:** span comes from parsed activity event timestamps in this export (not a full calendar-year guarantee and not every file in the zip).
+**Legacy analysis pages** (`HeatmapPage`, `SocialGraphPage`, `MessagesPage`, `MostUsedWordsPage`, Non-Followers) remain in the repo but are **not imported or routed** in `App.jsx`. Parsers in `frontend/src/utils/` are still used by Wrapped.
 
 ---
 
-## Hosting and CI/CD (shipped 2026-05-12)
+## Hosting and CI/CD
 
-- **Frontend** deployed on **Vercel** (static Vite build, root directory `frontend`). SPA rewrites via `frontend/vercel.json`.
-- **Backend** deployed on **Render** web service (root directory `backend`, `npm start`). Listens on `process.env.PORT || 4000`.
-- `VITE_API_URL` env var (set in Vercel dashboard) tells the frontend where to `POST /upload`. Baked in at build time; redeploy frontend after changing.
-- `frontend/.env.example` documents the env var for local dev.
-- `App.jsx` uses `import.meta.env.VITE_API_URL ?? "http://localhost:4000/upload"` so local dev works without any `.env` file.
-- GitHub Actions workflow `.github/workflows/frontend-ci.yml` runs `npm ci && npm run build` on PRs touching `frontend/**`.
-- Backend exposes `GET /health` for smoke tests; `cors()` allows cross-origin requests from the Vercel origin.
+- **Frontend:** Vercel (root `frontend`, Vite → `dist`). Git push triggers deploy; PR preview builds.
+- **Backend:** Render optional (`backend`, `npm start`, `GET /health`). Not required for Wrapped.
+- **CI:** `.github/workflows/frontend-ci.yml` — `npm ci && npm run build` on PRs touching `frontend/**`.
+- **SPA:** `frontend/vercel.json` rewrites to `index.html`.
 
 ---
 
 ## Key files touched recently
 
-- `frontend/src/pages/WrappedPage.jsx`, `wrappedSlideContent.jsx`, `components/WrappedSlideChrome.jsx`, `utils/wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `profileSearches.js`, `styles.css` — Wrapped: vertical 9:16 card column, scroll-snap + observers, activity/leaderboard stack charts, body quips after charts, merged footer stat, hybrid palette.
-- `frontend/src/App.jsx` — `VITE_API_URL` env-var integration (was hardcoded `localhost:4000`).
-- `frontend/.env.example` — new file documenting `VITE_API_URL`.
-- `frontend/vercel.json` — new file; SPA catch-all rewrite.
-- `.github/workflows/frontend-ci.yml` — new file; PR build gate.
-- `README.md` — deploy docs, env-var table.
+- `frontend/src/App.jsx`, `frontend/src/config/features.js` — Wrapped-only routes; `/` → `/wrapped`.
+- `frontend/src/utils/exportIngest.js`, `frontend/src/components/ExportPicker.jsx`, `frontend/src/context/ExportDataContext.jsx` — ZIP + folder ingest.
+- `frontend/src/components/ExportGuide.jsx`, `frontend/src/pages/GuidePage.jsx` — mobile/desktop export instructions (6mo–1yr range).
+- `frontend/src/styles.css` — mobile nav (wrap, safe-area), export guide/picker styles.
+- `frontend/package.json` — `fflate` dependency.
+- Wrapped stack: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`.
 
 ---
 
 ## Known gaps / next ideas (optional)
 
-- Expand or harden parsers as Instagram export shapes change; keep client and server parser behavior aligned where both touch the same export types.
-- Any new visualization should follow existing CSS and "no new heavy chart deps" unless the project explicitly adds one.
-- Optional: user-editable stopword list for Most used words.
-- Consider adding a backend health-check CI step or uptime monitor for Render.
+- Web Share API or explicit “save slide” for mobile sharing (today: screenshots).
+- Stream or worker-based unzip if very large exports OOM on mobile Safari.
+- Re-enable or remove legacy page files and backend upload UI if product stays Wrapped-only long term.
+- Backend health-check in CI or uptime monitor on Render if API is kept.
+- Harden parsers as Instagram export JSON shapes change.
 
 ---
 
 ## Template (for future updates)
 
-Copy this block when refreshing the doc after a milestone:
-
 ```markdown
 **Last updated:** YYYY-MM-DD
 
-## Features shipped
+## Product focus (shipped UI)
+- ...
+
+## Hosting and CI/CD
 - ...
 
 ## Key files touched recently
