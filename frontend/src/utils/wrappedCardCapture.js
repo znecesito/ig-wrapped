@@ -8,8 +8,8 @@ const CAPTURING_CLASS = "wrapped-card--capturing";
 
 /**
  * Rasterize a wrapped story card to PNG at 1080×1920 (Instagram story size).
- * Clones into an off-screen stage; per-theme opaque backgrounds approximate viewport + glass
- * (backdrop-filter is omitted — not supported in export).
+ * Clones into a 1080×1920 stage so container-query (cqw) typography and charts scale with the card.
+ * Per-theme opaque backgrounds approximate viewport + glass (backdrop-filter omitted in export).
  */
 export async function captureWrappedCardPng(cardElement) {
   if (!cardElement?.cloneNode) {
@@ -38,6 +38,8 @@ export async function captureWrappedCardPng(cardElement) {
   document.body.appendChild(host);
 
   try {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
     const dataUrl = await toPng(stage, {
       width: WRAPPED_EXPORT_WIDTH,
       height: WRAPPED_EXPORT_HEIGHT,
