@@ -3,16 +3,12 @@ import { toPng } from "html-to-image";
 export const WRAPPED_EXPORT_WIDTH = 1080;
 export const WRAPPED_EXPORT_HEIGHT = 1920;
 
-const CAPTURE_HOST_CLASS = "wrapped-card-capture-host";
-const CAPTURING_CLASS = "wrapped-card--capturing";
-
 /**
- * Rasterize a wrapped story card to PNG at 1080×1920 (Instagram story size).
- * Clones into a 1080×1920 stage so container-query (cqw) typography and charts scale with the card.
- * Per-theme opaque backgrounds approximate viewport + glass (backdrop-filter omitted in export).
+ * Rasterize the visible story card at on-screen size (WYSIWYG), then upscale to 1080×1920.
+ * Matches layout/fonts as shown in the app; uses devicePixelRatio for sharpness.
  */
 export async function captureWrappedCardPng(cardElement) {
-  if (!cardElement?.cloneNode) {
+  if (!cardElement?.getBoundingClientRect) {
     throw new Error("Could not capture this slide.");
   }
 
@@ -20,41 +16,52 @@ export async function captureWrappedCardPng(cardElement) {
     await document.fonts.ready;
   }
 
-  const host = document.createElement("div");
-  host.className = `wrapped-story ${CAPTURE_HOST_CLASS}`;
-  host.setAttribute("aria-hidden", "true");
+  cardElement.scrollIntoView({ block: "nearest", behavior: "auto" });
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-  const stage = document.createElement("div");
-  stage.className = `${CAPTURE_HOST_CLASS}__stage`;
+  const rect = cardElement.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width));
+  const height = Math.max(1, Math.round(rect.height));
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
 
-  const clone = cardElement.cloneNode(true);
-  clone.classList.remove(
-    "wrapped-card--from-next",
-    "wrapped-card--from-prev"
-  );
-  clone.classList.add("wrapped-card--visible", CAPTURING_CLASS);
-  stage.appendChild(clone);
-  host.appendChild(stage);
-  document.body.appendChild(host);
+  const dataUrl = await toPng(cardElement, {
+    width,
+    height,
+    pixelRatio,
+    cacheBust: true,
+    skipAutoScale: true
+  });
 
-  try {
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-    const dataUrl = await toPng(stage, {
-      width: WRAPPED_EXPORT_WIDTH,
-      height: WRAPPED_EXPORT_HEIGHT,
-      pixelRatio: 1,
-      cacheBust: true,
-      skipAutoScale: false
-    });
-    const blob = await dataUrlToBlob(dataUrl);
-    return blob;
-  } finally {
-    host.remove();
-  }
+  return upscaleToStorySize(dataUrl);
 }
 
-async function dataUrlToBlob(dataUrl) {
-  const res = await fetch(dataUrl);
-  return res.blob();
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Could not process slide image."));
+    img.src = src;
+  });
+}
+
+async function upscaleToStorySize(dataUrl) {
+  const img = await loadImage(dataUrl);
+  const canvas = document.createElement("canvas");
+  canvas.width = WRAPPED_EXPORT_WIDTH;
+  canvas.height = WRAPPED_EXPORT_HEIGHT;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not process slide image.");
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, WRAPPED_EXPORT_WIDTH, WRAPPED_EXPORT_HEIGHT);
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Could not encode slide image."))),
+      "image/png"
+    );
+  });
+  return blob;
 }
