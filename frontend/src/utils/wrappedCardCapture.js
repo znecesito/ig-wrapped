@@ -8,7 +8,8 @@ const CAPTURING_CLASS = "wrapped-card--capturing";
 
 /**
  * Rasterize a wrapped story card to PNG at 1080×1920 (Instagram story size).
- * Clones the node off-screen so scroll position and sibling opacity do not affect output.
+ * Clones into an off-screen stage; per-theme opaque backgrounds approximate viewport + glass
+ * (backdrop-filter is omitted — not supported in export).
  */
 export async function captureWrappedCardPng(cardElement) {
   if (!cardElement?.cloneNode) {
@@ -20,8 +21,11 @@ export async function captureWrappedCardPng(cardElement) {
   }
 
   const host = document.createElement("div");
-  host.className = CAPTURE_HOST_CLASS;
+  host.className = `wrapped-story ${CAPTURE_HOST_CLASS}`;
   host.setAttribute("aria-hidden", "true");
+
+  const stage = document.createElement("div");
+  stage.className = `${CAPTURE_HOST_CLASS}__stage`;
 
   const clone = cardElement.cloneNode(true);
   clone.classList.remove(
@@ -29,11 +33,12 @@ export async function captureWrappedCardPng(cardElement) {
     "wrapped-card--from-prev"
   );
   clone.classList.add("wrapped-card--visible", CAPTURING_CLASS);
-  host.appendChild(clone);
+  stage.appendChild(clone);
+  host.appendChild(stage);
   document.body.appendChild(host);
 
   try {
-    const dataUrl = await toPng(clone, {
+    const dataUrl = await toPng(stage, {
       width: WRAPPED_EXPORT_WIDTH,
       height: WRAPPED_EXPORT_HEIGHT,
       pixelRatio: 1,

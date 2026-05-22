@@ -897,11 +897,17 @@ button:disabled {
   padding: 0.65rem;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  background:
+  background: var(--wrapped-viewport-bg);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04), 0 16px 40px -12px rgba(15, 23, 42, 0.14);
+}
+
+/* Viewport wash behind story cards (live UI + PNG export backdrop) */
+.wrapped-page,
+.wrapped-card-capture-host {
+  --wrapped-viewport-bg:
     radial-gradient(120% 80% at 100% 0%, rgba(251, 113, 133, 0.22) 0%, transparent 55%),
     radial-gradient(90% 70% at 0% 100%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
     linear-gradient(165deg, #e7ecf6 0%, #fce7f3 38%, #fff1f2 72%, #f8fafc 100%);
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04), 0 16px 40px -12px rgba(15, 23, 42, 0.14);
 }
 
 .wrapped-story__scroller {
@@ -926,21 +932,30 @@ button:disabled {
   margin-right: auto;
 }
 
-/* Off-screen host for PNG export (1080×1920) */
+/* Off-screen host for PNG export (1080×1920) — mirrors .wrapped-story card + viewport */
 .wrapped-card-capture-host {
   position: fixed;
   left: -12000px;
   top: 0;
-  width: 1080px;
-  height: 1920px;
-  overflow: hidden;
   pointer-events: none;
   z-index: -1;
 }
 
+.wrapped-card-capture-host__stage {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 14px 26px -10px rgba(15, 23, 42, 0.12);
+}
+
 .wrapped-card-capture-host .wrapped-card.card {
-  width: 1080px !important;
-  height: 1920px !important;
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
   max-width: none;
   aspect-ratio: auto !important;
   opacity: 1 !important;
@@ -948,17 +963,95 @@ button:disabled {
   animation: none !important;
   flex-shrink: 0;
   scroll-snap-align: none;
+  margin: 0;
 }
 
-.wrapped-card-capture-host .wrapped-card.card.wrapped-card--capturing,
-.wrapped-card-capture-host .wrapped-card--capturing {
+/* Frosted blur is not rasterized; glass + ::before stay, composited over viewport backdrop */
+.wrapped-card-capture-host .wrapped-card.card.wrapped-card--capturing {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  background: linear-gradient(
-    165deg,
-    rgba(255, 255, 255, 0.94) 0%,
-    color-mix(in srgb, var(--slide-tint) 42%, white) 100%
-  ) !important;
+}
+
+/* Opaque bake: shared viewport wash + theme corner + glass (no backdrop-filter in export) */
+.wrapped-card-capture-host {
+  --slide-export-viewport:
+    radial-gradient(120% 80% at 100% 0%, rgba(251, 167, 185, 0.34) 0%, transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, rgba(190, 175, 230, 0.24) 0%, transparent 50%),
+    linear-gradient(165deg, #f0edf5 0%, #fce8f3 38%, #fff0f3 72%, #f8fafc 100%);
+}
+
+.wrapped-card-capture-host .wrapped-theme--intro.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(252, 198, 210, 0.72) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--span.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(198, 200, 252, 0.68) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--activity.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(255, 210, 175, 0.7) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--likes.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(255, 192, 218, 0.7) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--comments.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(210, 195, 255, 0.68) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--stories.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(255, 222, 175, 0.7) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--dms.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(195, 198, 255, 0.68) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--search.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(165, 225, 215, 0.62) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--privacy.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(200, 210, 222, 0.58) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-theme--teaser.wrapped-card--capturing {
+  --slide-export-bg:
+    radial-gradient(85% 55% at 100% 0%, rgba(212, 220, 232, 0.62) 0%, transparent 58%),
+    var(--slide-export-viewport);
+}
+
+.wrapped-card-capture-host .wrapped-card.card.wrapped-card--capturing {
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      color-mix(in srgb, var(--slide-tint) 32%, white) 100%
+    ),
+    var(--slide-export-bg) !important;
+}
+
+.wrapped-card-capture-host .wrapped-card.card.wrapped-card--capturing::before {
+  display: none;
 }
 
 .wrapped-save-preview {
