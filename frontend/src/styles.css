@@ -820,6 +820,8 @@ button:disabled {
 .wrapped-story__controls {
   display: flex;
   justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
@@ -844,6 +846,17 @@ button:disabled {
 
 .wrapped-story__nav-btn:disabled {
   opacity: 0.45;
+}
+
+.wrapped-story__save-btn {
+  background: linear-gradient(145deg, #e11d48 0%, #be123c 55%, #9f1239 100%);
+  min-width: 7.25rem;
+}
+
+.wrapped-story__save-error {
+  margin: -0.35rem 0 0.75rem;
+  text-align: center;
+  font-size: 0.88rem;
 }
 
 .wrapped-story__dots {
@@ -908,6 +921,91 @@ button:disabled {
   margin: 0.65rem 0 0;
   text-align: center;
   font-size: 0.82rem;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Off-screen host for PNG export (1080×1920) */
+.wrapped-card-capture-host {
+  position: fixed;
+  left: -12000px;
+  top: 0;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.wrapped-card-capture-host .wrapped-card.card {
+  width: 1080px !important;
+  height: 1920px !important;
+  max-width: none;
+  aspect-ratio: auto !important;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+  flex-shrink: 0;
+  scroll-snap-align: none;
+}
+
+.wrapped-card-capture-host .wrapped-card.card.wrapped-card--capturing,
+.wrapped-card-capture-host .wrapped-card--capturing {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    color-mix(in srgb, var(--slide-tint) 42%, white) 100%
+  ) !important;
+}
+
+.wrapped-save-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.wrapped-save-preview__panel {
+  width: min(100%, 22rem);
+  max-height: min(92vh, 640px);
+  overflow-y: auto;
+  margin: 0;
+}
+
+.wrapped-save-preview__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.wrapped-save-preview__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.wrapped-save-preview__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.wrapped-save-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.85rem;
 }
 
 .wrapped-story .wrapped-card.card {

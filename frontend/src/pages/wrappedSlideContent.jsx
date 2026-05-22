@@ -201,7 +201,7 @@ export function renderWrappedSlide(index, ctx) {
         <WrappedSlideLayout
           eyebrow="ig-wrapped"
           title="Your year in the feed"
-          deck="Screenshot any card for Stories · all local"
+          deck="Save slide for Stories · all local"
           bodyClassName="wrapped-card__body-zone--hero"
         >
           <p className="wrapped-card__hero">{handle}</p>

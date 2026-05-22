@@ -14,7 +14,7 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 - **Ingest:** [`ExportPicker`](../frontend/src/components/ExportPicker.jsx) — **Choose ZIP** (Instagram `.zip`, JSON entries unzipped in-browser via **fflate**) or **Choose folder** (`webkitdirectory`). [`exportIngest.js`](../frontend/src/utils/exportIngest.js) normalizes to `File[]` with `webkitRelativePath`; warns above ~200MB ZIP, hard cap ~600MB. State in [`ExportDataContext`](../frontend/src/context/ExportDataContext.jsx) (`loadExport`, progress, errors).
 - **Onboarding:** [`ExportGuide`](../frontend/src/components/ExportGuide.jsx) on empty Wrapped + [`GuidePage`](../frontend/src/pages/GuidePage.jsx) at `/guide` — Phone vs desktop tabs; recommends export **to device**, format **JSON**, date range **about 6 months to 1 year**.
-- **Story UI:** Ten **9:16** cards in a vertical scroller (scroll-snap, Prev/Next, dots, keyboard). Components: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; themes/palette/avatars in `wrappedThemes.js`, `wrappedPalette.js`, `wrappedAvatars.js`.
+- **Story UI:** Ten **9:16** cards in a vertical scroller (scroll-snap, Prev/Next, dots, keyboard). **Save slide** exports the current card at 1080×1920 via `html-to-image` (`wrappedCardCapture.js`); delivery uses Web Share on mobile (Save Image / Instagram) or download (`saveWrappedCardImage.js`), with a long-press preview fallback. Components: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; themes/palette/avatars in `wrappedThemes.js`, `wrappedPalette.js`, `wrappedAvatars.js`.
 - **Slides:** intro → activity span → activity (family stacks + busiest time) → likes → comments → story interactions → DMs → profile searches → privacy → teaser. Leaderboards capped at `WRAPPED_SOCIAL_LEADERBOARD_LIMIT` (4). Footer merges brand + #1 stat on data slides.
 - **Data:** `wrappedData.js` (`loadWrappedBaseline`) reuses/fills heatmap, social graph, and messages caches. Span wording uses timestamps in the loaded export, not a guaranteed calendar year.
 - **Privacy copy:** Export not uploaded for Wrapped; local browser only.
@@ -38,14 +38,13 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 - `frontend/src/utils/exportIngest.js`, `frontend/src/components/ExportPicker.jsx`, `frontend/src/context/ExportDataContext.jsx` — ZIP + folder ingest.
 - `frontend/src/components/ExportGuide.jsx`, `frontend/src/pages/GuidePage.jsx` — mobile/desktop export instructions (6mo–1yr range).
 - `frontend/src/styles.css` — mobile nav (wrap, safe-area), export guide/picker styles.
-- `frontend/package.json` — `fflate` dependency.
+- `frontend/package.json` — `fflate`, `html-to-image` dependencies.
 - Wrapped stack: `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`.
 
 ---
 
 ## Known gaps / next ideas (optional)
 
-- Web Share API or explicit “save slide” for mobile sharing (today: screenshots).
 - Stream or worker-based unzip if very large exports OOM on mobile Safari.
 - Re-enable or remove legacy page files and backend upload UI if product stays Wrapped-only long term.
 - Backend health-check in CI or uptime monitor on Render if API is kept.
