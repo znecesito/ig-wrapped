@@ -4,8 +4,9 @@ export const WRAPPED_EXPORT_WIDTH = 1080;
 export const WRAPPED_EXPORT_HEIGHT = 1920;
 
 /**
- * Rasterize the visible story card at on-screen size (WYSIWYG), then upscale to 1080×1920.
- * Matches layout/fonts as shown in the app; uses devicePixelRatio for sharpness.
+ * Rasterize the visible story card at its natural on-screen layout (no forced resize),
+ * then upscale the bitmap to 1080×1920 for Stories. Avoids passing width/height to
+ * html-to-image, which reflows the clone and can truncate text.
  */
 export async function captureWrappedCardPng(cardElement) {
   if (!cardElement?.getBoundingClientRect) {
@@ -19,17 +20,11 @@ export async function captureWrappedCardPng(cardElement) {
   cardElement.scrollIntoView({ block: "nearest", behavior: "auto" });
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-  const rect = cardElement.getBoundingClientRect();
-  const width = Math.max(1, Math.round(rect.width));
-  const height = Math.max(1, Math.round(rect.height));
   const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
 
   const dataUrl = await toPng(cardElement, {
-    width,
-    height,
     pixelRatio,
-    cacheBust: true,
-    skipAutoScale: true
+    cacheBust: true
   });
 
   return upscaleToStorySize(dataUrl);
