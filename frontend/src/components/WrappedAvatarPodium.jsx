@@ -29,7 +29,7 @@ function threadProfileHref(label) {
   return profileHref(bare);
 }
 
-function PodiumAvatar({ row, rank, threadLabels, imageUrl, exportMode }) {
+function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
   const key = avatarKeyForWrappedRow(row, { threadLabels });
   const initials = initialsForWrappedRow(row, { threadLabels });
   const bg = avatarColorForKey(key);
@@ -37,32 +37,31 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl, exportMode }) {
   const href = threadLabels ? threadProfileHref(row.label) : profileHref(row.username);
   const isLead = rank === 1;
 
-  const label = threadLabels ? row.label : `@${String(row.username).replace(/^@/, "")}`;
-
   const circle = (
     <span
       className={`wrapped-podium__avatar${isLead ? " wrapped-podium__avatar--lead" : ""}`}
-      style={{ backgroundColor: bg }}
       aria-hidden={Boolean(imageUrl)}
     >
-      {imageUrl ? (
-        <img
-          className="wrapped-podium__img"
-          src={imageUrl}
-          alt=""
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      ) : null}
-      <span className="wrapped-podium__initials">{initials}</span>
+      <span className="wrapped-podium__face" style={{ backgroundColor: bg }}>
+        {imageUrl ? (
+          <img
+            className="wrapped-podium__img"
+            src={imageUrl}
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : null}
+        <span className="wrapped-podium__initials">{initials}</span>
+      </span>
       <span className="wrapped-podium__badge">{rank}</span>
     </span>
   );
 
   return (
     <li className={`wrapped-podium__item${isLead ? " wrapped-podium__item--lead" : ""}`}>
-      {href && !exportMode ? (
+      {href ? (
         <a
           className="wrapped-podium__avatar-link"
           href={href}
@@ -73,7 +72,7 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl, exportMode }) {
           {circle}
         </a>
       ) : (
-        <span className="wrapped-podium__avatar-link" title={label}>
+        <span className="wrapped-podium__avatar-link" title={row.label}>
           {circle}
         </span>
       )}
@@ -82,7 +81,7 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl, exportMode }) {
   );
 }
 
-export default function WrappedAvatarPodium({ rows, threadLabels = false, exportMode = false }) {
+export default function WrappedAvatarPodium({ rows, threadLabels = false }) {
   if (!rows?.length) {
     return null;
   }
@@ -96,7 +95,6 @@ export default function WrappedAvatarPodium({ rows, threadLabels = false, export
           rank={index + 1}
           threadLabels={threadLabels}
           imageUrl={row.imageUrl}
-          exportMode={exportMode}
         />
       ))}
     </ol>

@@ -1,18 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExportGuide from "../components/ExportGuide.jsx";
 import ExportPicker from "../components/ExportPicker.jsx";
-import WrappedSlideExport from "../components/WrappedSlideExport.jsx";
 import { WrappedSlideShell } from "../components/WrappedSlideChrome.jsx";
 import { useExportData } from "../context/ExportDataContext.jsx";
 import {
   formatActivityBreakdownForWrapped,
   loadWrappedBaseline
 } from "../utils/wrappedData.js";
-import { captureWrappedCardPng } from "../utils/wrappedCardCapture.js";
-import {
-  revokePreviewUrl,
-  saveWrappedCardImage
-} from "../utils/saveWrappedCardImage.js";
 import { getSlideTheme } from "../utils/wrappedThemes.js";
 import { renderWrappedSlide } from "./wrappedSlideContent.jsx";
 
@@ -35,12 +29,8 @@ export default function WrappedPage() {
   const [baseline, setBaseline] = useState(null);
   const [warningsOpen, setWarningsOpen] = useState(true);
   const [cardIndex, setCardIndex] = useState(0);
-  const [savingSlide, setSavingSlide] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [savePreview, setSavePreview] = useState(null);
   const scrollerRef = useRef(null);
   const cardRefs = useRef([]);
-  const exportCardRef = useRef(null);
   const prevIndexRef = useRef(0);
 
   useEffect(() => {
@@ -197,48 +187,6 @@ export default function WrappedPage() {
     [baseline, handle, activityBreakdown]
   );
 
-  const closeSavePreview = useCallback(() => {
-    setSavePreview((prev) => {
-      if (prev?.url) {
-        revokePreviewUrl(prev.url);
-      }
-      return null;
-    });
-  }, []);
-
-  const handleSaveSlide = useCallback(async () => {
-    const exportCard = exportCardRef.current;
-    if (!exportCard || savingSlide) {
-      return;
-    }
-
-    setSavingSlide(true);
-    setSaveError("");
-    closeSavePreview();
-
-    try {
-      const blob = await captureWrappedCardPng(exportCard);
-      const result = await saveWrappedCardImage(blob, cardIndex + 1);
-      if (result.method === "preview") {
-        setSavePreview({ url: result.url, name: result.name });
-      }
-    } catch (err) {
-      if (err?.name !== "AbortError") {
-        setSaveError(err?.message || "Could not save this slide. Try again.");
-      }
-    } finally {
-      setSavingSlide(false);
-    }
-  }, [cardIndex, savingSlide, closeSavePreview]);
-
-  useEffect(() => {
-    return () => {
-      if (savePreview?.url) {
-        revokePreviewUrl(savePreview.url);
-      }
-    };
-  }, [savePreview?.url]);
-
   if (!files) {
     return (
       <section className="container wrapped-page">
@@ -306,22 +254,7 @@ export default function WrappedPage() {
             >
               Next
             </button>
-            <button
-              type="button"
-              className="wrapped-story__nav-btn wrapped-story__save-btn"
-              onClick={handleSaveSlide}
-              disabled={savingSlide}
-              aria-busy={savingSlide}
-            >
-              {savingSlide ? "Saving…" : "Save slide"}
-            </button>
           </div>
-
-          {saveError ? (
-            <p className="wrapped-story__save-error error" role="alert">
-              {saveError}
-            </p>
-          ) : null}
 
           <div className="wrapped-story__dots" role="tablist" aria-label="Wrapped slides">
             {Array.from({ length: WRAPPED_CARD_COUNT }).map((_, i) => (
@@ -360,51 +293,8 @@ export default function WrappedPage() {
             </div>
           </div>
           <p className="wrapped-story__share-hint muted">
-            Save slide opens share on your phone — choose Save Image or Instagram for Stories. On
-            desktop, it downloads a PNG.
+            Screenshot any card to share to Stories.
           </p>
-
-          {savePreview ? (
-            <div
-              className="wrapped-save-preview"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="wrapped-save-preview-title"
-            >
-              <div className="wrapped-save-preview__panel card">
-                <h2 id="wrapped-save-preview-title" className="wrapped-save-preview__title">
-                  Save this slide
-                </h2>
-                <p className="muted wrapped-save-preview__hint">
-                  Press and hold the image, then tap <strong>Add to Photos</strong>. Or use the
-                  share button in your browser.
-                </p>
-                <img
-                  className="wrapped-save-preview__img"
-                  src={savePreview.url}
-                  alt={`Wrapped slide ${cardIndex + 1}`}
-                />
-                <div className="wrapped-save-preview__actions">
-                  <a
-                    className="wrapped-story__nav-btn"
-                    href={savePreview.url}
-                    download={savePreview.name}
-                  >
-                    Download PNG
-                  </a>
-                  <button type="button" className="wrapped-page__dismiss" onClick={closeSavePreview}>
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          <WrappedSlideExport
-            slideIndex={cardIndex}
-            slideCtx={slideCtx}
-            cardRef={exportCardRef}
-          />
         </div>
       ) : null}
     </section>
