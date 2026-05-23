@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExportGuide from "../components/ExportGuide.jsx";
 import ExportPicker from "../components/ExportPicker.jsx";
+import WrappedSlideExport from "../components/WrappedSlideExport.jsx";
 import { WrappedSlideShell } from "../components/WrappedSlideChrome.jsx";
 import { useExportData } from "../context/ExportDataContext.jsx";
 import {
@@ -39,6 +40,7 @@ export default function WrappedPage() {
   const [savePreview, setSavePreview] = useState(null);
   const scrollerRef = useRef(null);
   const cardRefs = useRef([]);
+  const exportCardRef = useRef(null);
   const prevIndexRef = useRef(0);
 
   useEffect(() => {
@@ -205,8 +207,8 @@ export default function WrappedPage() {
   }, []);
 
   const handleSaveSlide = useCallback(async () => {
-    const card = cardRefs.current[cardIndex];
-    if (!card || savingSlide) {
+    const exportCard = exportCardRef.current;
+    if (!exportCard || savingSlide) {
       return;
     }
 
@@ -215,7 +217,7 @@ export default function WrappedPage() {
     closeSavePreview();
 
     try {
-      const blob = await captureWrappedCardPng(card);
+      const blob = await captureWrappedCardPng(exportCard);
       const result = await saveWrappedCardImage(blob, cardIndex + 1);
       if (result.method === "preview") {
         setSavePreview({ url: result.url, name: result.name });
@@ -397,6 +399,12 @@ export default function WrappedPage() {
               </div>
             </div>
           ) : null}
+
+          <WrappedSlideExport
+            slideIndex={cardIndex}
+            slideCtx={slideCtx}
+            cardRef={exportCardRef}
+          />
         </div>
       ) : null}
     </section>

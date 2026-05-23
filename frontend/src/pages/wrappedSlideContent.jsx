@@ -117,7 +117,13 @@ function threadStackHref(label) {
   return null;
 }
 
-function stackLinkLabel(row, { threadLabels }) {
+function stackLinkLabel(row, { threadLabels, exportMode = false }) {
+  if (exportMode) {
+    if (threadLabels) {
+      return formatPrimaryDmThreadName(row.label);
+    }
+    return `@${String(row.username).replace(/^@/, "")}`;
+  }
   if (threadLabels) {
     return truncateLabel(formatPrimaryDmThreadName(row.label), 18);
   }
@@ -165,7 +171,7 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}
   );
 }
 
-function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
+function renderLeaderboardBlock(rows, { threadLabels = false, accent, exportMode = false }) {
   if (!rows.length) {
     return null;
   }
@@ -176,7 +182,7 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
     const href = threadLabels ? threadStackHref(row.label) : profileLink(row.username);
     return {
       family: row.username ?? row.threadKey ?? index,
-      linkLabel: stackLinkLabel(row, { threadLabels }),
+      linkLabel: stackLinkLabel(row, { threadLabels, exportMode }),
       linkTitle: threadLabels ? row.label : `@${String(row.username).replace(/^@/, "")}`,
       href,
       total,
@@ -186,14 +192,14 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
 
   return (
     <div className="wrapped-leaderboard">
-      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
-      {renderActivityStack(stackFamilies, maxCount, { linkable: true })}
+      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} exportMode={exportMode} />
+      {renderActivityStack(stackFamilies, maxCount, { linkable: !exportMode, exportMode })}
     </div>
   );
 }
 
 export function renderWrappedSlide(index, ctx) {
-  const { baseline, handle, activityBreakdown } = ctx;
+  const { baseline, handle, activityBreakdown, exportMode = false } = ctx;
 
   switch (index) {
     case 0:
@@ -281,7 +287,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? likesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(3), exportMode })
           ) : (
             <p className="wrapped-card__body muted">No likes counted in this export.</p>
           )}
@@ -301,7 +307,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? commentsFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(4), exportMode })
           ) : (
             <p className="wrapped-card__body muted">No comments counted in this export.</p>
           )}
@@ -321,7 +327,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? storiesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(5), exportMode })
           ) : (
             <p className="wrapped-card__body muted">No story interactions in this export.</p>
           )}
@@ -345,7 +351,11 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? dmsFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
+            renderLeaderboardBlock(rows, {
+              threadLabels: true,
+              accent: getSlideAccent(6),
+              exportMode
+            })
           ) : (
             <p className="wrapped-card__body muted">No threads in this export.</p>
           )}
