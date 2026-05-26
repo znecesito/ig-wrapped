@@ -1676,6 +1676,53 @@ button:disabled {
   border-radius: 4px;
 }
 
+.export-guide__substeps {
+  margin: 0.45rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  list-style: lower-alpha;
+  font-size: 0.92rem;
+}
+
+.export-guide__shot {
+  margin: 0.6rem 0 0.2rem;
+}
+
+.export-guide__shot img {
+  display: block;
+  max-width: 100%;
+  width: clamp(220px, 55%, 360px);
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+}
+
+.export-guide__shot--wide img {
+  width: clamp(260px, 75%, 520px);
+}
+
+.export-guide__shot figcaption {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.export-guide__success {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.export-guide__success-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .export-picker-card {
   margin-top: 1rem;
 }

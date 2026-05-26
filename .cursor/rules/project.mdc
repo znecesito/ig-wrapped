@@ -26,10 +26,11 @@ alwaysApply: true
 
 ## Shipped product (UI)
 
-- **Only two routes** in [`App.jsx`](frontend/src/App.jsx): **`/wrapped`** (default) and **`/guide`** (export instructions). [`resolveRoute`](frontend/src/config/features.js) maps `/` and all legacy paths (`/heatmap`, `/`, etc.) to **`/wrapped`**.
+- **Only two routes** in [`App.jsx`](frontend/src/App.jsx): **`/wrapped`** (default) and **`/guide`** (export instructions). [`resolveRoute`](frontend/src/config/features.js) maps `/` and all legacy paths (`/heatmap`, `/messages`, etc.) to **`/wrapped`**.
 - **Nav:** Wrapped | How to export | Data loaded / Clear.
 - **Export ingest:** [`ExportPicker.jsx`](frontend/src/components/ExportPicker.jsx) — **Choose ZIP** or **Choose folder** → [`normalizeExportInput`](frontend/src/utils/exportIngest.js) in [`ExportDataContext.jsx`](frontend/src/context/ExportDataContext.jsx). ZIP path extracts **JSON only** via fflate; folder path uses `webkitdirectory`. Validates paths containing `your_instagram_activity/` or `personal_information/`.
 - **Export guide:** [`ExportGuide.jsx`](frontend/src/components/ExportGuide.jsx) — Phone vs desktop steps; recommends Instagram export date range **about 6 months to 1 year** (JSON, export to device).
+- **Sharing:** Users **screenshot** story cards for Instagram Stories. There is **no** in-app Save/download button (DOM-to-PNG export was tried and removed; it could not match on-screen layout reliably).
 - **Privacy:** Wrapped does **not** upload the export; parsing runs in the browser.
 
 ## Folder map
@@ -42,7 +43,7 @@ alwaysApply: true
   - **`components/`** — `ExportPicker.jsx`, `ExportGuide.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; `FolderPicker.jsx` (alias → ExportPicker)
   - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy `HeatmapPage`, `SocialGraphPage`, `MessagesPage`, `MostUsedWordsPage` (not routed)
   - **`utils/`** — `exportIngest.js`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`, `profileSearches.js`, plus shared parsers (`commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`)
-  - **`styles.css`** — mobile nav, export guide/picker, Wrapped 9:16 story column
+  - **`styles.css`** — mobile nav, export guide/picker, Wrapped 9:16 story column, podium/leaderboard layout
 - **`frontend/.env.example`** — documents optional `VITE_API_URL`
 - **`frontend/vercel.json`** — SPA rewrite
 - **`docs/AGENT_CONTEXT.md`** — rolling handoff for AI/contributors
@@ -56,8 +57,9 @@ alwaysApply: true
 
 - Match existing style: focused diffs, no unrelated refactors.
 - **Wrapped** (`/wrapped`) is client-only after export load: **ten 9:16 story cards** in a vertical scroller (scroll-snap, Prev/Next/dots/arrow keys, screenshot-friendly), light glass styling, per-slide accents (`wrappedThemes.js`), activity-style stack charts (`wrappedPalette.js`), body quips after charts, merged footer on data slides. Slide order: intro → span → activity → likes → comments → story interactions → DMs → profile searches → privacy → teaser. Orchestration: `wrappedData.js` (`loadWrappedBaseline`); reuses or fills `heatmapCache`, `socialGraphCache`, `messagesCache`.
+- **Leaderboard slides:** [`WrappedAvatarPodium.jsx`](frontend/src/components/WrappedAvatarPodium.jsx) — initials circles in `.wrapped-podium__face` (clipped); rank badge `.wrapped-podium__badge` sits **outside** the circle. Leaderboard cards use `:has(.wrapped-leaderboard)` in CSS for extra padding and `overflow: visible` so badges are not clipped by the deck or card edges. Stack bar labels use `truncateLabel` in [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx) for on-screen fit only.
 - When extending Instagram export parsing, reuse patterns from **`commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
-- No new heavy chart libraries unless explicitly approved.
+- No new heavy chart libraries unless explicitly approved. Avoid re-adding **`html-to-image`** or similar for Save unless there is a dedicated export layout that does not depend on photographing the scroller card.
 
 ## Optional scoped rules
 

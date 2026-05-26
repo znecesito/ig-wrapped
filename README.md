@@ -6,14 +6,18 @@
 
 | Route | What it does |
 | --- | --- |
-| `/wrapped` | **Wrapped** — load export → scroll or step through 10 story-style cards (9:16, shareable screenshots) |
+| `/wrapped` | **Wrapped** — load export → scroll or step through 10 story-style cards (9:16) |
 | `/guide` | **How to export** — phone vs desktop steps for getting your Instagram JSON export |
 
 Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
 
+## Share to Stories
+
+Wrapped does **not** include a Save or download button. For sharing, **screenshot the card** you want while viewing it in the app (same as posting any other story image from your camera roll). That keeps the image exactly what you see on screen.
+
 ## Load your export
 
-1. In Instagram: **Accounts Centre** → **Your information and permissions** → **Export your information** → **Export to device**, format **JSON**.
+1. In Instagram: **Accounts Center** → **Your information and permissions** → **Export your information** → **Export to device**, format **JSON**.
 2. For the best balance of detail and file size, set the date range to about **6 months to 1 year**.
 3. When the export is ready, open ig-wrapped and either:
    - **Choose ZIP** — pick the `.zip` from Instagram (recommended on phone), or

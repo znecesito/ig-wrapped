@@ -1,5 +1,22 @@
 import React, { useState } from "react";
 
+function GuideShot({ src, alt, caption, modifier }) {
+  return (
+    <figure className={`export-guide__shot${modifier ? ` ${modifier}` : ""}`}>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onError={(e) => {
+          const fig = e.currentTarget.closest("figure");
+          if (fig) fig.style.display = "none";
+        }}
+      />
+      {caption ? <figcaption>{caption}</figcaption> : null}
+    </figure>
+  );
+}
+
 export default function ExportGuide({ defaultOpen = "phone" }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -35,35 +52,206 @@ export default function ExportGuide({ defaultOpen = "phone" }) {
       {open === "phone" ? (
         <ol className="export-guide__steps">
           <li>
-            Instagram → <strong>Settings</strong> → <strong>Accounts Centre</strong> →{" "}
-            <strong>Your information and permissions</strong> → <strong>Export your information</strong>.
+            Open Instagram → <strong>Settings</strong> → <strong>Accounts Center</strong>.
+            <GuideShot
+              src="/export-guide/phone/01-accounts-center.png"
+              alt="Accounts Center entry inside Instagram Settings on phone"
+            />
           </li>
           <li>
-            Create export → <strong>Export to device</strong> → format <strong>JSON</strong>. For date
-            range, choose about <strong>6 months to 1 year</strong> — enough for Wrapped without a huge
-            file that is slow on your phone.
+            Set up the export.
+            <ol className="export-guide__substeps">
+              <li>
+                <strong>Your information and permissions</strong> →{" "}
+                <strong>Export your information</strong>.
+              </li>
+              <li>
+                Tap <strong>Create export</strong> → select your{" "}
+                <strong>Instagram account</strong>.
+              </li>
+              <li>
+                Pick <strong>Export to device</strong> (not "Transfer to a service").
+                <GuideShot
+                  src="/export-guide/phone/02c-export-to-device.png"
+                  alt="Export destination set to Export to device"
+                />
+              </li>
+              <li>
+                Format: <strong>JSON</strong> — not HTML.
+                <GuideShot
+                  src="/export-guide/phone/02d-format-json.png"
+                  alt="Export format set to JSON"
+                  caption="Make sure JSON is selected — HTML exports will not work with Wrapped."
+                />
+              </li>
+              <li>
+                Date range: <strong>6 months to 1 year</strong>.
+                <GuideShot
+                  src="/export-guide/phone/02e-date-range.png"
+                  alt="Date range set to about 6 months to 1 year"
+                />
+              </li>
+            </ol>
           </li>
-          <li>Wait for the notification (can take hours or days). Download when ready — link expires after a few days.</li>
           <li>
-            Save the <strong>.zip</strong> to the <strong>Files</strong> app. Here, tap <strong>Choose ZIP</strong>{" "}
-            (easiest). Or unzip in Files (long-press the zip → uncompress), then tap <strong>Choose folder</strong>.
+            Heads up: make sure to select an email you actively use so notifications from Meta reach
+            you.
+            <GuideShot
+              src="/export-guide/phone/03-notification-email.png"
+              alt="Notification email shown on the export confirmation screen"
+            />
+          </li>
+          <li>
+            Begin the download process.
+            <ol className="export-guide__substeps">
+              <li>
+                Wait for the notification to arrive (it may take hours or days). The email subject
+                will be <strong>"Your Meta information download is ready"</strong>.
+                <GuideShot
+                  src="/export-guide/phone/04a-email-notification.png"
+                  alt="Meta email notifying that the export is ready to download"
+                />
+              </li>
+              <li>
+                Once the notification arrives, log back in to <strong>Accounts Center</strong> by
+                following steps 1–2a.
+              </li>
+              <li>
+                Tap <strong>Download</strong>. The link expires after a few days, so don't wait too
+                long.
+                <GuideShot
+                  src="/export-guide/phone/04c-download-button.png"
+                  alt="Download button on the export confirmation page"
+                />
+              </li>
+            </ol>
+          </li>
+          <li>
+            Save the <strong>.zip</strong> to the <strong>Files</strong> app.
+            <GuideShot
+              src="/export-guide/phone/05-save-to-files.png"
+              alt="Saving the Instagram export ZIP to the iOS Files app"
+            />
+          </li>
+          <li>
+            Come back here → tap <strong>Choose ZIP</strong> and pick the export from Files.
+            <GuideShot
+              src="/export-guide/phone/06-choose-zip.png"
+              alt="Choosing the ZIP from the iOS Files picker"
+            />
+            <ol className="export-guide__substeps">
+              <li>
+                Or, if you'd rather load a folder: long-press the zip in Files → <em>Uncompress</em>,
+                then tap <strong>Choose folder</strong>.
+                <GuideShot
+                  src="/export-guide/phone/06a-uncompress.png"
+                  alt="Uncompressing the export zip in the iOS Files app"
+                />
+              </li>
+            </ol>
           </li>
         </ol>
       ) : (
         <ol className="export-guide__steps">
           <li>
-            Same path in Instagram: Accounts Centre → <strong>Export your information</strong> →{" "}
-            <strong>Export to device</strong>, format <strong>JSON</strong>. Set the date range to about{" "}
-            <strong>6 months to 1 year</strong> for the best balance of story detail and download size.
+            Instagram (web) → <strong>Settings</strong> → <strong>Accounts Center</strong> →{" "}
+            <strong>Your information and permissions</strong> →{" "}
+            <strong>Export your information</strong>.
+            <GuideShot
+              src="/export-guide/desktop/01-accounts-center.png"
+              alt="Accounts Center Export your information page in a desktop browser"
+            />
           </li>
-          <li>Download the <strong>.zip</strong> when Instagram emails you that it is ready.</li>
           <li>
-            On this site: <strong>Choose ZIP</strong> and select the file, or unzip on your computer and use{" "}
-            <strong>Choose folder</strong> (select the folder that contains{" "}
-            <code className="export-guide__code">your_instagram_activity</code>).
+            Set up the export.
+            <ol className="export-guide__substeps">
+              <li>
+                Click <strong>Create export</strong> → select your{" "}
+                <strong>Instagram account</strong>.
+              </li>
+              <li>
+                Pick <strong>Export to device</strong> (not "Transfer to a service").
+              </li>
+              <li>
+                Format: <strong>JSON</strong> — not HTML.
+                <GuideShot
+                  src="/export-guide/desktop/02c-format-json.png"
+                  alt="Export format set to JSON in the desktop flow"
+                  caption="JSON only — HTML exports cannot be parsed by Wrapped."
+                />
+              </li>
+              <li>
+                Date range: <strong>6 months to 1 year</strong>.
+                <GuideShot
+                  src="/export-guide/desktop/02d-date-range.png"
+                  alt="Date range set to about 6 months to 1 year in the desktop flow"
+                />
+              </li>
+            </ol>
+          </li>
+          <li>
+            Heads up: make sure to select an email you actively use so notifications from Meta reach
+            you.
+            <GuideShot
+              src="/export-guide/desktop/03-notification-email.png"
+              alt="Notification email shown on the export confirmation screen"
+            />
+          </li>
+          <li>
+            Begin the download process.
+            <ol className="export-guide__substeps">
+              <li>
+                Wait for the notification to arrive (it may take hours or days). The email subject
+                will be <strong>"Your Meta information download is ready"</strong>.
+                <GuideShot
+                  src="/export-guide/desktop/04a-email-notification.png"
+                  alt="Meta email notifying that the export is ready to download"
+                />
+              </li>
+              <li>
+                Once the notification arrives, log back in to <strong>Accounts Center</strong> by
+                following step 1.
+              </li>
+              <li>
+                Click <strong>Download</strong>. The link expires after a few days, so don't wait too
+                long.
+                <GuideShot
+                  src="/export-guide/desktop/04c-download-button.png"
+                  alt="Download button on the export confirmation page"
+                />
+              </li>
+            </ol>
+          </li>
+          <li>
+            On this site: click <strong>Choose ZIP</strong> and select the export.
+            <GuideShot
+              src="/export-guide/desktop/05-choose-zip.png"
+              alt="Choosing the ZIP from the desktop file picker"
+            />
+            <ol className="export-guide__substeps">
+              <li>
+                Or, if you'd rather load a folder: unzip the export, then click{" "}
+                <strong>Choose folder</strong> and pick the folder that contains{" "}
+                <code className="export-guide__code">your_instagram_activity</code>.
+                <GuideShot
+                  src="/export-guide/desktop/05a-unzipped-folder.png"
+                  alt="Unzipped Instagram export folder containing your_instagram_activity"
+                />
+              </li>
+            </ol>
           </li>
         </ol>
       )}
+
+      <div className="export-guide__success">
+        <p className="export-guide__success-title">What success looks like</p>
+        <GuideShot
+          src="/export-guide/data-loaded.png"
+          alt="ig-wrapped showing the data-loaded indicator with a JSON file count"
+          modifier="export-guide__shot--wide"
+          caption={"You're ready when the picker shows \u201CData loaded\u201D with a JSON file count."}
+        />
+      </div>
     </div>
   );
 }

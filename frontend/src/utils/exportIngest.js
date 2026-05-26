@@ -58,7 +58,7 @@ export async function normalizeExportInput(fileList, options = {}) {
     const { files, warning } = await unzipInstagramExport(zipFile, { onProgress });
     if (!looksLikeInstagramExport(files)) {
       throw new Error(
-        "This ZIP doesn't look like an Instagram export. Choose the JSON export from Instagram (Accounts Centre → Export your information)."
+        "This ZIP doesn't look like an Instagram export. Choose the JSON export from Instagram (Accounts Center → Export your information)."
       );
     }
     return { files, source: "zip", warning };
