@@ -96,6 +96,19 @@
   --max-width-frame: 420px;
 }
 
+@utility bg-deck-viewport {
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgb(251 113 133 / 0.22) 0%, transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, rgb(139 92 246 / 0.14) 0%, transparent 50%),
+    linear-gradient(
+      165deg,
+      var(--color-deck-gradient-start) 0%,
+      var(--color-deck-gradient-mid) 38%,
+      #fff1f2 72%,
+      var(--color-deck-gradient-end) 100%
+    );
+}
+
 /* Bridge tokens for legacy CSS (styles.css can migrate to var(--iw-*) gradually) */
 :root {
   --iw-brand: var(--color-brand);

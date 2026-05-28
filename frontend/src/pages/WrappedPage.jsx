@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ExportGuide from "../components/ExportGuide.jsx";
 import ExportPicker from "../components/ExportPicker.jsx";
 import { WrappedSlideShell } from "../components/WrappedSlideChrome.jsx";
+import WrappedStoryDeck from "../components/WrappedStoryDeck.jsx";
 import { useExportData } from "../context/ExportDataContext.jsx";
 import {
   formatActivityBreakdownForWrapped,
@@ -239,66 +240,30 @@ export default function WrappedPage() {
       ) : null}
 
       {!loading && baseline ? (
-        <div className="wrapped-story">
-          <div className="wrapped-story__controls">
-            <button
-              type="button"
-              className="wrapped-story__nav-btn"
-              onClick={() => goToCard(cardIndex - 1)}
-              disabled={cardIndex <= 0}
+        <WrappedStoryDeck
+          cardIndex={cardIndex}
+          cardCount={WRAPPED_CARD_COUNT}
+          onPrevious={() => goToCard(cardIndex - 1)}
+          onNext={() => goToCard(cardIndex + 1)}
+          onGoToIndex={goToCard}
+          scrollerRef={scrollerRef}
+          viewportLabel={`Slide ${cardIndex + 1} of ${WRAPPED_CARD_COUNT}`}
+        >
+          {Array.from({ length: WRAPPED_CARD_COUNT }).map((_, i) => (
+            <WrappedSlideShell
+              key={i}
+              cardIndex={i}
+              cardCount={WRAPPED_CARD_COUNT}
+              theme={getSlideTheme(i)}
+              extraClass={i === 9 ? "wrapped-card--teaser" : ""}
+              cardRef={(el) => {
+                cardRefs.current[i] = el;
+              }}
             >
-              Previous
-            </button>
-            <button
-              type="button"
-              className="wrapped-story__nav-btn"
-              onClick={() => goToCard(cardIndex + 1)}
-              disabled={cardIndex >= WRAPPED_CARD_COUNT - 1}
-            >
-              Next
-            </button>
-          </div>
-
-          <div className="wrapped-story__dots" role="tablist" aria-label="Wrapped slides">
-            {Array.from({ length: WRAPPED_CARD_COUNT }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                role="tab"
-                aria-selected={cardIndex === i}
-                className={`wrapped-story__dot ${cardIndex === i ? "is-active" : ""}`}
-                onClick={() => goToCard(i)}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
-
-          <div
-            className="wrapped-story__viewport"
-            aria-live="polite"
-            aria-label={`Slide ${cardIndex + 1} of ${WRAPPED_CARD_COUNT}`}
-          >
-            <div className="wrapped-story__scroller" ref={scrollerRef}>
-              {Array.from({ length: WRAPPED_CARD_COUNT }).map((_, i) => (
-                <WrappedSlideShell
-                  key={i}
-                  cardIndex={i}
-                  cardCount={WRAPPED_CARD_COUNT}
-                  theme={getSlideTheme(i)}
-                  extraClass={i === 9 ? "wrapped-card--teaser" : ""}
-                  cardRef={(el) => {
-                    cardRefs.current[i] = el;
-                  }}
-                >
-                  {renderWrappedSlide(i, slideCtx)}
-                </WrappedSlideShell>
-              ))}
-            </div>
-          </div>
-          <p className="wrapped-story__share-hint muted">
-            Screenshot any card to share to Stories.
-          </p>
-        </div>
+              {renderWrappedSlide(i, slideCtx)}
+            </WrappedSlideShell>
+          ))}
+        </WrappedStoryDeck>
       ) : null}
     </section>
   );

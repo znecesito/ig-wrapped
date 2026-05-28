@@ -42,7 +42,7 @@ alwaysApply: true
   - **`App.jsx`** — Wrapped + guide only
   - **`config/features.js`** — route resolution
   - **`context/ExportDataContext.jsx`** — `files`, `loadExport`, ingest loading/error state, parser caches for Wrapped
-  - **`components/`** — `ExportPicker.jsx`, `ExportGuide.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; `FolderPicker.jsx` (alias → ExportPicker)
+  - **`components/`** — `ExportPicker.jsx`, `ExportGuide.jsx`, `WrappedStoryDeck.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; `FolderPicker.jsx` (alias → ExportPicker)
   - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy `HeatmapPage`, `SocialGraphPage`, `MessagesPage`, `MostUsedWordsPage` (not routed)
   - **`utils/`** — `exportIngest.js`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`, `profileSearches.js`, plus shared parsers (`commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`)
   - **`tailwind.css`** — Tailwind entry + `@theme` tokens (colors, type, radius, shadows)
