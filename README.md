@@ -30,6 +30,22 @@ Parsing runs entirely in your browser.
 - `frontend/` — React + Vite app (shipped product)
 - `backend/` — optional Express API (`GET /health`, legacy `POST /upload` for non-followers; not used by the current UI)
 
+### Frontend styling (Tailwind migration)
+
+The UI is migrating incrementally to **Tailwind CSS v4**:
+
+| Path | Role |
+| --- | --- |
+| `frontend/src/tailwind.css` | Tailwind entry + `@theme` design tokens |
+| `frontend/src/lib/tokens.js` | Same tokens in JS (charts, inline styles) |
+| `frontend/src/lib/utils.js` | `cn()` — merge Tailwind class names |
+| `frontend/src/styles.css` | Legacy styles (still drives most visuals) |
+| `frontend/vite.config.js` | Vite + `@tailwindcss/vite` |
+
+New UI should use Tailwind utilities and tokens (`bg-brand`, `text-ink`, `rounded-card`, etc.). Existing screens may look unchanged until each area is migrated on purpose.
+
+**Local dev:** If `/wrapped` is a blank page after pulling, clear a stale Vite cache: `rm -rf frontend/node_modules/.vite`, then `npm run dev` again (can happen after removed dependencies such as `html-to-image`).
+
 ## Run locally
 
 ### Frontend (required)
@@ -69,9 +85,11 @@ See `frontend/.env.example`. For Vercel, set variables in the project dashboard 
 1. Import the repo in [Vercel](https://vercel.com).
 2. **Root Directory:** `frontend`
 3. **Build:** `npm run build` · **Output:** `dist`
-4. Deploy — pushes to your connected branch update production (and PRs get preview URLs).
+4. **Production** deploys from **`main`**. Other branches and pull requests get **Preview** URLs automatically (same project, root `frontend`).
 
 `frontend/vercel.json` rewrites routes to `index.html` so `/wrapped` and `/guide` work on refresh.
+
+**Try a feature branch before merge:** push your branch → open the branch or PR deployment in Vercel → test `/wrapped` and `/guide` on the preview URL → merge to `main` when ready.
 
 ### Backend on Render (optional)
 

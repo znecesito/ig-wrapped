@@ -34,7 +34,7 @@ function AppInner() {
     <main className="app-shell">
       <header className="top-nav">
         <div className="top-nav__inner">
-          <h1 className="top-nav__title">ig-wrapped</h1>
+          <h1 className="top-nav__title font-bold text-nav-link-text">ig-wrapped</h1>
           <nav className="top-nav__links" aria-label="Primary">
             <button
               type="button"

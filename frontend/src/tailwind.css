@@ -1,0 +1,110 @@
+/**
+ * Tailwind v4 entry + design tokens (phase 1).
+ * Legacy UI still uses styles.css; new work should prefer these utilities/tokens.
+ * @see frontend/src/lib/tokens.js (JS mirror for charts / inline styles)
+ */
+@import "tailwindcss";
+
+@theme {
+  /* --- Typography --- */
+  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+
+  --text-xs: 0.72rem;
+  --text-xs--line-height: 1.25;
+  --text-sm: 0.82rem;
+  --text-sm--line-height: 1.35;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.4;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.15;
+  --text-hero: 2.75rem;
+  --text-hero--line-height: 1.05;
+
+  /* --- Brand & surfaces (align with .wrapped-page / nav) --- */
+  --color-brand: #e11d48;
+  --color-brand-mid: #ec4899;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #f5f7fb;
+  --color-surface-elevated: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-nav: #0f172a;
+  --color-nav-link: #334155;
+  --color-nav-link-border: #475569;
+  --color-nav-muted: #94a3b8;
+  --color-nav-link-text: #e2e8f0;
+
+  --color-danger: #ef4444;
+  --color-danger-soft: #fca5a5;
+
+  /* Slide accent palette (matches wrappedThemes / SLIDE_ACCENTS) */
+  --color-slide-intro: #e11d48;
+  --color-slide-span: #6366f1;
+  --color-slide-activity: #ea580c;
+  --color-slide-likes: #db2777;
+  --color-slide-comments: #7c3aed;
+  --color-slide-stories: #d97706;
+  --color-slide-dms: #4f46e5;
+  --color-slide-search: #0d9488;
+  --color-slide-privacy: #475569;
+  --color-slide-teaser: #94a3b8;
+
+  /* Glass / story deck */
+  --color-glass: rgb(255 255 255 / 0.72);
+  --color-glass-border: rgb(255 255 255 / 0.92);
+  --color-deck-gradient-start: #e7ecf6;
+  --color-deck-gradient-mid: #fce7f3;
+  --color-deck-gradient-end: #f8fafc;
+
+  /* --- Spacing (app-specific; default Tailwind scale still available) --- */
+  --spacing-nav-y: 0.8rem;
+  --spacing-card-pad: 1rem;
+  --spacing-deck-gap: 0.85rem;
+
+  /* --- Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-card: 0.875rem;
+  --radius-deck: 1rem;
+  --radius-pill: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-nav: 0 4px 12px rgb(0 0 0 / 0.25);
+  --shadow-deck:
+    0 2px 4px rgb(15 23 42 / 0.04), 0 16px 40px -12px rgb(15 23 42 / 0.14);
+  --shadow-card:
+    0 4px 6px -1px rgb(15 23 42 / 0.06), 0 14px 26px -10px rgb(15 23 42 / 0.12),
+    0 0 0 1px rgb(255 255 255 / 0.55) inset;
+  --shadow-card-hover: 0 6px 16px rgb(225 29 72 / 0.2), 0 4px 12px rgb(15 23 42 / 0.18);
+  --shadow-dot-active:
+    0 0 0 3px rgb(225 29 72 / 0.22), 0 3px 10px rgb(236 72 153 / 0.42);
+
+  /* --- Layout --- */
+  --aspect-story: 9 / 16;
+  --max-width-frame: 420px;
+}
+
+/* Bridge tokens for legacy CSS (styles.css can migrate to var(--iw-*) gradually) */
+:root {
+  --iw-brand: var(--color-brand);
+  --iw-brand-mid: var(--color-brand-mid);
+  --iw-ink: var(--color-ink);
+  --iw-muted: var(--color-muted);
+  --iw-surface: var(--color-surface);
+  --iw-font-sans: var(--font-sans);
+  --iw-radius-card: var(--radius-card);
+  --iw-shadow-card: var(--shadow-card);
+  --iw-aspect-story: var(--aspect-story);
+}

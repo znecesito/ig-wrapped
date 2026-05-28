@@ -9,6 +9,15 @@ body {
   color: #1f2937;
 }
 
+/* Tailwind preflight sets headings to inherit font-weight; restore app defaults */
+.top-nav__title,
+.wrapped-page h1,
+.guide-page h1,
+.export-picker-card__title,
+.guide-page__picker-title {
+  font-weight: 700;
+}
+
 .app-shell {
   min-height: 100vh;
 }

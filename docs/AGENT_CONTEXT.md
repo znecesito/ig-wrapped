@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-25
+**Last updated:** 2026-05-28
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc).
 
@@ -26,7 +26,8 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 ## Hosting and CI/CD
 
-- **Frontend:** Vercel (root `frontend`, Vite → `dist`). Git push triggers deploy; PR preview builds.
+- **Frontend:** Vercel (root `frontend`, Vite → `dist`). **`main`** → production. Feature branches / PRs → preview URLs (no second Vercel project needed).
+- **Active feature branch (Tailwind):** `feat/tailwind-foundation` — foundation + partial slide shell migration; visuals intentionally unchanged until later phases.
 - **Backend:** Render optional (`backend`, `npm start`, `GET /health`). Not required for Wrapped.
 - **CI:** `.github/workflows/frontend-ci.yml` — `npm ci && npm run build` on PRs touching `frontend/**`.
 - **SPA:** `frontend/vercel.json` rewrites to `index.html`.
@@ -35,19 +36,22 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 ## Key files touched recently
 
+- **Tailwind phase 1–2:** `tailwind.css` + tokens; `WrappedSlideChrome.jsx` shell/layout use `cn()` + utilities (all 10 slides share one shell). Legacy `styles.css` still drives card glass, snap, animations, theme tints. Preflight fix: explicit `font-weight: 700` on app `h1`s. Slide *content* in `wrappedSlideContent.jsx` migrates one index at a time next.
 - `frontend/src/components/ExportGuide.jsx` — full phone + desktop rewrite: substep outline (2a/2b/…), explicit "select your Instagram account", standalone email-preference step with screenshot, "Begin the download process" parent step with notification + download-button screenshots, Choose ZIP / uncompress substep with screenshots, US "Center" spelling, inline `<GuideShot>` figures with `onError` graceful-hide.
 - `frontend/src/styles.css` — `.export-guide__shot img` width switched to `clamp(220px, 55%, 360px)` (`clamp(260px, 75%, 520px)` for `--wide`) so screenshots scale by percentage rather than fixed pixels.
 - `frontend/src/utils/exportIngest.js`, `README.md` — Centre → Center copy fix.
 - `frontend/public/export-guide/{phone,desktop}/` — drop folder for guide screenshots (`.gitkeep` placeholders; full slot list in `docs/export-guide-images.md`).
 - `frontend/src/pages/WrappedPage.jsx` — Save slide / export host removed; screenshot share hint.
 - `frontend/src/components/WrappedAvatarPodium.jsx` — face + badge DOM; rank badge outside circle.
-- `frontend/package.json` — **`fflate` only** (no `html-to-image`).
+- `frontend/package.json` — **`fflate`**, **Tailwind v4**, `clsx`, `tailwind-merge` (no `html-to-image`).
+- `frontend/vite.config.js`, `frontend/src/tailwind.css`, `frontend/src/lib/{utils,tokens}.js` — Tailwind phase 1.
 - Removed (not in tree): `WrappedSlideExport.jsx`, `wrappedCardCapture.js`, `saveWrappedCardImage.js`.
 
 ---
 
 ## Known gaps / next ideas (optional)
 
+- **Blank dev page:** If `/wrapped` is white and the terminal shows `ENOENT ... html-to-image`, run `rm -rf frontend/node_modules/.vite` and restart `npm run dev` (stale Vite optimizer cache after removing `html-to-image`).
 - **Save to PNG:** Only worth revisiting with a purpose-built export layout (or native share) — not by rasterizing the scroller card.
 - Stream or worker-based unzip if very large exports OOM on mobile Safari.
 - Re-enable or delete legacy page files and backend upload UI if product stays Wrapped-only long term.

@@ -8,8 +8,9 @@ alwaysApply: true
 ## Stack
 
 - **Backend:** Node.js (ESM), Express 4, Multer, CORS (optional; not used by shipped UI).
-- **Frontend:** React 18, Vite 5, **fflate** (client-side ZIP unzip).
+- **Frontend:** React 18, Vite 5, **Tailwind CSS v4** (`@tailwindcss/vite`), **fflate** (client-side ZIP unzip).
 - **Language:** JavaScript only (no TypeScript in this repo).
+- **Styling:** Legacy UI in `styles.css`; design tokens in `src/tailwind.css` (`@theme`) and `src/lib/tokens.js`. New UI should use Tailwind utilities + `cn()` from `src/lib/utils.js`.
 
 ## Run (local)
 
@@ -23,6 +24,7 @@ alwaysApply: true
 - **`VITE_API_URL`** — only needed if re-enabling the legacy Non-Followers upload flow; baked in at **build time** on Vercel.
 - **`frontend/vercel.json`** — SPA catch-all rewrite so `/wrapped`, `/guide`, and refresh on deep links work.
 - **`.github/workflows/frontend-ci.yml`** — runs `npm ci && npm run build` on PRs touching `frontend/**`.
+- **Branches:** `main` = production on Vercel; feature work (e.g. `feat/tailwind-foundation`) uses preview deploys before merge.
 
 ## Shipped product (UI)
 
@@ -43,7 +45,10 @@ alwaysApply: true
   - **`components/`** — `ExportPicker.jsx`, `ExportGuide.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; `FolderPicker.jsx` (alias → ExportPicker)
   - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy `HeatmapPage`, `SocialGraphPage`, `MessagesPage`, `MostUsedWordsPage` (not routed)
   - **`utils/`** — `exportIngest.js`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`, `profileSearches.js`, plus shared parsers (`commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`)
-  - **`styles.css`** — mobile nav, export guide/picker, Wrapped 9:16 story column, podium/leaderboard layout
+  - **`tailwind.css`** — Tailwind entry + `@theme` tokens (colors, type, radius, shadows)
+  - **`lib/utils.js`** — `cn()` (clsx + tailwind-merge); **`lib/tokens.js`** — JS token mirror for charts/inline styles
+  - **`styles.css`** — legacy mobile nav, export guide/picker, Wrapped 9:16 story column, podium/leaderboard layout
+  - **`vite.config.js`** — Vite + Tailwind plugin
 - **`frontend/.env.example`** — documents optional `VITE_API_URL`
 - **`frontend/vercel.json`** — SPA rewrite
 - **`docs/AGENT_CONTEXT.md`** — rolling handoff for AI/contributors

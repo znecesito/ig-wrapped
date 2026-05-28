@@ -115,6 +115,9 @@ export default function WrappedPage() {
       return undefined;
     }
 
+    // Cards default to opacity 0 until revealed; ensure at least one is visible on load.
+    cards[0]?.classList.add("wrapped-card--visible");
+
     const indexObserver = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -190,7 +193,7 @@ export default function WrappedPage() {
   if (!files) {
     return (
       <section className="container wrapped-page">
-        <h1>Wrapped</h1>
+        <h1 className="font-display font-bold tracking-tight text-ink">Wrapped</h1>
         <p className="wrapped-page__lede muted">
           Your Instagram year in story cards — private, in your browser. Load your export below.
         </p>
@@ -205,7 +208,7 @@ export default function WrappedPage() {
 
   return (
     <section className="container wrapped-page">
-      <h1>Wrapped</h1>
+      <h1 className="font-display font-bold tracking-tight text-ink">Wrapped</h1>
       <p className="wrapped-page__lede muted">
         Story cards use your loaded export. Scroll vertically through slides, or use Prev/Next. Date
         ranges reflect timestamps found in activity data.
@@ -281,7 +284,7 @@ export default function WrappedPage() {
                   key={i}
                   cardIndex={i}
                   cardCount={WRAPPED_CARD_COUNT}
-                  themeClass={`wrapped-theme--${getSlideTheme(i)}`}
+                  theme={getSlideTheme(i)}
                   extraClass={i === 9 ? "wrapped-card--teaser" : ""}
                   cardRef={(el) => {
                     cardRefs.current[i] = el;
