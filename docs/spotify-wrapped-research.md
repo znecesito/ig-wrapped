@@ -34,7 +34,7 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 
 ## Slide order (current, index 0–9)
 
-0 intro · 1 span · 2 activity · 3 likes · 4 comments · 5 stories · 6 DMs · 7 searches · 8 privacy · 9 feed personality
+0 intro · 1 span · 2 activity · 3 likes · 4 comments · 5 stories · 6 DMs · 7 searches · 8 feed personality · 9 privacy
 
 ---
 
@@ -44,12 +44,12 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 
 Hero / data / trust templates in `WrappedSlideChrome`, `getCardSurfaceStyle()` in `wrappedThemes.js`, per-slide player backdrop + grain in `tailwind.css`.
 
-### Phase G — Metrics & copy **← NEXT**
+### Phase G — Metrics & copy **Done**
 
-- Share lines on DMs + searches slides (like 3–5).
-- Title vs `bodyQuip` dedupe; optional slide 8/9 reorder.
+- `dmsShare` / `searchesShare`; deduped title vs body on leaderboards.
+- Slide **8** = feed personality, **9** = privacy (privacy is last / manual advance).
 
-### Phase H — Scene choreography
+### Phase H — Scene choreography **← NEXT**
 
 - GSAP (preferred) or Framer Motion timelines per slide; sync with `WRAPPED_SLIDE_DURATIONS_MS`.
 - Hold pauses timeline + segment progress.

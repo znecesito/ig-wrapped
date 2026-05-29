@@ -10,8 +10,8 @@ export const SLIDE_THEMES = [
   "stories",
   "dms",
   "search",
-  "privacy",
-  "teaser"
+  "teaser",
+  "privacy"
 ];
 
 const SLIDE_GLASS = {
@@ -56,7 +56,7 @@ export const SLIDE_THEME_VARS = Object.fromEntries(
 export const CARD_SURFACE_BG =
   "linear-gradient(165deg, var(--slide-glass) 0%, color-mix(in srgb, var(--slide-tint) 35%, white) 100%)";
 
-/** Phase F — hero (0,1,9), data (2–7), trust (8). */
+/** Phase F — hero (0,1,8), data (2–7), trust (9). */
 export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "hero",
@@ -66,8 +66,8 @@ export const SLIDE_TEMPLATE_BY_INDEX = [
   "data",
   "data",
   "data",
-  "trust",
-  "hero"
+  "hero",
+  "trust"
 ];
 
 export function getSlideTemplate(cardIndex) {

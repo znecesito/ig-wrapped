@@ -272,7 +272,7 @@ export default function WrappedStoryPlayer({
 
         <p className="pointer-events-none mt-3 text-center text-[0.72rem] text-muted">
           {isLastSlide
-            ? "Tap to go back · screenshot to share · swipe down to exit"
+            ? "Tap to go back · screenshot to share · swipe down when you're done"
             : paused
               ? "Release to resume"
               : "Tap sides to skip · hold to pause · swipe down to exit"}

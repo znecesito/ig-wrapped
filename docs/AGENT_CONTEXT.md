@@ -38,10 +38,10 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 | 3 | Likes | Share headlines from `wrappedInsights` |
 | 4 | Comments | Same |
 | 5 | Story interactions | Same |
-| 6 | DMs | Top threads (share lines **not** done yet — Phase G) |
-| 7 | Profile searches | Share lines **not** done yet — Phase G |
-| 8 | Privacy | Trust / local-only |
-| 9 | Feed personality | Club-style persona + streak/busiest day bullets |
+| 6 | DMs | Share headlines + leaderboard |
+| 7 | Profile searches | Share headlines + mega stat |
+| 8 | Feed personality | Club-style persona (hero) |
+| 9 | Privacy | Trust / local-only (last slide, tap to finish) |
 
 Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
 
@@ -72,23 +72,13 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | **Hybrid v1** | Done | `wrappedInsights.js`, Spotify-style copy on slides 0–2, 3–5, 9 |
 | **E** | Done | Lobby + `WrappedStoryPlayer`, `WrappedPlayerContext`, `parseWarningImpact.js`, `wrappedPlayer.js` |
 | **F** | Done | Hero/data/trust slide templates, per-slide player backdrop + grain, bold lobby CTA, pilot slides 0/2/9 + rollout 1–8 |
+| **G** | Done | `dmsShare` / `searchesShare`, deduped leaderboard copy, slides 8 = personality / 9 = privacy (privacy last) |
 
 ---
 
 ## Roadmap — immediate and remaining
 
-### **Phase G — Metrics & copy completion** ← **NEXT**
-
-
-### **Phase G — Metrics & copy completion**
-
-- DMs (6) + profile searches (7): same **share headline** pattern as likes (`topPersonShareLines` in `wrappedInsights.js`).
-- Dedupe slide title vs `bodyQuip` where redundant.
-- Optional: personality slide **after** privacy (slide order 8/9 swap) if product prefers trust before finale.
-
----
-
-### **Phase H — Scene choreography (Spotify-style presentation)**
+### **Phase H — Scene choreography (Spotify-style presentation)** ← **NEXT**
 
 **Not** small CSS fades only. Each slide = **timed scene** synced with `WRAPPED_SLIDE_DURATIONS_MS` in `wrappedPlayer.js`.
 
@@ -154,6 +144,6 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Implement **Phase G** unless user reprioritizes.
+3. Implement **Phase H** unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for player + screenshot legibility.

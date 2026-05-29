@@ -15,7 +15,6 @@ import {
   SLIDE_BULLET_LIST_ON_DARK,
   SLIDE_CODE,
   SLIDE_FOOTER_LINK,
-  SLIDE_HERO,
   SLIDE_HERO_COMPACT,
   SLIDE_HERO_COMPACT_ON_DARK,
   SLIDE_HERO_DISPLAY,
@@ -31,9 +30,6 @@ import {
   SLIDE_MEGA_STAT_SM,
   SLIDE_PERSONALITY_EMOJI,
   SLIDE_PERSONALITY_EMOJI_HERO,
-  SLIDE_PERSONALITY_TITLE,
-  SLIDE_PERSONALITY_TITLE_HERO,
-  SLIDE_SHARE_HEADLINE,
   SLIDE_STAT_LABEL,
   SLIDE_STAT_VALUE,
   SLIDE_STATS_INLINE
@@ -101,7 +97,7 @@ function likesFooterQuip(top) {
       <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
       </a>{" "}
-      earned <strong>{formatCount(top.count)}</strong> of your likes here. The algorithm simply watches.
+      had the edge in this export. The algorithm simply watches.
     </p>
   );
 }
@@ -114,8 +110,7 @@ function commentsFooterQuip(top) {
       <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
       </a>{" "}
-      collected <strong>{formatCount(top.count)}</strong> of your replies here. Caps lock optional;
-      sincerity wasn&apos;t.
+      got the most replies here. Caps lock optional; sincerity wasn&apos;t.
     </p>
   );
 }
@@ -127,18 +122,25 @@ function storiesFooterQuip(top) {
       Your story lane had a main character —{" "}
       <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
-      </a>{" "}
-      shows up <strong>{formatCount(top.count)}</strong> times across polls, taps, and views here. The
-      ring doesn&apos;t lie.
+      </a>
+      . The ring doesn&apos;t lie.
     </p>
   );
 }
 
-function dmsFooterQuip(top) {
+function dmsFooterQuip() {
+  return <p>You kept the thread hot. We won&apos;t tell who left everyone on read.</p>;
+}
+
+function searchesFooterQuip(top) {
+  const handle = `@${String(top.username).replace(/^@/, "")}`;
   return (
     <p>
-      You traded the most messages with <strong>{formatPrimaryDmThreadName(top.label)}</strong> —{" "}
-      <strong>{formatCount(top.messageCount)}</strong> messages. Say hi from us!
+      Curiosity has a favorite —{" "}
+      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
+        {handle}
+      </a>{" "}
+      topped your search history in this export.
     </p>
   );
 }
@@ -338,10 +340,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? likesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            <>
-              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
-              {renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })}
-            </>
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
           ) : (
             <p className={SLIDE_BODY}>No likes counted in this export.</p>
           )}
@@ -363,10 +362,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? commentsFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            <>
-              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
-              {renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })}
-            </>
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
           ) : (
             <p className={SLIDE_BODY}>No comments counted in this export.</p>
           )}
@@ -388,10 +384,7 @@ export function renderWrappedSlide(index, ctx) {
           bodyQuip={top ? storiesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            <>
-              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
-              {renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })}
-            </>
+            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
           ) : (
             <p className={SLIDE_BODY}>No story interactions in this export.</p>
           )}
@@ -402,18 +395,19 @@ export function renderWrappedSlide(index, ctx) {
     case 6: {
       const rows = baseline.topThreads;
       const top = rows[0];
+      const share = insights?.dmsShare;
       return (
         <WrappedSlideLayout
           template={template}
           eyebrow="Inbox"
-          title="Top DM threads"
-          deck={`Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
+          title={share?.headline ?? "Top DM threads"}
+          deck={share?.subline ?? `Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
           footerStat={
             top
               ? mergedFooterStat(top.label, top.messageCount, "messages", { thread: true })
               : null
           }
-          bodyQuip={top ? dmsFooterQuip(top) : null}
+          bodyQuip={top ? dmsFooterQuip() : null}
         >
           {rows.length > 0 ? (
             renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
@@ -425,13 +419,15 @@ export function renderWrappedSlide(index, ctx) {
     }
 
     case 7: {
-      const topSearch = baseline.profileSearches?.rows?.[0];
+      const rows = baseline.profileSearches?.rows ?? [];
+      const topSearch = rows[0];
+      const share = insights?.searchesShare;
       return (
         <WrappedSlideLayout
           template={template}
           eyebrow="Search history"
-          title="Profile searches"
-          deck="From profile_searches.json"
+          title={share?.headline ?? "Profile searches"}
+          deck={share?.subline ?? "From profile_searches.json"}
           footerStat={
             topSearch ? (
               <>
@@ -439,6 +435,7 @@ export function renderWrappedSlide(index, ctx) {
               </>
             ) : null
           }
+          bodyQuip={topSearch ? searchesFooterQuip(topSearch) : null}
         >
           {!baseline.profileSearches?.fileFound ? (
             <p className={SLIDE_BODY}>No profile_searches.json in this folder.</p>
@@ -447,12 +444,11 @@ export function renderWrappedSlide(index, ctx) {
             <p className={SLIDE_BODY}>No profile searches in this snapshot.</p>
           ) : (
             <>
-              <p className={SLIDE_HERO}>@{baseline.profileSearches.rows[0].username}</p>
-              <p className={SLIDE_MEGA_STAT_SM}>{formatCount(baseline.profileSearches.rows[0].count)}</p>
-              <p className={SLIDE_MEGA_LABEL}>searches</p>
-              {baseline.profileSearches.rows.length > 1 ? (
+              <p className={SLIDE_MEGA_STAT_SM}>{formatCount(rows[0].count)}</p>
+              <p className={SLIDE_MEGA_LABEL}>profile searches</p>
+              {rows.length > 1 ? (
                 <ul className={SEARCH_RANK_REST} aria-label="Other searches">
-                  {baseline.profileSearches.rows.slice(1, 4).map((r, i) => (
+                  {rows.slice(1, 4).map((r, i) => (
                     <li key={r.username} className={SEARCH_RANK_ROW}>
                       <span className={SEARCH_RANK_NUM}>{i + 2}</span>
                       <span className={SEARCH_RANK_NAME}>@{r.username}</span>
@@ -471,29 +467,13 @@ export function renderWrappedSlide(index, ctx) {
       return (
         <WrappedSlideLayout
           template={template}
-          eyebrow="Privacy"
-          title="Local only"
-          deck="Your export is not uploaded for Wrapped"
-          footerStat="Non-Followers is the only server upload"
-        >
-          <ul className={SLIDE_BULLET_LIST}>
-            <li>Runs entirely in your browser</li>
-            <li>Clear data from the nav on shared devices</li>
-          </ul>
-        </WrappedSlideLayout>
-      );
-
-    case 9:
-      return (
-        <WrappedSlideLayout
-          template={template}
           eyebrow="Your feed personality"
           title={insights?.personality?.title ?? "Still loading your vibe"}
           deck={insights?.personality?.tagline ?? "Load activity data to see your club"}
           bodyClassName="hero"
           footerStat={
             insights?.personality
-              ? `${insights.personality.emoji} ${insights.personality.title}`
+              ? `${insights.personality.emoji} ${insights.dominantPct >= 20 ? `${insights.dominantPct}% ${insights.personality.label}` : insights.personality.label}`
               : null
           }
         >
@@ -502,7 +482,6 @@ export function renderWrappedSlide(index, ctx) {
               <p className={SLIDE_PERSONALITY_EMOJI_HERO} aria-hidden>
                 {insights.personality.emoji}
               </p>
-              <p className={SLIDE_PERSONALITY_TITLE_HERO}>{insights.personality.title}</p>
               <ul className={SLIDE_BULLET_LIST_ON_DARK}>
                 {insights.dominantPct >= 20 ? (
                   <li>
@@ -533,6 +512,22 @@ export function renderWrappedSlide(index, ctx) {
               Instagram&apos;s export settings.
             </p>
           )}
+        </WrappedSlideLayout>
+      );
+
+    case 9:
+      return (
+        <WrappedSlideLayout
+          template={template}
+          eyebrow="Privacy"
+          title="Local only"
+          deck="Your export is not uploaded for Wrapped"
+          footerStat="Non-Followers is the only server upload"
+        >
+          <ul className={SLIDE_BULLET_LIST}>
+            <li>Runs entirely in your browser</li>
+            <li>Clear data from the nav on shared devices</li>
+          </ul>
         </WrappedSlideLayout>
       );
 

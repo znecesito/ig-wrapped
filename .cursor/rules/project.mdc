@@ -51,8 +51,8 @@ intro → span → activity → likes → comments → stories → DMs → searc
 | Phase | Focus |
 |-------|--------|
 | **F** | Done — IG-native templates (hero/data/trust), player backdrop, lobby CTA |
-| **G** ← next | DMs + searches share copy; slide polish |
-| **H** | GSAP scene choreography synced to slide durations |
+| **G** | Done — DMs/searches share copy, copy dedupe, slide 8 personality / 9 privacy |
+| **H** ← next | GSAP scene choreography synced to slide durations |
 | **I** | Personality-mapped ambient audio + mute |
 | **J** | Optional extra slides (words, insights JSON) |
 | **K** | Merge `feat/tailwind-foundation` → `main`, cleanup |

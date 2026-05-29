@@ -14,8 +14,8 @@ export const WRAPPED_SLIDE_DURATIONS_MS = [
   6500, // stories
   6500, // DMs
   6000, // searches
-  5000, // privacy
-  0 // personality — no auto-advance
+  7000, // feed personality
+  0 // privacy — last slide, no auto-advance
 ];
 
 export function getSlideDurationMs(slideIndex) {
