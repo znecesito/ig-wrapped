@@ -821,28 +821,8 @@ button:disabled {
   font-size: 0.8rem;
 }
 
-.wrapped-card__mega-stat {
-  margin: 0;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(2rem, 9vw, 2.65rem);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  color: var(--wrapped-ink);
-}
-
 .wrapped-card__mega-stat--sm {
   font-size: clamp(1.55rem, 7vw, 2rem);
-}
-
-.wrapped-card__mega-label {
-  margin: 0;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--wrapped-muted);
-  line-height: 1.2;
 }
 
 .wrapped-leaderboard {
@@ -1066,92 +1046,6 @@ button:disabled {
   gap: 0.3rem;
   align-items: baseline;
   font-size: 0.72rem;
-}
-
-.wrapped-activity-stack {
-  display: flex;
-  flex-direction: column;
-  height: min(10.5rem, 24vh);
-  min-height: 6.5rem;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) inset;
-}
-
-.wrapped-activity-stack__segment {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.35rem;
-  padding: 0.3rem 0.45rem;
-  min-height: 1.25rem;
-  color: #0f172a;
-}
-
-.wrapped-activity-stack__label {
-  font-size: 0.64rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.wrapped-activity-stack__link {
-  color: inherit;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  min-width: 0;
-}
-
-.wrapped-activity-stack__link:hover {
-  text-decoration: underline;
-  color: #0f172a;
-}
-
-.wrapped-activity-stack__label-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  min-width: 0;
-}
-
-.wrapped-activity-stack__val {
-  font-size: 0.76rem;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.wrapped-card__stats--inline {
-  grid-template-columns: 1fr 1fr;
-  display: grid;
-  list-style: none;
-  margin: 0;
-  padding: 0.4rem 0.5rem;
-  gap: 0.25rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-}
-
-.wrapped-story .wrapped-card__label {
-  font-size: 0.58rem;
-  color: var(--wrapped-muted);
-}
-
-.wrapped-story .wrapped-card__value {
-  font-size: 0.92rem;
-  font-weight: 700;
-  font-family: "Playfair Display", Georgia, serif;
-  color: var(--wrapped-ink);
 }
 
 @media (max-width: 480px) {

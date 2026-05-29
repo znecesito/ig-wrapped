@@ -2,12 +2,22 @@ import React from "react";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
 import {
+  ACTIVITY_STACK,
+  ACTIVITY_STACK_LABEL,
+  ACTIVITY_STACK_LINK,
+  ACTIVITY_STACK_SEGMENT,
+  ACTIVITY_STACK_VAL,
   SLIDE_BODY,
   SLIDE_BULLET_LIST,
   SLIDE_CODE,
   SLIDE_FOOTER_LINK,
   SLIDE_HERO,
-  SLIDE_HERO_COMPACT
+  SLIDE_HERO_COMPACT,
+  SLIDE_MEGA_LABEL,
+  SLIDE_MEGA_STAT,
+  SLIDE_STAT_LABEL,
+  SLIDE_STAT_VALUE,
+  SLIDE_STATS_INLINE
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
@@ -135,7 +145,7 @@ function stackLinkLabel(row, { threadLabels }) {
 /** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
 function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}) {
   return (
-    <div className="wrapped-activity-stack" aria-label="Breakdown">
+    <div className={ACTIVITY_STACK} aria-label="Breakdown">
       {families.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
         const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
@@ -143,7 +153,7 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}
         const labelNode =
           linkable && fam.href ? (
             <a
-              className="wrapped-activity-stack__link"
+              className={ACTIVITY_STACK_LINK}
               href={fam.href}
               target="_blank"
               rel="noreferrer"
@@ -152,20 +162,20 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}
               {text}
             </a>
           ) : (
-            <span className="wrapped-activity-stack__label-text">{text}</span>
+            <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{text}</span>
           );
 
         return (
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
-            className="wrapped-activity-stack__segment"
+            className={ACTIVITY_STACK_SEGMENT}
             style={{
               flexGrow,
               backgroundColor: fam.color
             }}
           >
-            <span className="wrapped-activity-stack__label">{labelNode}</span>
-            <span className="wrapped-activity-stack__val">{formatCount(total)}</span>
+            <span className={ACTIVITY_STACK_LABEL}>{labelNode}</span>
+            <span className={ACTIVITY_STACK_VAL}>{formatCount(total)}</span>
           </div>
         );
       })}
@@ -253,24 +263,22 @@ export function renderWrappedSlide(index, ctx) {
         >
           {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
             <>
-              <p className="wrapped-card__mega-stat">
-                {formatCount(baseline.heatmapData.totalActivities)}
-              </p>
-              <p className="wrapped-card__mega-label">activities</p>
+              <p className={SLIDE_MEGA_STAT}>{formatCount(baseline.heatmapData.totalActivities)}</p>
+              <p className={SLIDE_MEGA_LABEL}>activities</p>
               {renderActivityStack(activityBreakdown.families, activityBreakdown.maxFamilyTotal)}
-              <ul className="wrapped-card__stats wrapped-card__stats--inline">
+              <ul className={SLIDE_STATS_INLINE}>
                 <li>
-                  <span className="wrapped-card__label">Busiest weekday</span>
-                  <span className="wrapped-card__value">{baseline.heatmapData.activeWeekdayLabel}</span>
+                  <span className={SLIDE_STAT_LABEL}>Busiest weekday</span>
+                  <span className={SLIDE_STAT_VALUE}>{baseline.heatmapData.activeWeekdayLabel}</span>
                 </li>
                 <li>
-                  <span className="wrapped-card__label">Busiest hour</span>
-                  <span className="wrapped-card__value">{baseline.heatmapData.activeHourLabel}</span>
+                  <span className={SLIDE_STAT_LABEL}>Busiest hour</span>
+                  <span className={SLIDE_STAT_VALUE}>{baseline.heatmapData.activeHourLabel}</span>
                 </li>
               </ul>
             </>
           ) : (
-            <p className="wrapped-card__body muted">No activity data in this export.</p>
+            <p className={SLIDE_BODY}>No activity data in this export.</p>
           )}
         </WrappedSlideLayout>
       );
