@@ -22,7 +22,9 @@ export default function ExportGuide({ defaultOpen = "phone" }) {
 
   return (
     <div className="export-guide card">
-      <h2 className="export-guide__title">How to get your Instagram export</h2>
+      <h2 className="export-guide__title m-0 mb-1 text-[1.15rem] font-bold text-ink">
+        How to get your Instagram export
+      </h2>
       <p className="export-guide__lede muted">
         Wrapped runs in your browser. Pick the ZIP from Instagram, or the unzipped folder. Your export
         is not uploaded for Wrapped.

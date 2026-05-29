@@ -9,6 +9,7 @@ import {
   loadWrappedBaseline
 } from "../utils/wrappedData.js";
 import { getSlideTheme } from "../utils/wrappedThemes.js";
+import { PAGE_TITLE } from "../components/wrappedSlideClasses.js";
 import { renderWrappedSlide } from "./wrappedSlideContent.jsx";
 
 const WRAPPED_CARD_COUNT = 10;
@@ -194,7 +195,7 @@ export default function WrappedPage() {
   if (!files) {
     return (
       <section className="container wrapped-page">
-        <h1 className="font-display font-bold tracking-tight text-ink">Wrapped</h1>
+        <h1 className={PAGE_TITLE}>Wrapped</h1>
         <p className="wrapped-page__lede muted">
           Your Instagram year in story cards — private, in your browser. Load your export below.
         </p>
@@ -209,7 +210,7 @@ export default function WrappedPage() {
 
   return (
     <section className="container wrapped-page">
-      <h1 className="font-display font-bold tracking-tight text-ink">Wrapped</h1>
+      <h1 className={PAGE_TITLE}>Wrapped</h1>
       <p className="wrapped-page__lede muted">
         Story cards use your loaded export. Scroll vertically through slides, or use Prev/Next. Date
         ranges reflect timestamps found in activity data.
