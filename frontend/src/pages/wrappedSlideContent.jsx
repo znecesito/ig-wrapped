@@ -7,6 +7,7 @@ import {
   ACTIVITY_STACK_LINK,
   ACTIVITY_STACK_SEGMENT,
   ACTIVITY_STACK_VAL,
+  LEADERBOARD,
   SLIDE_BODY,
   SLIDE_BULLET_LIST,
   SLIDE_CODE,
@@ -209,7 +210,7 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   });
 
   return (
-    <div className="wrapped-leaderboard">
+    <div className={LEADERBOARD}>
       <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
       {renderActivityStack(stackFamilies, maxCount, { linkable: true })}
     </div>
@@ -303,7 +304,7 @@ export function renderWrappedSlide(index, ctx) {
           {rows.length > 0 ? (
             renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
           ) : (
-            <p className="wrapped-card__body muted">No likes counted in this export.</p>
+            <p className={SLIDE_BODY}>No likes counted in this export.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -323,7 +324,7 @@ export function renderWrappedSlide(index, ctx) {
           {rows.length > 0 ? (
             renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
           ) : (
-            <p className="wrapped-card__body muted">No comments counted in this export.</p>
+            <p className={SLIDE_BODY}>No comments counted in this export.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -343,7 +344,7 @@ export function renderWrappedSlide(index, ctx) {
           {rows.length > 0 ? (
             renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
           ) : (
-            <p className="wrapped-card__body muted">No story interactions in this export.</p>
+            <p className={SLIDE_BODY}>No story interactions in this export.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -367,7 +368,7 @@ export function renderWrappedSlide(index, ctx) {
           {rows.length > 0 ? (
             renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
           ) : (
-            <p className="wrapped-card__body muted">No threads in this export.</p>
+            <p className={SLIDE_BODY}>No threads in this export.</p>
           )}
         </WrappedSlideLayout>
       );

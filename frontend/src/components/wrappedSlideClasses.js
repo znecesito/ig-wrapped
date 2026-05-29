@@ -67,3 +67,43 @@ export const SEARCH_RANK_NAME =
 
 export const SEARCH_RANK_COUNT =
   "font-bold tabular-nums text-[0.72rem] text-muted";
+
+/** Leaderboard block (slides 3–6) — keep .wrapped-leaderboard for :has() in slide chrome */
+export const LEADERBOARD =
+  "wrapped-leaderboard flex w-full flex-col gap-[0.45rem] px-2 pt-2.5";
+
+export const PODIUM =
+  "m-0 flex list-none items-end justify-center gap-[clamp(0.35rem,2.5vw,0.65rem)] overflow-visible p-0";
+
+export const PODIUM_ITEM =
+  "flex max-w-[4.5rem] min-w-0 flex-1 flex-col items-center gap-[0.22rem] overflow-visible";
+
+export const PODIUM_ITEM_LEAD = "max-w-[5.25rem]";
+
+export const PODIUM_AVATAR_LINK = "block overflow-visible leading-none no-underline";
+
+export const PODIUM_AVATAR =
+  "relative block size-[clamp(2.35rem,11vw,2.85rem)] overflow-visible";
+
+export const PODIUM_AVATAR_LEAD = "size-[clamp(2.85rem,13vw,3.45rem)]";
+
+export const PODIUM_FACE =
+  "relative flex size-full items-center justify-center overflow-hidden rounded-full border-2 border-white/[0.92] shadow-[0_2px_8px_rgba(15,23,42,0.12)]";
+
+export const PODIUM_FACE_LEAD =
+  "border-[2.5px] border-[var(--slide-accent)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--slide-accent)_28%,transparent)]";
+
+export const PODIUM_IMG = "absolute inset-0 size-full object-cover";
+
+export const PODIUM_INITIALS =
+  "z-0 text-[clamp(0.85rem,3.8vw,1rem)] font-extrabold tracking-wide text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.2)]";
+
+export const PODIUM_INITIALS_LEAD = "text-[clamp(1rem,4.5vw,1.15rem)]";
+
+export const PODIUM_BADGE =
+  "absolute -left-[0.2rem] -top-[0.2rem] z-[2] flex h-[1.05rem] min-w-[1.05rem] items-center justify-center rounded-pill border-[1.5px] border-white bg-[var(--slide-accent)] px-[0.2rem] text-[0.58rem] font-extrabold leading-none text-white shadow-[0_1px_3px_rgba(15,23,42,0.15)]";
+
+export const PODIUM_COUNT =
+  "max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-[0.62rem] font-bold tabular-nums leading-snug text-muted";
+
+export const PODIUM_COUNT_LEAD = "text-[0.68rem] text-ink";
