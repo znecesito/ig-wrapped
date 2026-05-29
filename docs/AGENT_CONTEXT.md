@@ -36,7 +36,8 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 ## Key files touched recently
 
-- **Tailwind phase C (complete):** all slide content + podium + leaderboard wrapper via `wrappedSlideClasses.js`. Phase D: CSS cleanup, token sync, optional page/guide tailwind.
+- **Tailwind phase D (complete):** `SLIDE_ACCENTS` canonical in `lib/tokens.js`; `wrappedThemes.js` / `wrappedPalette.js` derive from it; wrapped-page layout vars + card reveal in `tailwind.css`; page/guide lede + warnings → `wrappedSlideClasses.js`; removed dead Wrapped CSS from `styles.css`.
+- **Tailwind phase C (complete):** all slide content + podium + leaderboard wrapper via `wrappedSlideClasses.js`.
 - **Tailwind phase B (card shell):** `WrappedSlideChrome.jsx` + `wrappedThemes.js` (`SLIDE_THEME_VARS`) — glass 9:16 card, tint overlay, themes, reveal animations in `tailwind.css`; leaderboard overflow via `has-[.wrapped-leaderboard]`.
 - **Tailwind phase A (deck):** [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) — prev/next, dots, viewport, scroller.
 - `frontend/src/components/ExportGuide.jsx` — full phone + desktop rewrite: substep outline (2a/2b/…), explicit "select your Instagram account", standalone email-preference step with screenshot, "Begin the download process" parent step with notification + download-button screenshots, Choose ZIP / uncompress substep with screenshots, US "Center" spelling, inline `<GuideShot>` figures with `onError` graceful-hide.

@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "../lib/utils.js";
+import { SLIDE_DECK } from "./wrappedSlideClasses.js";
 import { CARD_SURFACE_BG, getSlideThemeStyle } from "../utils/wrappedThemes.js";
 
 const CARD_SHELL = [
@@ -81,14 +82,14 @@ export function WrappedSlideLayout({
   footerStat,
   bodyQuip
 }) {
-  const isHero = bodyClassName === "hero" || bodyClassName === "wrapped-card__body-zone--hero";
+  const isHero = bodyClassName === "hero";
 
   return (
     <div
       className={cn(
         "flex min-h-0 flex-1 flex-col justify-center gap-[0.32rem]",
         "has-[.wrapped-leaderboard]:gap-[0.45rem]",
-        "has-[.wrapped-leaderboard]:[&_.wrapped-card__deck]:mb-0.5"
+        "has-[.wrapped-leaderboard]:[&_.slide-deck]:mb-0.5"
       )}
     >
       <header className="shrink-0">
@@ -108,12 +109,11 @@ export function WrappedSlideLayout({
           {title}
         </h2>
         {deck ? (
-          <p className={cn("wrapped-card__deck muted", "mt-0.5 text-[0.74rem] leading-snug")}>{deck}</p>
+          <p className={cn(SLIDE_DECK, "mt-0.5 text-[0.74rem] leading-snug text-muted")}>{deck}</p>
         ) : null}
       </header>
       <div
         className={cn(
-          "wrapped-card__body-zone",
           "flex min-h-0 flex-[0_1_auto] flex-col items-stretch justify-center gap-[0.28rem] overflow-y-auto",
           "has-[.wrapped-leaderboard]:overflow-visible",
           isHero && "items-center text-center",

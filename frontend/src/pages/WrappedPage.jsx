@@ -9,7 +9,14 @@ import {
   loadWrappedBaseline
 } from "../utils/wrappedData.js";
 import { getSlideTheme } from "../utils/wrappedThemes.js";
-import { PAGE_TITLE } from "../components/wrappedSlideClasses.js";
+import {
+  PAGE_TITLE,
+  WRAPPED_PAGE_DISMISS,
+  WRAPPED_PAGE_LEDE,
+  WRAPPED_PAGE_STATUS,
+  WRAPPED_PAGE_WARNINGS_HEADER,
+  WRAPPED_PAGE_WARNINGS_TITLE
+} from "../components/wrappedSlideClasses.js";
 import { renderWrappedSlide } from "./wrappedSlideContent.jsx";
 
 const WRAPPED_CARD_COUNT = 10;
@@ -196,7 +203,7 @@ export default function WrappedPage() {
     return (
       <section className="container wrapped-page">
         <h1 className={PAGE_TITLE}>Wrapped</h1>
-        <p className="wrapped-page__lede muted">
+        <p className={WRAPPED_PAGE_LEDE}>
           Your Instagram year in story cards — private, in your browser. Load your export below.
         </p>
         <ExportGuide />
@@ -211,7 +218,7 @@ export default function WrappedPage() {
   return (
     <section className="container wrapped-page">
       <h1 className={PAGE_TITLE}>Wrapped</h1>
-      <p className="wrapped-page__lede muted">
+      <p className={WRAPPED_PAGE_LEDE}>
         Story cards use your loaded export. Scroll vertically through slides, or use Prev/Next. Date
         ranges reflect timestamps found in activity data.
       </p>
@@ -219,16 +226,16 @@ export default function WrappedPage() {
       {loadError ? <div className="error">{loadError}</div> : null}
 
       {loading ? (
-        <p className="muted wrapped-page__status" role="status">
+        <p className={WRAPPED_PAGE_STATUS} role="status">
           Reading your export…
         </p>
       ) : null}
 
       {!loading && baseline?.warnings?.length > 0 && warningsOpen ? (
         <div className="card warning-card wrapped-page__warnings" role="status">
-          <div className="wrapped-page__warnings-header">
-            <h2 className="wrapped-page__warnings-title">Parse warnings</h2>
-            <button type="button" className="wrapped-page__dismiss" onClick={() => setWarningsOpen(false)}>
+          <div className={WRAPPED_PAGE_WARNINGS_HEADER}>
+            <h2 className={WRAPPED_PAGE_WARNINGS_TITLE}>Parse warnings</h2>
+            <button type="button" className={WRAPPED_PAGE_DISMISS} onClick={() => setWarningsOpen(false)}>
               Dismiss
             </button>
           </div>

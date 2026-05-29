@@ -11,7 +11,6 @@ body {
 
 /* Tailwind preflight sets headings to inherit font-weight; restore app defaults */
 .top-nav__title,
-.wrapped-page h1,
 .guide-page h1,
 .export-picker-card__title,
 .guide-page__picker-title {
@@ -749,90 +748,7 @@ button:disabled {
   color: #fca5a5;
 }
 
-/* --- Wrapped (/wrapped) — vertical story column, light IG glass --- */
-
-.wrapped-page {
-  --wrapped-accent: #e11d48;
-  --wrapped-accent-mid: #ec4899;
-  --wrapped-ink: #0f172a;
-  --wrapped-muted: #64748b;
-  --wrapped-aspect: 9 / 16;
-  --wrapped-chrome: 200px;
-  --wrapped-safe-top: 6%;
-  --wrapped-safe-bottom: 7%;
-  --wrapped-frame-width: min(
-    calc(100vw - 1.5rem),
-    calc((100dvh - var(--wrapped-chrome)) * 9 / 16),
-    420px
-  );
-  font-family: "Outfit", system-ui, sans-serif;
-}
-
-.wrapped-page h1 {
-  margin-bottom: 0.35rem;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(1.8rem, 4vw, 2.2rem);
-  letter-spacing: -0.015em;
-  color: var(--wrapped-ink);
-}
-
-.wrapped-page .muted {
-  color: var(--wrapped-muted);
-}
-
-.wrapped-page__lede {
-  max-width: 42rem;
-  line-height: 1.55;
-}
-
-.wrapped-page__status {
-  margin-top: 0.75rem;
-}
-
-.wrapped-page__warnings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.35rem;
-}
-
-.wrapped-page__warnings-title {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.wrapped-page__dismiss {
-  background: #64748b;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-}
-
-/* Card shell + layout chrome → WrappedSlideChrome.jsx + tailwind.css */
-
-.wrapped-card__deck {
-  margin: 0.08rem 0 0;
-}
-
-@media (max-width: 480px) {
-  .wrapped-page {
-    --wrapped-chrome: 220px;
-    --wrapped-frame-width: min(calc(100vw - 1.25rem), calc((100dvh - var(--wrapped-chrome)) * 9 / 16));
-  }
-}
-
 /* --- Export guide & picker --- */
-
-.guide-page__lede {
-  max-width: 40rem;
-  line-height: 1.55;
-  margin-bottom: 1rem;
-}
-
-.guide-page__picker {
-  margin-top: 1rem;
-}
 
 .guide-page__picker-title {
   margin: 0 0 0.75rem;

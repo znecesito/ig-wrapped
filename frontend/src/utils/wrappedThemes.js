@@ -1,3 +1,5 @@
+import { SLIDE_ACCENTS } from "../lib/tokens.js";
+
 /** Per-slide accent tint (light glass cards). */
 export const SLIDE_THEMES = [
   "intro",
@@ -17,59 +19,39 @@ const SLIDE_GLASS = {
   "--slide-glass-border": "rgba(255, 255, 255, 0.92)"
 };
 
-/** CSS variables for card shell (accent, tint, glass). */
-export const SLIDE_THEME_VARS = {
-  intro: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#e11d48",
-    "--slide-tint": "rgba(225, 29, 72, 0.11)"
-  },
-  span: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#6366f1",
-    "--slide-tint": "rgba(99, 102, 241, 0.1)"
-  },
-  activity: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#ea580c",
-    "--slide-tint": "rgba(234, 88, 12, 0.1)"
-  },
-  likes: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#db2777",
-    "--slide-tint": "rgba(219, 39, 119, 0.1)"
-  },
-  comments: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#7c3aed",
-    "--slide-tint": "rgba(124, 58, 237, 0.1)"
-  },
-  stories: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#d97706",
-    "--slide-tint": "rgba(217, 119, 6, 0.1)"
-  },
-  dms: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#4f46e5",
-    "--slide-tint": "rgba(79, 70, 229, 0.1)"
-  },
-  search: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#0d9488",
-    "--slide-tint": "rgba(13, 148, 136, 0.1)"
-  },
-  privacy: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#475569",
-    "--slide-tint": "rgba(71, 85, 105, 0.09)"
-  },
-  teaser: {
-    ...SLIDE_GLASS,
-    "--slide-accent": "#94a3b8",
-    "--slide-tint": "rgba(148, 163, 184, 0.12)"
-  }
+/** Per-theme tint alpha (visual parity with pre-token migration). */
+const SLIDE_TINT_ALPHA = {
+  intro: 0.11,
+  privacy: 0.09,
+  teaser: 0.12
 };
+
+const DEFAULT_SLIDE_TINT_ALPHA = 0.1;
+
+function slideTintFromHex(hex, alpha) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function buildSlideThemeVars(theme, accent) {
+  const alpha = SLIDE_TINT_ALPHA[theme] ?? DEFAULT_SLIDE_TINT_ALPHA;
+  return {
+    ...SLIDE_GLASS,
+    "--slide-accent": accent,
+    "--slide-tint": slideTintFromHex(accent, alpha)
+  };
+}
+
+/** CSS variables for card shell (accent, tint, glass). */
+export const SLIDE_THEME_VARS = Object.fromEntries(
+  Object.entries(SLIDE_ACCENTS).map(([theme, accent]) => [
+    theme,
+    buildSlideThemeVars(theme, accent)
+  ])
+);
 
 export const CARD_SURFACE_BG =
   "linear-gradient(165deg, var(--slide-glass) 0%, color-mix(in srgb, var(--slide-tint) 35%, white) 100%)";

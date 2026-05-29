@@ -1,6 +1,19 @@
 /**
- * JS design tokens — keep in sync with @theme in tailwind.css and SLIDE_ACCENTS in wrappedPalette.js.
+ * JS design tokens — canonical slide accents; keep @theme in tailwind.css in sync manually.
  */
+
+export const SLIDE_ACCENTS = {
+  intro: "#e11d48",
+  span: "#6366f1",
+  activity: "#ea580c",
+  likes: "#db2777",
+  comments: "#7c3aed",
+  stories: "#d97706",
+  dms: "#4f46e5",
+  search: "#0d9488",
+  privacy: "#475569",
+  teaser: "#94a3b8"
+};
 
 export const colors = {
   brand: "#e11d48",
@@ -9,19 +22,7 @@ export const colors = {
   muted: "#64748b",
   surface: "#f5f7fb",
   border: "#e2e8f0",
-  nav: "#0f172a",
-  slide: {
-    intro: "#e11d48",
-    span: "#6366f1",
-    activity: "#ea580c",
-    likes: "#db2777",
-    comments: "#7c3aed",
-    stories: "#d97706",
-    dms: "#4f46e5",
-    search: "#0d9488",
-    privacy: "#475569",
-    teaser: "#94a3b8"
-  }
+  slide: SLIDE_ACCENTS
 };
 
 export const fonts = {

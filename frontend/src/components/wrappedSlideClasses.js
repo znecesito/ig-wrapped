@@ -1,8 +1,27 @@
 /** Shared Tailwind classes for Wrapped slide content (phase C). */
 
-/** Page title (Wrapped / guide) — matches .wrapped-page h1 */
+/** Page title (Wrapped / guide) */
 export const PAGE_TITLE =
   "mb-1 font-display text-[clamp(1.8rem,4vw,2.2rem)] font-bold tracking-tight text-ink";
+
+export const WRAPPED_PAGE_LEDE = "max-w-[42rem] leading-[1.55] text-muted";
+
+export const WRAPPED_PAGE_STATUS = "mt-3 text-muted";
+
+export const WRAPPED_PAGE_WARNINGS_HEADER =
+  "mb-1.5 flex items-center justify-between gap-3";
+
+export const WRAPPED_PAGE_WARNINGS_TITLE = "m-0 text-base";
+
+export const WRAPPED_PAGE_DISMISS =
+  "rounded-pill bg-muted px-[0.65rem] py-[0.35rem] text-[0.8rem] text-white";
+
+export const GUIDE_PAGE_LEDE = "mb-4 max-w-[40rem] leading-[1.55] text-muted";
+
+export const GUIDE_PAGE_PICKER = "mt-4";
+
+/** Slide chrome hooks — keep class names for :has() selectors in WrappedSlideChrome */
+export const SLIDE_DECK = "slide-deck";
 
 export const SLIDE_BODY = "m-0 text-[0.8rem] leading-[1.3] text-muted";
 

@@ -1,7 +1,7 @@
 /**
  * Tailwind v4 entry + design tokens (phase 1).
  * Legacy UI still uses styles.css; new work should prefer these utilities/tokens.
- * @see frontend/src/lib/tokens.js (JS mirror for charts / inline styles)
+ * @see frontend/src/lib/tokens.js — slide accent hex (sync --color-slide-* here)
  */
 @import "tailwindcss";
 
@@ -29,7 +29,7 @@
   --text-hero: 2.75rem;
   --text-hero--line-height: 1.05;
 
-  /* --- Brand & surfaces (align with .wrapped-page / nav) --- */
+  /* --- Brand & surfaces (align with nav) --- */
   --color-brand: #e11d48;
   --color-brand-mid: #ec4899;
   --color-ink: #0f172a;
@@ -48,7 +48,7 @@
   --color-danger: #ef4444;
   --color-danger-soft: #fca5a5;
 
-  /* Slide accent palette (matches wrappedThemes / SLIDE_ACCENTS) */
+  /* Slide accent palette (sync with SLIDE_ACCENTS in lib/tokens.js) */
   --color-slide-intro: #e11d48;
   --color-slide-span: #6366f1;
   --color-slide-activity: #ea580c;
@@ -140,6 +140,28 @@
 }
 
 @layer components {
+  /* Story deck frame width + card safe zones (used by WrappedStoryDeck / WrappedSlideChrome) */
+  .wrapped-page {
+    --wrapped-chrome: 200px;
+    --wrapped-safe-top: 6%;
+    --wrapped-safe-bottom: 7%;
+    --wrapped-frame-width: min(
+      calc(100vw - 1.5rem),
+      calc((100dvh - var(--wrapped-chrome)) * 9 / 16),
+      420px
+    );
+  }
+
+  @media (max-width: 480px) {
+    .wrapped-page {
+      --wrapped-chrome: 220px;
+      --wrapped-frame-width: min(
+        calc(100vw - 1.25rem),
+        calc((100dvh - var(--wrapped-chrome)) * 9 / 16)
+      );
+    }
+  }
+
   .wrapped-story .wrapped-card.wrapped-card--visible {
     animation: wrapped-reveal-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
