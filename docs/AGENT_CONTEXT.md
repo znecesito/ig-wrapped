@@ -36,6 +36,7 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 ## Key files touched recently
 
+- **Wrapped insights (Spotify-style metrics):** `wrappedInsights.js` + `docs/spotify-wrapped-research.md` — dominant-family %, export-scoped top-person share lines, streak/busiest day, Feed Personality slide (replaces teaser). Browser research: Spotify 2025 newsroom.
 - **Tailwind phase D (complete):** `SLIDE_ACCENTS` canonical in `lib/tokens.js`; `wrappedThemes.js` / `wrappedPalette.js` derive from it; wrapped-page layout vars + card reveal in `tailwind.css`; page/guide lede + warnings → `wrappedSlideClasses.js`; removed dead Wrapped CSS from `styles.css`.
 - **Tailwind phase C (complete):** all slide content + podium + leaderboard wrapper via `wrappedSlideClasses.js`.
 - **Tailwind phase B (card shell):** `WrappedSlideChrome.jsx` + `wrappedThemes.js` (`SLIDE_THEME_VARS`) — glass 9:16 card, tint overlay, themes, reveal animations in `tailwind.css`; leaderboard overflow via `has-[.wrapped-leaderboard]`.

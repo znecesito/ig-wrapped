@@ -8,6 +8,7 @@ import {
   formatActivityBreakdownForWrapped,
   loadWrappedBaseline
 } from "../utils/wrappedData.js";
+import { buildWrappedInsights } from "../utils/wrappedInsights.js";
 import { getSlideTheme } from "../utils/wrappedThemes.js";
 import {
   PAGE_TITLE,
@@ -186,6 +187,8 @@ export default function WrappedPage() {
     [baseline?.heatmapData]
   );
 
+  const insights = useMemo(() => buildWrappedInsights(baseline), [baseline]);
+
   const handle = detectedUsername
     ? `@${String(detectedUsername).replace(/^@/, "")}`
     : "your Instagram export";
@@ -194,9 +197,10 @@ export default function WrappedPage() {
     () => ({
       baseline,
       handle,
-      activityBreakdown
+      activityBreakdown,
+      insights
     }),
-    [baseline, handle, activityBreakdown]
+    [baseline, handle, activityBreakdown, insights]
   );
 
   if (!files) {

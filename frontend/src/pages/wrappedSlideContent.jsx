@@ -19,9 +19,13 @@ import {
   SEARCH_RANK_NUM,
   SEARCH_RANK_REST,
   SEARCH_RANK_ROW,
+  SLIDE_INSIGHT_PUNCH,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT,
   SLIDE_MEGA_STAT_SM,
+  SLIDE_PERSONALITY_EMOJI,
+  SLIDE_PERSONALITY_TITLE,
+  SLIDE_SHARE_HEADLINE,
   SLIDE_STAT_LABEL,
   SLIDE_STAT_VALUE,
   SLIDE_STATS_INLINE
@@ -218,19 +222,24 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
 }
 
 export function renderWrappedSlide(index, ctx) {
-  const { baseline, handle, activityBreakdown } = ctx;
+  const { baseline, handle, activityBreakdown, insights } = ctx;
+  const yearLabel = insights?.exportYear ? String(insights.exportYear) : "Your export";
 
   switch (index) {
     case 0:
       return (
         <WrappedSlideLayout
-          eyebrow="ig-wrapped"
-          title="Your year in the feed"
+          eyebrow={insights?.exportYear ? `${insights.exportYear} · ig-wrapped` : "ig-wrapped"}
+          title="Your feed, wrapped"
           deck="Screenshot any card for Stories · all local"
           bodyClassName="hero"
         >
           <p className={SLIDE_HERO}>{handle}</p>
-          <p className={SLIDE_BODY}>Activity · people · DMs · searches</p>
+          <p className={SLIDE_BODY}>
+            {insights?.totalActivities > 0
+              ? `${formatCount(insights.totalActivities)} activities · people · DMs · searches`
+              : "Activity · people · DMs · searches"}
+          </p>
         </WrappedSlideLayout>
       );
 
@@ -238,8 +247,8 @@ export function renderWrappedSlide(index, ctx) {
       return (
         <WrappedSlideLayout
           eyebrow="In this export"
-          title="Your activity span"
-          deck="Timestamps in this folder — not full IG history"
+          title={yearLabel === "Your export" ? "Your activity span" : `Your ${yearLabel} in the feed`}
+          deck="Timestamps in this folder — not your full IG history"
           bodyClassName="hero"
         >
           {baseline.heatmapData ? (
@@ -256,9 +265,13 @@ export function renderWrappedSlide(index, ctx) {
     case 2:
       return (
         <WrappedSlideLayout
-          eyebrow="Rhythm"
-          title="Activity"
-          deck="Four main categories in this export"
+          eyebrow="The big number"
+          title={
+            insights?.dominantPct >= 35 && insights?.personality
+              ? `${insights.dominantPct}% ${insights.personality.label}`
+              : "Your activity"
+          }
+          deck="What you actually did in this export"
           footerStat={
             baseline.heatmapData?.totalActivities > 0 ? (
               <>
@@ -271,7 +284,10 @@ export function renderWrappedSlide(index, ctx) {
           {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
             <>
               <p className={SLIDE_MEGA_STAT}>{formatCount(baseline.heatmapData.totalActivities)}</p>
-              <p className={SLIDE_MEGA_LABEL}>activities</p>
+              <p className={SLIDE_MEGA_LABEL}>activities in this export</p>
+              {insights?.activityPunchline ? (
+                <p className={SLIDE_INSIGHT_PUNCH}>{insights.activityPunchline}</p>
+              ) : null}
               {renderActivityStack(activityBreakdown.families, activityBreakdown.maxFamilyTotal)}
               <ul className={SLIDE_STATS_INLINE}>
                 <li>
@@ -293,16 +309,20 @@ export function renderWrappedSlide(index, ctx) {
     case 3: {
       const rows = baseline.mostLikedCreators;
       const top = rows[0];
+      const share = insights?.likesShare;
       return (
         <WrappedSlideLayout
-          eyebrow="Hearts"
-          title="Most liked creators"
-          deck="Liked posts & comments · by creator"
+          eyebrow="Top of your likes"
+          title={share?.headline ?? "Most liked creators"}
+          deck={share?.subline ?? "Liked posts & comments · by creator"}
           footerStat={top ? mergedFooterStat(top.username, top.count, "likes") : null}
           bodyQuip={top ? likesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
+            <>
+              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
+              {renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })}
+            </>
           ) : (
             <p className={SLIDE_BODY}>No likes counted in this export.</p>
           )}
@@ -313,16 +333,20 @@ export function renderWrappedSlide(index, ctx) {
     case 4: {
       const rows = baseline.mostCommentedCreators;
       const top = rows[0];
+      const share = insights?.commentsShare;
       return (
         <WrappedSlideLayout
-          eyebrow="Comments"
-          title="Most commented creators"
-          deck="Posts, reels & stories"
+          eyebrow="Top of your comments"
+          title={share?.headline ?? "Most commented creators"}
+          deck={share?.subline ?? "Posts, reels & stories"}
           footerStat={top ? mergedFooterStat(top.username, top.count, "comments") : null}
           bodyQuip={top ? commentsFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
+            <>
+              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
+              {renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })}
+            </>
           ) : (
             <p className={SLIDE_BODY}>No comments counted in this export.</p>
           )}
@@ -333,16 +357,20 @@ export function renderWrappedSlide(index, ctx) {
     case 5: {
       const rows = baseline.mostStoryCreators;
       const top = rows[0];
+      const share = insights?.storiesShare;
       return (
         <WrappedSlideLayout
-          eyebrow="Stories"
-          title="Top story interactions"
-          deck="Polls · views · reactions"
+          eyebrow="Top of your stories"
+          title={share?.headline ?? "Top story interactions"}
+          deck={share?.subline ?? "Polls · views · reactions"}
           footerStat={top ? mergedFooterStat(top.username, top.count, "interactions") : null}
           bodyQuip={top ? storiesFooterQuip(top) : null}
         >
           {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
+            <>
+              {share?.headline ? <p className={SLIDE_SHARE_HEADLINE}>{share.headline}</p> : null}
+              {renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })}
+            </>
           ) : (
             <p className={SLIDE_BODY}>No story interactions in this export.</p>
           )}
@@ -434,13 +462,52 @@ export function renderWrappedSlide(index, ctx) {
     case 9:
       return (
         <WrappedSlideLayout
-          eyebrow="Coming later"
-          title="Creator insights"
-          deck="When insights JSON is in your export"
+          eyebrow="Your feed personality"
+          title={insights?.personality?.title ?? "Still loading your vibe"}
+          deck={insights?.personality?.tagline ?? "Load activity data to see your club"}
+          bodyClassName="hero"
+          footerStat={
+            insights?.personality
+              ? `${insights.personality.emoji} ${insights.personality.title}`
+              : null
+          }
         >
-          <p className={SLIDE_BODY}>
-            <code className={SLIDE_CODE}>past_instagram_insights</code> could power a future slide here.
-          </p>
+          {insights?.personality ? (
+            <>
+              <p className={SLIDE_PERSONALITY_EMOJI} aria-hidden>
+                {insights.personality.emoji}
+              </p>
+              <p className={SLIDE_PERSONALITY_TITLE}>{insights.personality.title}</p>
+              <ul className={SLIDE_BULLET_LIST}>
+                {insights.dominantPct >= 20 ? (
+                  <li>
+                    <strong>{insights.dominantPct}%</strong> of activity was {insights.personality.label}
+                  </li>
+                ) : null}
+                {insights.timePersona && insights.activeHour ? (
+                  <li>
+                    Peak hour <strong>{insights.activeHour}</strong> — {insights.timePersona}
+                  </li>
+                ) : null}
+                {insights.streakDays >= 2 ? (
+                  <li>
+                    Longest active streak: <strong>{insights.streakDays} days</strong> in this export
+                  </li>
+                ) : null}
+                {insights.busiestDayLabel && insights.busiestDayCount > 0 ? (
+                  <li>
+                    Busiest day: <strong>{insights.busiestDayLabel}</strong> (
+                    {formatCount(insights.busiestDayCount)} activities)
+                  </li>
+                ) : null}
+              </ul>
+            </>
+          ) : (
+            <p className={SLIDE_BODY}>
+              Not enough activity in this export for a personality card. Try a longer date range in
+              Instagram&apos;s export settings.
+            </p>
+          )}
         </WrappedSlideLayout>
       );
 

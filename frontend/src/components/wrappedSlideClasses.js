@@ -49,6 +49,18 @@ export const SLIDE_MEGA_STAT_SM =
 export const SLIDE_MEGA_LABEL =
   "m-0 text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.07em] text-muted";
 
+/** Spotify-style one-liner under a mega stat */
+export const SLIDE_INSIGHT_PUNCH =
+  "m-0 rounded-[10px] border border-[color-mix(in_srgb,var(--slide-accent)_22%,transparent)] bg-[color-mix(in_srgb,var(--slide-accent)_10%,white)] px-2.5 py-2 text-center text-[0.78rem] font-bold leading-snug text-ink";
+
+export const SLIDE_PERSONALITY_TITLE =
+  "m-0 font-display text-[clamp(1.35rem,6vw,1.75rem)] font-extrabold leading-tight tracking-tight text-ink";
+
+export const SLIDE_PERSONALITY_EMOJI = "m-0 text-[2.25rem] leading-none";
+
+export const SLIDE_SHARE_HEADLINE =
+  "m-0 text-center text-[0.82rem] font-extrabold leading-snug text-[var(--slide-accent)]";
+
 export const SLIDE_STATS_INLINE =
   "m-0 grid list-none grid-cols-2 gap-1 rounded-[10px] border border-white/80 bg-white/45 px-2 py-1.5";
 
