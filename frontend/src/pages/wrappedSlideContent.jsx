@@ -13,8 +13,14 @@ import {
   SLIDE_FOOTER_LINK,
   SLIDE_HERO,
   SLIDE_HERO_COMPACT,
+  SEARCH_RANK_COUNT,
+  SEARCH_RANK_NAME,
+  SEARCH_RANK_NUM,
+  SEARCH_RANK_REST,
+  SEARCH_RANK_ROW,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT,
+  SLIDE_MEGA_STAT_SM,
   SLIDE_STAT_LABEL,
   SLIDE_STAT_VALUE,
   SLIDE_STATS_INLINE
@@ -383,24 +389,22 @@ export function renderWrappedSlide(index, ctx) {
           }
         >
           {!baseline.profileSearches?.fileFound ? (
-            <p className="wrapped-card__body muted">No profile_searches.json in this folder.</p>
+            <p className={SLIDE_BODY}>No profile_searches.json in this folder.</p>
           ) : baseline.profileSearches.totalSearchEvents === 0 ||
             baseline.profileSearches.rows.length === 0 ? (
-            <p className="wrapped-card__body muted">No profile searches in this snapshot.</p>
+            <p className={SLIDE_BODY}>No profile searches in this snapshot.</p>
           ) : (
             <>
-              <p className="wrapped-card__hero">@{baseline.profileSearches.rows[0].username}</p>
-              <p className="wrapped-card__mega-stat wrapped-card__mega-stat--sm">
-                {formatCount(baseline.profileSearches.rows[0].count)}
-              </p>
-              <p className="wrapped-card__mega-label">searches</p>
+              <p className={SLIDE_HERO}>@{baseline.profileSearches.rows[0].username}</p>
+              <p className={SLIDE_MEGA_STAT_SM}>{formatCount(baseline.profileSearches.rows[0].count)}</p>
+              <p className={SLIDE_MEGA_LABEL}>searches</p>
               {baseline.profileSearches.rows.length > 1 ? (
-                <ul className="wrapped-rank__rest wrapped-rank__rest--plain" aria-label="Other searches">
+                <ul className={SEARCH_RANK_REST} aria-label="Other searches">
                   {baseline.profileSearches.rows.slice(1, 4).map((r, i) => (
-                    <li key={r.username} className="wrapped-rank__row">
-                      <span className="wrapped-rank__num">{i + 2}</span>
-                      <span className="wrapped-rank__name">@{r.username}</span>
-                      <span className="wrapped-rank__count">{r.count}</span>
+                    <li key={r.username} className={SEARCH_RANK_ROW}>
+                      <span className={SEARCH_RANK_NUM}>{i + 2}</span>
+                      <span className={SEARCH_RANK_NAME}>@{r.username}</span>
+                      <span className={SEARCH_RANK_COUNT}>{r.count}</span>
                     </li>
                   ))}
                 </ul>

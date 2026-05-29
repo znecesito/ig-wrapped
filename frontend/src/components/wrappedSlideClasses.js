@@ -52,3 +52,18 @@ export const ACTIVITY_STACK_LINK =
 
 export const ACTIVITY_STACK_VAL =
   "shrink-0 text-[0.76rem] font-black tabular-nums";
+
+/** Profile searches slide — ranks 2–4 list */
+export const SEARCH_RANK_REST =
+  "m-0 mt-0.5 flex list-none flex-col gap-[0.15rem] p-0";
+
+export const SEARCH_RANK_ROW =
+  "grid grid-cols-[1rem_1fr_auto] items-baseline gap-[0.3rem] text-[0.72rem]";
+
+export const SEARCH_RANK_NUM = "min-w-4 text-[0.7rem] font-extrabold text-muted";
+
+export const SEARCH_RANK_NAME =
+  "overflow-hidden text-ellipsis whitespace-nowrap font-bold text-[#be185d]";
+
+export const SEARCH_RANK_COUNT =
+  "font-bold tabular-nums text-[0.72rem] text-muted";

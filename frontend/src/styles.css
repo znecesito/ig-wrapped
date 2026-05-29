@@ -821,10 +821,6 @@ button:disabled {
   font-size: 0.8rem;
 }
 
-.wrapped-card__mega-stat--sm {
-  font-size: clamp(1.55rem, 7vw, 2rem);
-}
-
 .wrapped-leaderboard {
   display: flex;
   flex-direction: column;
@@ -953,99 +949,6 @@ button:disabled {
 .wrapped-podium__item--lead .wrapped-podium__count {
   font-size: 0.68rem;
   color: var(--wrapped-ink);
-}
-
-.wrapped-rank {
-  display: flex;
-  flex-direction: column;
-  gap: 0.28rem;
-}
-
-.wrapped-rank__top {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-}
-
-.wrapped-rank__num {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--wrapped-muted);
-  min-width: 1rem;
-}
-
-.wrapped-rank__num--lead {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.35rem;
-  line-height: 1;
-  color: var(--slide-accent);
-  opacity: 0.85;
-}
-
-.wrapped-rank__top-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.02rem;
-}
-
-.wrapped-rank__name {
-  font-weight: 700;
-  font-size: 0.76rem;
-  color: #be185d;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wrapped-rank__name--lead {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(1.05rem, 4.5vw, 1.32rem);
-  font-weight: 700;
-  color: var(--wrapped-ink);
-  white-space: normal;
-  line-height: 1.1;
-}
-
-.wrapped-rank__name:hover {
-  color: var(--slide-accent);
-  text-decoration: underline;
-}
-
-.wrapped-rank__count {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.72rem;
-  color: var(--wrapped-muted);
-}
-
-.wrapped-rank__count--lead {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(0.95rem, 3.2vw, 1.08rem);
-  color: var(--wrapped-ink);
-}
-
-.wrapped-rank__rest {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.wrapped-rank__rest--plain {
-  margin-top: 0.1rem;
-}
-
-.wrapped-rank__row {
-  display: grid;
-  grid-template-columns: 1rem 1fr auto;
-  gap: 0.3rem;
-  align-items: baseline;
-  font-size: 0.72rem;
 }
 
 @media (max-width: 480px) {
