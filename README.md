@@ -1,19 +1,29 @@
 # ig-wrapped
 
-**Instagram Wrapped** in your browser: load your official export (ZIP or folder), get ten portrait story cards—activity, top people, DMs, searches, and more. Your export stays on your device; nothing is uploaded for Wrapped.
+**Instagram Wrapped** in your browser: load your official export (ZIP or folder), tap **Start Wrapped**, and play through ten portrait story cards—activity, top people, DMs, searches, and your feed personality. Your export stays on your device; nothing is uploaded for Wrapped.
 
 ## What you can do today
 
 | Route | What it does |
 | --- | --- |
-| `/wrapped` | **Wrapped** — load export → scroll or step through 10 story-style cards (9:16) |
-| `/guide` | **How to export** — phone vs desktop steps for getting your Instagram JSON export |
+| `/wrapped` | **Wrapped** — load export → lobby → full-screen story player (10 cards) |
+| `/guide` | **How to export** — phone vs desktop steps for your Instagram JSON export |
 
 Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
 
-## Share to Stories
+## How Wrapped works
 
-Wrapped does **not** include a Save or download button. For sharing, **screenshot the card** you want while viewing it in the app (same as posting any other story image from your camera roll). That keeps the image exactly what you see on screen.
+1. **Load export** — Choose ZIP or folder (see [Load your export](#load-your-export)).
+2. **Lobby** — Short intro; if parsing hit snags, read what each warning affects and acknowledge before continuing.
+3. **Start Wrapped** — Full-screen story player (like Stories / Spotify Wrapped):
+   - Progress bar across the top
+   - **Tap** right side for next, left for previous
+   - **Hold** to pause; release to resume
+   - Slides auto-advance unless you hold (last slide waits for you)
+   - **Exit:** × button, swipe down, or Escape → back to lobby
+4. **Share** — **Screenshot** the card you want for Instagram Stories (no in-app download button).
+
+On desktop, the background fills the browser; the card stays a centered phone-sized 9:16 frame so screenshots still look right.
 
 ## Load your export
 
@@ -28,23 +38,38 @@ Parsing runs entirely in your browser.
 ## Project structure
 
 - `frontend/` — React + Vite app (shipped product)
-- `backend/` — optional Express API (`GET /health`, legacy `POST /upload` for non-followers; not used by the current UI)
+- `backend/` — optional Express API (`GET /health`, legacy `POST /upload`; not used by Wrapped UI)
+- `docs/AGENT_CONTEXT.md` — handoff for contributors / AI (phases, files, what’s next)
+- `docs/spotify-wrapped-research.md` — Wrapped-style metrics and roadmap
 
-### Frontend styling (Tailwind migration)
-
-The UI is migrating incrementally to **Tailwind CSS v4**:
+### Frontend styling
 
 | Path | Role |
 | --- | --- |
-| `frontend/src/tailwind.css` | Tailwind entry + `@theme` design tokens |
-| `frontend/src/lib/tokens.js` | Same tokens in JS (charts, inline styles) |
-| `frontend/src/lib/utils.js` | `cn()` — merge Tailwind class names |
-| `frontend/src/styles.css` | Legacy styles (still drives most visuals) |
-| `frontend/vite.config.js` | Vite + `@tailwindcss/vite` |
+| `frontend/src/tailwind.css` | Tailwind entry + `@theme` tokens + story player layout |
+| `frontend/src/lib/tokens.js` | Slide accents and brand colors (JS) |
+| `frontend/src/lib/utils.js` | `cn()` — merge Tailwind classes |
+| `frontend/src/components/wrappedSlideClasses.js` | Shared Tailwind strings for slides |
+| `frontend/src/styles.css` | Legacy nav, export guide, picker |
 
-New UI should use Tailwind utilities and tokens (`bg-brand`, `text-ink`, `rounded-card`, etc.). Existing screens may look unchanged until each area is migrated on purpose.
+**Local dev:** If `/wrapped` is blank after pulling, clear Vite cache: `rm -rf frontend/node_modules/.vite`, then `npm run dev` again.
 
-**Local dev:** If `/wrapped` is a blank page after pulling, clear a stale Vite cache: `rm -rf frontend/node_modules/.vite`, then `npm run dev` again (can happen after removed dependencies such as `html-to-image`).
+## Development roadmap
+
+Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge to `main`).
+
+| Phase | Status | Summary |
+| --- | --- | --- |
+| Tailwind + slides A–D | Done | Design system, card shell, all slide content |
+| Hybrid insights | Done | Personality slide, share-style copy on key slides |
+| **E Story player** | Done | Lobby, Start Wrapped, full-screen tap/hold/auto-advance |
+| **F Visual (IG-native)** | **Next** | Bold full-bleed cards, hero/data templates in player |
+| G Metrics polish | Planned | DMs + searches share lines |
+| H Motion | Planned | GSAP-style scene beats per slide |
+| I Music | Planned | Optional ambient loops by personality |
+| K Ship | Planned | Merge to `main` after iPhone QA |
+
+See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for file paths, locked UX decisions, and session handoff.
 
 ## Run locally
 
@@ -60,7 +85,7 @@ Open `http://localhost:5173` — you’ll land on Wrapped.
 
 ### Backend (optional)
 
-Only needed if you work on the legacy upload API:
+Only needed for the legacy upload API:
 
 ```bash
 cd backend
@@ -74,9 +99,9 @@ Runs on `http://localhost:4000`.
 
 | Variable | Description |
 | --- | --- |
-| `VITE_API_URL` | Optional. Full URL for legacy `POST /upload` (e.g. `https://your-api.onrender.com/upload`). Unused by the Wrapped-only UI. |
+| `VITE_API_URL` | Optional. Full URL for legacy `POST /upload`. Unused by Wrapped-only UI. |
 
-See `frontend/.env.example`. For Vercel, set variables in the project dashboard (Production + Preview) if you use the backend again.
+See `frontend/.env.example`.
 
 ## Deploy (Vercel + optional Render)
 
@@ -85,33 +110,29 @@ See `frontend/.env.example`. For Vercel, set variables in the project dashboard 
 1. Import the repo in [Vercel](https://vercel.com).
 2. **Root Directory:** `frontend`
 3. **Build:** `npm run build` · **Output:** `dist`
-4. **Production** deploys from **`main`**. Other branches and pull requests get **Preview** URLs automatically (same project, root `frontend`).
+4. **Production** from **`main`**. Other branches and PRs get **Preview** URLs.
 
 `frontend/vercel.json` rewrites routes to `index.html` so `/wrapped` and `/guide` work on refresh.
 
-**Try a feature branch before merge:** push your branch → open the branch or PR deployment in Vercel → test `/wrapped` and `/guide` on the preview URL → merge to `main` when ready.
+**Test before merge:** push your branch → open the Vercel preview → test lobby → Start Wrapped → full playthrough on a phone.
 
 ### Backend on Render (optional)
 
-1. Create a **Web Service** from the same repo.
-2. **Root Directory:** `backend`
-3. **Build:** `npm install` · **Start:** `npm start`
-4. Confirm `GET https://<host>/health` returns `{ "ok": true }`.
-
-Redeploy the frontend with `VITE_API_URL` only if you re-enable server-side uploads.
+Root **`backend`**, start **`npm start`**, health at `GET /health`.
 
 ## CI
 
-GitHub Actions (`.github/workflows/frontend-ci.yml`) runs `npm ci && npm run build` on pull requests that touch `frontend/**`.
+`.github/workflows/frontend-ci.yml` runs `npm ci && npm run build` on PRs touching `frontend/**`.
 
 ## API (legacy backend)
 
 - `GET /health` → `{ "ok": true }`
-- `POST /upload` — `followersFile` + `followingFile` (JSON) → `{ "non_followers": ["user1", ...] }`
+- `POST /upload` — `followersFile` + `followingFile` → `{ "non_followers": [...] }`
 
 ## For contributors / AI assistants
 
-- **Rolling context:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md)
+- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, phases, locked decisions, next = **Phase F**)
+- **Metrics / Spotify mapping:** [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md)
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
 
-Legacy analysis pages (`HeatmapPage`, `SocialGraphPage`, etc.) and parsers under `frontend/src/utils/` remain for Wrapped’s data pipeline but are not linked in the nav.
+Legacy analysis pages (`HeatmapPage`, `SocialGraphPage`, etc.) remain for parsers but are not routed in the app.

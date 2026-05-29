@@ -10,7 +10,7 @@ alwaysApply: true
 - **Backend:** Node.js (ESM), Express 4, Multer, CORS (optional; not used by shipped UI).
 - **Frontend:** React 18, Vite 5, **Tailwind CSS v4** (`@tailwindcss/vite`), **fflate** (client-side ZIP unzip).
 - **Language:** JavaScript only (no TypeScript in this repo).
-- **Styling:** Legacy UI in `styles.css`; design tokens in `src/tailwind.css` (`@theme`) and `src/lib/tokens.js`. New UI should use Tailwind utilities + `cn()` from `src/lib/utils.js`.
+- **Styling:** Tailwind-first for Wrapped (`tailwind.css`, `wrappedSlideClasses.js`); legacy nav/guide in `styles.css`. Tokens: `src/tailwind.css` (`@theme`), `src/lib/tokens.js`. Use `cn()` from `src/lib/utils.js`.
 
 ## Run (local)
 
@@ -19,53 +19,67 @@ alwaysApply: true
 
 ## Hosting
 
-- **Frontend:** Vercel — static Vite build. Root directory **`frontend`**, framework preset Vite, output `dist`.
-- **Backend:** Render Web Service (optional) — Root directory **`backend`**, start command `npm start`, listens on `process.env.PORT || 4000`.
-- **`VITE_API_URL`** — only needed if re-enabling the legacy Non-Followers upload flow; baked in at **build time** on Vercel.
-- **`frontend/vercel.json`** — SPA catch-all rewrite so `/wrapped`, `/guide`, and refresh on deep links work.
-- **`.github/workflows/frontend-ci.yml`** — runs `npm ci && npm run build` on PRs touching `frontend/**`.
-- **Branches:** `main` = production on Vercel; feature work (e.g. `feat/tailwind-foundation`) uses preview deploys before merge.
+- **Frontend:** Vercel — root **`frontend`**, output `dist`.
+- **Backend:** Render optional — root **`backend`**, `npm start`.
+- **`VITE_API_URL`** — legacy Non-Followers only; baked at build time on Vercel.
+- **Branches:** `main` = production; feature work (e.g. **`feat/tailwind-foundation`**) uses **preview URLs** before merge.
+- **SPA:** `frontend/vercel.json` rewrites to `index.html`.
 
 ## Shipped product (UI)
 
-- **Only two routes** in [`App.jsx`](frontend/src/App.jsx): **`/wrapped`** (default) and **`/guide`** (export instructions). [`resolveRoute`](frontend/src/config/features.js) maps `/` and all legacy paths (`/heatmap`, `/messages`, etc.) to **`/wrapped`**.
-- **Nav:** Wrapped | How to export | Data loaded / Clear.
-- **Export ingest:** [`ExportPicker.jsx`](frontend/src/components/ExportPicker.jsx) — **Choose ZIP** or **Choose folder** → [`normalizeExportInput`](frontend/src/utils/exportIngest.js) in [`ExportDataContext.jsx`](frontend/src/context/ExportDataContext.jsx). ZIP path extracts **JSON only** via fflate; folder path uses `webkitdirectory`. Validates paths containing `your_instagram_activity/` or `personal_information/`.
-- **Export guide:** [`ExportGuide.jsx`](frontend/src/components/ExportGuide.jsx) — Phone vs desktop steps; recommends Instagram export date range **about 6 months to 1 year** (JSON, export to device).
-- **Sharing:** Users **screenshot** story cards for Instagram Stories. There is **no** in-app Save/download button (DOM-to-PNG export was tried and removed; it could not match on-screen layout reliably).
-- **Privacy:** Wrapped does **not** upload the export; parsing runs in the browser.
+- **Routes:** [`App.jsx`](frontend/src/App.jsx) — **`/wrapped`**, **`/guide`** only; [`resolveRoute`](frontend/src/config/features.js) maps legacy paths to `/wrapped`.
+- **Nav:** Wrapped | How to export | Data loaded / Clear — **hidden only during story player** ([`WrappedPlayerContext`](frontend/src/context/WrappedPlayerContext.jsx)).
+- **Export ingest:** [`ExportPicker.jsx`](frontend/src/components/ExportPicker.jsx) → [`exportIngest.js`](frontend/src/utils/exportIngest.js) → [`ExportDataContext.jsx`](frontend/src/context/ExportDataContext.jsx).
+
+### Wrapped flow (export loaded)
+
+1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — lede, parse warnings with layman slide impact ([`parseWarningImpact.js`](frontend/src/utils/parseWarningImpact.js)), **Start Wrapped** (blocked until warnings acknowledged).
+2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap left/right; hold-to-pause; auto-advance ([`config/wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); last slide waits for tap; exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
+
+### Ten slides (0–9)
+
+intro → span → activity → likes → comments → stories → DMs → searches → privacy → **feed personality**. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js).
+
+### Product constraints
+
+- Client-only parsing; export not uploaded for Wrapped.
+- **IG-native** visuals (not Spotify brand clone). **No fake global percentiles.**
+- No `html-to-image` / scroller Save unless dedicated export layout.
+
+## Roadmap (next sessions)
+
+| Phase | Focus |
+|-------|--------|
+| **F** | Done — IG-native templates (hero/data/trust), player backdrop, lobby CTA |
+| **G** ← next | DMs + searches share copy; slide polish |
+| **H** | GSAP scene choreography synced to slide durations |
+| **I** | Personality-mapped ambient audio + mute |
+| **J** | Optional extra slides (words, insights JSON) |
+| **K** | Merge `feat/tailwind-foundation` → `main`, cleanup |
+
+Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md).
 
 ## Folder map
 
-- **`backend/src/`** — `server.js`, `app.js`; `routes/upload.js`; `services/compareUsers.js`; `parsers/instagramParsers.js`; `middleware/errorHandler.js`
 - **`frontend/src/`**
-  - **`App.jsx`** — Wrapped + guide only
-  - **`config/features.js`** — route resolution
-  - **`context/ExportDataContext.jsx`** — `files`, `loadExport`, ingest loading/error state, parser caches for Wrapped
-  - **`components/`** — `ExportPicker.jsx`, `ExportGuide.jsx`, `WrappedStoryDeck.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`; `FolderPicker.jsx` (alias → ExportPicker)
-  - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy `HeatmapPage`, `SocialGraphPage`, `MessagesPage`, `MostUsedWordsPage` (not routed)
-  - **`utils/`** — `exportIngest.js`, `wrappedData.js`, `wrappedPalette.js`, `wrappedThemes.js`, `wrappedAvatars.js`, `profileSearches.js`, plus shared parsers (`commentHeatmap.js`, `socialInteractionGraph.js`, `messageFrequency.js`, `mostUsedWords.js`)
-  - **`tailwind.css`** — Tailwind entry + `@theme` tokens (colors, type, radius, shadows)
-  - **`lib/utils.js`** — `cn()` (clsx + tailwind-merge); **`lib/tokens.js`** — JS token mirror for charts/inline styles
-  - **`styles.css`** — legacy mobile nav, export guide/picker, Wrapped 9:16 story column, podium/leaderboard layout
-  - **`vite.config.js`** — Vite + Tailwind plugin
-- **`frontend/.env.example`** — documents optional `VITE_API_URL`
-- **`frontend/vercel.json`** — SPA rewrite
-- **`docs/AGENT_CONTEXT.md`** — rolling handoff for AI/contributors
-
-## API (backend, optional)
-
-- **`GET /health`** → `{ "ok": true }`
-- **`POST /upload`** (`multipart/form-data`): `followersFile`, `followingFile` → `{ "non_followers": [...] }` (legacy Non-Followers; not exposed in current UI)
+  - **`App.jsx`** — nav + routes; wraps `WrappedPlayerProvider`
+  - **`context/`** — `ExportDataContext.jsx`, `WrappedPlayerContext.jsx`
+  - **`config/`** — `features.js`, `wrappedPlayer.js` (slide count, durations)
+  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused after Phase E)
+  - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy analysis pages (not routed)
+  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
+  - **`lib/`** — `utils.js` (`cn`), `tokens.js`
+  - **`tailwind.css`**, **`styles.css`**, **`vite.config.js`**
+- **`docs/AGENT_CONTEXT.md`** — rolling handoff (read first for AI)
 
 ## Conventions
 
-- Match existing style: focused diffs, no unrelated refactors.
-- **Wrapped** (`/wrapped`) is client-only after export load: **ten 9:16 story cards** in a vertical scroller (scroll-snap, Prev/Next/dots/arrow keys, screenshot-friendly), light glass styling, per-slide accents (`wrappedThemes.js`), activity-style stack charts (`wrappedPalette.js`), body quips after charts, merged footer on data slides. Slide order: intro → span → activity → likes → comments → story interactions → DMs → profile searches → privacy → teaser. Orchestration: `wrappedData.js` (`loadWrappedBaseline`); reuses or fills `heatmapCache`, `socialGraphCache`, `messagesCache`.
-- **Leaderboard slides:** [`WrappedAvatarPodium.jsx`](frontend/src/components/WrappedAvatarPodium.jsx) — initials circles in `.wrapped-podium__face` (clipped); rank badge `.wrapped-podium__badge` sits **outside** the circle. Leaderboard cards use `:has(.wrapped-leaderboard)` in CSS for extra padding and `overflow: visible` so badges are not clipped by the deck or card edges. Stack bar labels use `truncateLabel` in [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx) for on-screen fit only.
-- When extending Instagram export parsing, reuse patterns from **`commentHeatmap.js`** and align with **`socialInteractionGraph.js`** where overlap exists.
-- No new heavy chart libraries unless explicitly approved. Avoid re-adding **`html-to-image`** or similar for Save unless there is a dedicated export layout that does not depend on photographing the scroller card.
+- Focused diffs; no unrelated refactors.
+- **Leaderboard slides:** [`WrappedAvatarPodium.jsx`](frontend/src/components/WrappedAvatarPodium.jsx); `:has(.wrapped-leaderboard)` for overflow/padding on card shell.
+- Extend parsers via patterns in **`commentHeatmap.js`** / **`socialInteractionGraph.js`**.
+- No new heavy chart libs without approval. Phase H may add **GSAP** (or Framer Motion) for slide timelines — one animation library only.
 
-## Optional scoped rules
+## API (backend, optional)
 
-Add separate `.mdc` files with `globs` (e.g. `frontend/**/*.jsx`, `backend/**/*.js`) if you need frontend-only or backend-only guidance beyond this file.
+- `GET /health` → `{ "ok": true }`
+- `POST /upload` — legacy Non-Followers (not in UI)

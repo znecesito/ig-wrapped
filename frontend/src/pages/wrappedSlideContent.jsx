@@ -3,17 +3,22 @@ import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
 import {
   ACTIVITY_STACK,
+  ACTIVITY_STACK_COMPACT,
   ACTIVITY_STACK_LABEL,
   ACTIVITY_STACK_LINK,
   ACTIVITY_STACK_SEGMENT,
   ACTIVITY_STACK_VAL,
   LEADERBOARD,
   SLIDE_BODY,
+  SLIDE_BODY_ON_DARK,
   SLIDE_BULLET_LIST,
+  SLIDE_BULLET_LIST_ON_DARK,
   SLIDE_CODE,
   SLIDE_FOOTER_LINK,
   SLIDE_HERO,
   SLIDE_HERO_COMPACT,
+  SLIDE_HERO_COMPACT_ON_DARK,
+  SLIDE_HERO_DISPLAY,
   SEARCH_RANK_COUNT,
   SEARCH_RANK_NAME,
   SEARCH_RANK_NUM,
@@ -22,15 +27,19 @@ import {
   SLIDE_INSIGHT_PUNCH,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT,
+  SLIDE_MEGA_STAT_DOMINANT,
   SLIDE_MEGA_STAT_SM,
   SLIDE_PERSONALITY_EMOJI,
+  SLIDE_PERSONALITY_EMOJI_HERO,
   SLIDE_PERSONALITY_TITLE,
+  SLIDE_PERSONALITY_TITLE_HERO,
   SLIDE_SHARE_HEADLINE,
   SLIDE_STAT_LABEL,
   SLIDE_STAT_VALUE,
   SLIDE_STATS_INLINE
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
+import { getSlideTemplate } from "../utils/wrappedThemes.js";
 import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
 
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
@@ -154,9 +163,9 @@ function stackLinkLabel(row, { threadLabels }) {
 }
 
 /** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
-function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}) {
+function renderActivityStack(families, maxFamilyTotal, { linkable = false, compact = false } = {}) {
   return (
-    <div className={ACTIVITY_STACK} aria-label="Breakdown">
+    <div className={compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK} aria-label="Breakdown">
       {families.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
         const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
@@ -216,7 +225,7 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   return (
     <div className={LEADERBOARD}>
       <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
-      {renderActivityStack(stackFamilies, maxCount, { linkable: true })}
+      {renderActivityStack(stackFamilies, maxCount, { linkable: true, compact: true })}
     </div>
   );
 }
@@ -224,18 +233,20 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
 export function renderWrappedSlide(index, ctx) {
   const { baseline, handle, activityBreakdown, insights } = ctx;
   const yearLabel = insights?.exportYear ? String(insights.exportYear) : "Your export";
+  const template = getSlideTemplate(index);
 
   switch (index) {
     case 0:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow={insights?.exportYear ? `${insights.exportYear} · ig-wrapped` : "ig-wrapped"}
           title="Your feed, wrapped"
           deck="Screenshot any card for Stories · all local"
           bodyClassName="hero"
         >
-          <p className={SLIDE_HERO}>{handle}</p>
-          <p className={SLIDE_BODY}>
+          <p className={SLIDE_HERO_DISPLAY}>{handle}</p>
+          <p className={SLIDE_BODY_ON_DARK}>
             {insights?.totalActivities > 0
               ? `${formatCount(insights.totalActivities)} activities · people · DMs · searches`
               : "Activity · people · DMs · searches"}
@@ -246,6 +257,7 @@ export function renderWrappedSlide(index, ctx) {
     case 1:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="In this export"
           title={yearLabel === "Your export" ? "Your activity span" : `Your ${yearLabel} in the feed`}
           deck="Timestamps in this folder — not your full IG history"
@@ -253,11 +265,11 @@ export function renderWrappedSlide(index, ctx) {
         >
           {baseline.heatmapData ? (
             <>
-              <p className={SLIDE_HERO_COMPACT}>{baseline.heatmapData.dateRangeLabel}</p>
-              <p className={SLIDE_BODY}>Comments · likes · media · stories</p>
+              <p className={SLIDE_HERO_COMPACT_ON_DARK}>{baseline.heatmapData.dateRangeLabel}</p>
+              <p className={SLIDE_BODY_ON_DARK}>Comments · likes · media · stories</p>
             </>
           ) : (
-            <p className={SLIDE_BODY}>No activity timestamps in this folder.</p>
+            <p className={SLIDE_BODY_ON_DARK}>No activity timestamps in this folder.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -265,6 +277,7 @@ export function renderWrappedSlide(index, ctx) {
     case 2:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="The big number"
           title={
             insights?.dominantPct >= 35 && insights?.personality
@@ -283,12 +296,17 @@ export function renderWrappedSlide(index, ctx) {
         >
           {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
             <>
-              <p className={SLIDE_MEGA_STAT}>{formatCount(baseline.heatmapData.totalActivities)}</p>
+              <p className={SLIDE_MEGA_STAT_DOMINANT}>
+                {formatCount(baseline.heatmapData.totalActivities)}
+              </p>
               <p className={SLIDE_MEGA_LABEL}>activities in this export</p>
               {insights?.activityPunchline ? (
                 <p className={SLIDE_INSIGHT_PUNCH}>{insights.activityPunchline}</p>
               ) : null}
-              {renderActivityStack(activityBreakdown.families, activityBreakdown.maxFamilyTotal)}
+              {renderActivityStack(
+                activityBreakdown.families,
+                activityBreakdown.maxFamilyTotal
+              )}
               <ul className={SLIDE_STATS_INLINE}>
                 <li>
                   <span className={SLIDE_STAT_LABEL}>Busiest weekday</span>
@@ -312,6 +330,7 @@ export function renderWrappedSlide(index, ctx) {
       const share = insights?.likesShare;
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Top of your likes"
           title={share?.headline ?? "Most liked creators"}
           deck={share?.subline ?? "Liked posts & comments · by creator"}
@@ -336,6 +355,7 @@ export function renderWrappedSlide(index, ctx) {
       const share = insights?.commentsShare;
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Top of your comments"
           title={share?.headline ?? "Most commented creators"}
           deck={share?.subline ?? "Posts, reels & stories"}
@@ -360,6 +380,7 @@ export function renderWrappedSlide(index, ctx) {
       const share = insights?.storiesShare;
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Top of your stories"
           title={share?.headline ?? "Top story interactions"}
           deck={share?.subline ?? "Polls · views · reactions"}
@@ -383,6 +404,7 @@ export function renderWrappedSlide(index, ctx) {
       const top = rows[0];
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Inbox"
           title="Top DM threads"
           deck={`Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
@@ -406,6 +428,7 @@ export function renderWrappedSlide(index, ctx) {
       const topSearch = baseline.profileSearches?.rows?.[0];
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Search history"
           title="Profile searches"
           deck="From profile_searches.json"
@@ -447,6 +470,7 @@ export function renderWrappedSlide(index, ctx) {
     case 8:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Privacy"
           title="Local only"
           deck="Your export is not uploaded for Wrapped"
@@ -462,6 +486,7 @@ export function renderWrappedSlide(index, ctx) {
     case 9:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Your feed personality"
           title={insights?.personality?.title ?? "Still loading your vibe"}
           deck={insights?.personality?.tagline ?? "Load activity data to see your club"}
@@ -474,11 +499,11 @@ export function renderWrappedSlide(index, ctx) {
         >
           {insights?.personality ? (
             <>
-              <p className={SLIDE_PERSONALITY_EMOJI} aria-hidden>
+              <p className={SLIDE_PERSONALITY_EMOJI_HERO} aria-hidden>
                 {insights.personality.emoji}
               </p>
-              <p className={SLIDE_PERSONALITY_TITLE}>{insights.personality.title}</p>
-              <ul className={SLIDE_BULLET_LIST}>
+              <p className={SLIDE_PERSONALITY_TITLE_HERO}>{insights.personality.title}</p>
+              <ul className={SLIDE_BULLET_LIST_ON_DARK}>
                 {insights.dominantPct >= 20 ? (
                   <li>
                     <strong>{insights.dominantPct}%</strong> of activity was {insights.personality.label}
@@ -503,7 +528,7 @@ export function renderWrappedSlide(index, ctx) {
               </ul>
             </>
           ) : (
-            <p className={SLIDE_BODY}>
+            <p className={SLIDE_BODY_ON_DARK}>
               Not enough activity in this export for a personality card. Try a longer date range in
               Instagram&apos;s export settings.
             </p>

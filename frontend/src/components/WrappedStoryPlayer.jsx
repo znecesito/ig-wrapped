@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../lib/utils.js";
 import { WrappedSlideShell } from "./WrappedSlideChrome.jsx";
-import { getSlideTheme } from "../utils/wrappedThemes.js";
+import { getSlideTheme, getSlideThemeStyle } from "../utils/wrappedThemes.js";
 import {
   getSlideDurationMs,
   WRAPPED_CARD_COUNT,
@@ -34,6 +34,8 @@ export default function WrappedStoryPlayer({
   const durationMs = getSlideDurationMs(cardIndex);
   const isLastSlide = cardIndex >= WRAPPED_LAST_SLIDE_INDEX;
   const autoAdvance = durationMs > 0 && !isLastSlide;
+  const slideTheme = getTheme(cardIndex);
+  const slideThemeStyle = getSlideThemeStyle(slideTheme);
 
   const goTo = useCallback(
     (nextIndex) => {
@@ -189,14 +191,15 @@ export default function WrappedStoryPlayer({
 
   return (
     <div
-      className={cn(
-        "wrapped-player fixed inset-0 z-50 flex flex-col",
-        "bg-deck-viewport font-sans text-ink"
-      )}
+      className={cn("wrapped-player fixed inset-0 z-50 flex flex-col font-sans text-ink")}
+      style={slideThemeStyle}
+      data-slide-theme={slideTheme}
       role="dialog"
       aria-modal="true"
       aria-label={`Wrapped story ${cardIndex + 1} of ${cardCount}`}
     >
+      <div className="wrapped-player__stage" aria-hidden />
+      <div className="wrapped-player__grain" aria-hidden />
       <div
         className={cn(
           "flex shrink-0 gap-1 px-2",
@@ -259,7 +262,7 @@ export default function WrappedStoryPlayer({
             key={cardIndex}
             cardIndex={cardIndex}
             cardCount={cardCount}
-            theme={getTheme(cardIndex)}
+            theme={slideTheme}
             playerMode
             extraClass={cn("wrapped-card--visible", enterClass)}
           >

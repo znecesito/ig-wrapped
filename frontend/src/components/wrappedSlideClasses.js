@@ -17,7 +17,7 @@ export const WRAPPED_PAGE_DISMISS =
   "rounded-pill bg-muted px-[0.65rem] py-[0.35rem] text-[0.8rem] text-white";
 
 export const LOBBY_START_BTN =
-  "rounded-pill border-0 bg-gradient-to-br from-brand to-brand-mid px-8 py-3.5 text-base font-bold text-white shadow-card transition-[transform,opacity,filter] duration-200 hover:enabled:brightness-105 active:enabled:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45";
+  "rounded-pill border-0 bg-gradient-to-br from-brand via-[#f43f5e] to-brand-mid px-9 py-4 text-[1.05rem] font-extrabold tracking-tight text-white shadow-[0_10px_28px_-8px_rgb(225_29_72/0.55),0_4px_14px_rgb(15_23_42/0.12)] transition-[transform,opacity,filter] duration-200 hover:enabled:brightness-110 hover:enabled:shadow-[0_14px_32px_-6px_rgb(225_29_72/0.62)] active:enabled:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45";
 
 export const LOBBY_WARNING_ITEM =
   "rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5";
@@ -37,11 +37,20 @@ export const SLIDE_DECK = "slide-deck";
 
 export const SLIDE_BODY = "m-0 text-[0.8rem] leading-[1.3] text-muted";
 
+export const SLIDE_BODY_ON_DARK = "m-0 text-[0.82rem] leading-[1.35] text-[var(--slide-fg-muted)]";
+
 export const SLIDE_HERO =
   "m-0 font-display text-[clamp(1.45rem,6.5vw,1.85rem)] font-bold leading-[1.08] tracking-tight text-ink break-words";
 
+/** Hero template — intro / personality in player */
+export const SLIDE_HERO_DISPLAY =
+  "m-0 font-display text-[clamp(1.85rem,8.5vw,2.45rem)] font-extrabold leading-[1.02] tracking-tight text-[var(--slide-fg,#0f172a)] break-words";
+
 export const SLIDE_HERO_COMPACT =
   "m-0 font-display text-[clamp(1.05rem,4.5vw,1.32rem)] font-bold leading-[1.08] tracking-tight text-ink break-words";
+
+export const SLIDE_HERO_COMPACT_ON_DARK =
+  "m-0 font-display text-[clamp(1.15rem,5vw,1.45rem)] font-bold leading-[1.08] tracking-tight text-[var(--slide-fg)] break-words";
 
 export const SLIDE_BULLET_LIST =
   "m-0 list-disc space-y-[0.28rem] pl-4 text-[0.8rem] leading-[1.3] text-slate-700";
@@ -55,6 +64,10 @@ export const SLIDE_FOOTER_LINK =
 export const SLIDE_MEGA_STAT =
   "m-0 font-display text-[clamp(2rem,9vw,2.65rem)] font-extrabold leading-[0.95] tracking-tight text-ink";
 
+/** Data template — activity slide mega number */
+export const SLIDE_MEGA_STAT_DOMINANT =
+  "m-0 font-display text-[clamp(2.35rem,11vw,3.15rem)] font-extrabold leading-[0.92] tracking-tight text-ink";
+
 export const SLIDE_MEGA_STAT_SM =
   "m-0 font-display text-[clamp(1.55rem,7vw,2rem)] font-extrabold leading-[0.95] tracking-tight text-ink";
 
@@ -65,10 +78,88 @@ export const SLIDE_MEGA_LABEL =
 export const SLIDE_INSIGHT_PUNCH =
   "m-0 rounded-[10px] border border-[color-mix(in_srgb,var(--slide-accent)_22%,transparent)] bg-[color-mix(in_srgb,var(--slide-accent)_10%,white)] px-2.5 py-2 text-center text-[0.78rem] font-bold leading-snug text-ink";
 
+export const SLIDE_INSIGHT_PUNCH_ON_DARK =
+  "m-0 rounded-[10px] border border-white/25 bg-white/15 px-2.5 py-2 text-center text-[0.78rem] font-bold leading-snug text-[var(--slide-fg)]";
+
 export const SLIDE_PERSONALITY_TITLE =
   "m-0 font-display text-[clamp(1.35rem,6vw,1.75rem)] font-extrabold leading-tight tracking-tight text-ink";
 
+export const SLIDE_PERSONALITY_TITLE_HERO =
+  "m-0 font-display text-[clamp(1.55rem,7vw,2rem)] font-extrabold leading-tight tracking-tight text-[var(--slide-fg)]";
+
 export const SLIDE_PERSONALITY_EMOJI = "m-0 text-[2.25rem] leading-none";
+
+export const SLIDE_PERSONALITY_EMOJI_HERO = "m-0 text-[clamp(2.5rem,12vw,3.25rem)] leading-none";
+
+export const SLIDE_BULLET_LIST_ON_DARK =
+  "m-0 list-disc space-y-[0.32rem] pl-4 text-[0.82rem] leading-[1.35] text-[var(--slide-fg-muted)] marker:text-white/50";
+
+/** Template-aware chrome (Phase F) */
+export function slideEyebrowClass(template) {
+  const base =
+    "m-0 mb-0.5 text-[0.62rem] font-bold uppercase tracking-[0.11em]";
+  if (template === "hero") {
+    return `${base} text-[var(--slide-fg-subtle)]`;
+  }
+  if (template === "trust") {
+    return `${base} text-slate-500`;
+  }
+  return `${base} text-[var(--slide-accent)]`;
+}
+
+export function slideTitleClass(template) {
+  const base =
+    "m-0 font-display font-bold leading-tight tracking-tight";
+  if (template === "hero") {
+    return `${base} text-[clamp(1.12rem,4.2vw,1.38rem)] text-[var(--slide-fg)]`;
+  }
+  if (template === "data") {
+    return `${base} text-[clamp(1rem,3.8vw,1.22rem)] text-ink`;
+  }
+  return `${base} text-[clamp(1.05rem,4vw,1.28rem)] text-ink`;
+}
+
+export function slideDeckClass(template) {
+  const base = `${SLIDE_DECK} mt-0.5 text-[0.74rem] leading-snug`;
+  if (template === "hero") {
+    return `${base} text-[var(--slide-fg-muted)]`;
+  }
+  if (template === "trust") {
+    return `${base} text-muted`;
+  }
+  return `${base} text-muted`;
+}
+
+export function slideFooterClass(template) {
+  const base =
+    "m-0 flex items-baseline justify-between gap-2 border-t pt-1.5 text-[0.68rem] leading-snug";
+  if (template === "hero") {
+    return `${base} border-white/20 text-[var(--slide-fg-muted)]`;
+  }
+  if (template === "trust") {
+    return `${base} border-slate-200/90 text-muted`;
+  }
+  return `${base} border-slate-200/95 text-muted`;
+}
+
+export function slideFooterBrandClass(template) {
+  const base = "shrink-0 font-extrabold uppercase tracking-[0.12em]";
+  if (template === "hero") {
+    return `${base} text-white/70`;
+  }
+  if (template === "trust") {
+    return `${base} text-slate-500`;
+  }
+  return `${base} text-[var(--slide-accent)]`;
+}
+
+export function slideBodyQuipClass(template) {
+  const base = "mt-1.5 shrink-0 border-t pt-1.5 text-[0.74rem] leading-snug";
+  if (template === "hero") {
+    return `${base} border-white/20 text-[var(--slide-fg-muted)]`;
+  }
+  return `${base} border-slate-200/85 text-muted`;
+}
 
 export const SLIDE_SHARE_HEADLINE =
   "m-0 text-center text-[0.82rem] font-extrabold leading-snug text-[var(--slide-accent)]";
@@ -82,7 +173,10 @@ export const SLIDE_STAT_VALUE =
   "font-display text-[0.92rem] font-bold text-ink";
 
 export const ACTIVITY_STACK =
-  "flex h-[min(10.5rem,24vh)] min-h-[6.5rem] flex-col overflow-hidden rounded-[10px] border border-white/75 shadow-[inset_0_1px_3px_rgba(15,23,42,0.06)]";
+  "flex h-[min(9.5rem,22vh)] min-h-[6rem] flex-col overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--slide-accent)_18%,#e2e8f0)] bg-white/55 shadow-[inset_0_1px_2px_rgb(15_23_42/0.05)]";
+
+export const ACTIVITY_STACK_COMPACT =
+  "flex h-[min(8rem,18vh)] min-h-[5rem] flex-col overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--slide-accent)_18%,#e2e8f0)] bg-white/55 shadow-[inset_0_1px_2px_rgb(15_23_42/0.05)]";
 
 export const ACTIVITY_STACK_SEGMENT =
   "flex min-h-5 items-center justify-between gap-1.5 px-[0.45rem] py-[0.3rem] text-ink";

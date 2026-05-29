@@ -1,55 +1,83 @@
 import React from "react";
 import { cn } from "../lib/utils.js";
-import { SLIDE_DECK } from "./wrappedSlideClasses.js";
-import { CARD_SURFACE_BG, getSlideThemeStyle } from "../utils/wrappedThemes.js";
+import {
+  slideBodyQuipClass,
+  slideDeckClass,
+  slideEyebrowClass,
+  slideFooterBrandClass,
+  slideFooterClass,
+  slideTitleClass
+} from "./wrappedSlideClasses.js";
+import { getCardSurfaceStyle, getSlideTemplate } from "../utils/wrappedThemes.js";
 
-const CARD_SHELL = [
+const CARD_SHELL_BASE = [
   "wrapped-card card",
   "relative m-0 flex w-full shrink-0 flex-col overflow-hidden p-0",
-  "aspect-[9/16] snap-start snap-always rounded-[14px] border text-ink",
+  "aspect-[9/16] snap-start snap-always text-ink",
   "opacity-0 translate-y-[18px]",
-  "shadow-card backdrop-blur-[14px]",
-  "border-[var(--slide-glass-border)]",
   "has-[.wrapped-leaderboard]:overflow-visible"
+];
+
+const CARD_SHELL_LEGACY = [
+  "rounded-[14px] border shadow-card backdrop-blur-[14px]",
+  "border-[var(--slide-glass-border)]"
+];
+
+const CARD_SHELL_PLAYER = [
+  "rounded-[18px] border shadow-[0_20px_50px_-18px_rgb(15_23_42/0.35)]"
 ];
 
 const CARD_TINT_OVERLAY =
   "pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(85%_55%_at_100%_0%,var(--slide-tint)_0%,transparent_58%)]";
 
+const CARD_TINT_HERO =
+  "pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(90%_70%_at_0%_100%,rgb(255_255_255/0.14)_0%,transparent_55%)]";
+
 export function WrappedSlideShell({
   cardIndex,
   cardCount,
   theme = "intro",
+  template: templateProp,
   extraClass = "",
   cardRef,
   playerMode = false,
   children
 }) {
-  const themeStyle = getSlideThemeStyle(theme);
+  const template = templateProp ?? getSlideTemplate(cardIndex);
   const isTeaser = theme === "teaser";
+  const isHero = template === "hero";
+
+  const surfaceStyle = getCardSurfaceStyle(theme, template, { playerMode });
 
   return (
     <article
       ref={cardRef}
       data-slide-index={cardIndex}
+      data-slide-template={template}
       className={cn(
-        CARD_SHELL,
+        CARD_SHELL_BASE,
+        playerMode ? CARD_SHELL_PLAYER : CARD_SHELL_LEGACY,
         playerMode && "wrapped-card--player opacity-100 translate-y-0",
+        playerMode && `wrapped-card--${template}`,
         isTeaser && "border-dashed border-border-strong",
         extraClass
       )}
       style={{
-        ...themeStyle,
-        background: CARD_SURFACE_BG,
+        ...surfaceStyle,
         ...(isTeaser ? { borderColor: "#cbd5e1" } : null)
       }}
     >
-      <div className={CARD_TINT_OVERLAY} aria-hidden />
+      <div
+        className={cn(isHero && playerMode ? CARD_TINT_HERO : CARD_TINT_OVERLAY)}
+        aria-hidden
+      />
       <span
         className={cn(
           "absolute top-2 right-2.5 z-[2]",
-          "rounded-pill border border-white/95 bg-white/80",
-          "px-1.5 py-0.5 text-[0.6rem] font-bold tracking-wide text-muted"
+          "rounded-pill px-1.5 py-0.5 text-[0.6rem] font-bold tracking-wide",
+          isHero && playerMode
+            ? "border border-white/25 bg-black/15 text-white/75"
+            : "border border-white/95 bg-white/80 text-muted"
         )}
         aria-hidden="true"
       >
@@ -59,7 +87,8 @@ export function WrappedSlideShell({
         className={cn(
           "relative z-[1] flex h-full min-h-0 flex-col",
           "px-3.5 pb-[calc(var(--wrapped-safe-bottom)+0.35rem)] pt-[var(--wrapped-safe-top)]",
-          "has-[.wrapped-leaderboard]:overflow-visible"
+          "has-[.wrapped-leaderboard]:overflow-visible",
+          playerMode && template === "data" && "px-4"
         )}
       >
         <div
@@ -76,6 +105,7 @@ export function WrappedSlideShell({
 }
 
 export function WrappedSlideLayout({
+  template = "data",
   eyebrow,
   title,
   deck,
@@ -84,75 +114,45 @@ export function WrappedSlideLayout({
   footerStat,
   bodyQuip
 }) {
-  const isHero = bodyClassName === "hero";
+  const isHeroBody = bodyClassName === "hero";
+  const isHeroTemplate = template === "hero";
 
   return (
     <div
       className={cn(
         "flex min-h-0 flex-1 flex-col justify-center gap-[0.32rem]",
         "has-[.wrapped-leaderboard]:gap-[0.45rem]",
-        "has-[.wrapped-leaderboard]:[&_.slide-deck]:mb-0.5"
+        "has-[.wrapped-leaderboard]:[&_.slide-deck]:mb-0.5",
+        template === "data" && "gap-[0.38rem]"
       )}
     >
-      <header className="shrink-0">
-        <p
-          className={cn(
-            "m-0 mb-0.5 text-[0.62rem] font-bold uppercase tracking-[0.11em]",
-            "text-[var(--slide-accent)]"
-          )}
-        >
-          {eyebrow}
-        </p>
-        <h2
-          className={cn(
-            "m-0 font-display text-[clamp(1.05rem,4vw,1.28rem)] font-bold leading-tight tracking-tight text-ink"
-          )}
-        >
-          {title}
-        </h2>
-        {deck ? (
-          <p className={cn(SLIDE_DECK, "mt-0.5 text-[0.74rem] leading-snug text-muted")}>{deck}</p>
-        ) : null}
+      <header className={cn("shrink-0", template === "data" && "mb-0.5")}>
+        <p className={slideEyebrowClass(template)}>{eyebrow}</p>
+        <h2 className={slideTitleClass(template)}>{title}</h2>
+        {deck ? <p className={slideDeckClass(template)}>{deck}</p> : null}
       </header>
       <div
         className={cn(
           "flex min-h-0 flex-[0_1_auto] flex-col items-stretch justify-center gap-[0.28rem] overflow-y-auto",
           "has-[.wrapped-leaderboard]:overflow-visible",
-          isHero && "items-center text-center",
-          bodyClassName && !isHero && bodyClassName
+          template === "data" && "gap-[0.32rem]",
+          (isHeroBody || isHeroTemplate) && "items-center text-center",
+          bodyClassName && !isHeroBody && bodyClassName
         )}
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {children}
-        {bodyQuip ? (
-          <div
-            className={cn(
-              "mt-1.5 shrink-0 border-t border-slate-200/85 pt-1.5 text-[0.74rem] leading-snug text-muted"
-            )}
-          >
-            {bodyQuip}
-          </div>
-        ) : null}
+        {bodyQuip ? <div className={slideBodyQuipClass(template)}>{bodyQuip}</div> : null}
       </div>
       <footer className="mt-0 shrink-0 pt-0.5">
-        <p
-          className={cn(
-            "m-0 flex items-baseline justify-between gap-2 border-t border-slate-200/95 pt-1.5",
-            "text-[0.68rem] leading-snug text-muted"
-          )}
-        >
-          <span
-            className={cn(
-              "shrink-0 font-extrabold uppercase tracking-[0.12em] text-[var(--slide-accent)]"
-            )}
-          >
-            ig-wrapped
-          </span>
+        <p className={slideFooterClass(template)}>
+          <span className={slideFooterBrandClass(template)}>ig-wrapped</span>
           {footerStat ? (
             <span
               className={cn(
                 "min-w-0 truncate text-right",
-                "[&_strong]:font-bold [&_strong]:text-ink"
+                "[&_strong]:font-bold",
+                isHeroTemplate ? "[&_strong]:text-[var(--slide-fg)]" : "[&_strong]:text-ink"
               )}
             >
               {footerStat}
