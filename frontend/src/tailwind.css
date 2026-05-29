@@ -96,6 +96,69 @@
   --max-width-frame: 420px;
 }
 
+/* Wrapped card reveal (class toggled from WrappedPage) */
+@keyframes wrapped-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-nudge-down {
+  from {
+    opacity: 0.35;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-nudge-up {
+  from {
+    opacity: 0.35;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .wrapped-story .wrapped-card.wrapped-card--visible {
+    animation: wrapped-reveal-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--from-next.wrapped-card--visible {
+    animation: wrapped-nudge-down 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--from-prev.wrapped-card--visible {
+    animation: wrapped-nudge-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-story .wrapped-card.wrapped-card--visible {
+      animation: wrapped-reveal-fade 0.25s ease forwards;
+    }
+  }
+}
+
 @utility bg-deck-viewport {
   background:
     radial-gradient(120% 80% at 100% 0%, rgb(251 113 133 / 0.22) 0%, transparent 55%),

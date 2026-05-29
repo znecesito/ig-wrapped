@@ -255,7 +255,6 @@ export default function WrappedPage() {
               cardIndex={i}
               cardCount={WRAPPED_CARD_COUNT}
               theme={getSlideTheme(i)}
-              extraClass={i === 9 ? "wrapped-card--teaser" : ""}
               cardRef={(el) => {
                 cardRefs.current[i] = el;
               }}
