@@ -16,6 +16,18 @@ export const WRAPPED_PAGE_WARNINGS_TITLE = "m-0 text-base";
 export const WRAPPED_PAGE_DISMISS =
   "rounded-pill bg-muted px-[0.65rem] py-[0.35rem] text-[0.8rem] text-white";
 
+export const LOBBY_START_BTN =
+  "rounded-pill border-0 bg-gradient-to-br from-brand to-brand-mid px-8 py-3.5 text-base font-bold text-white shadow-card transition-[transform,opacity,filter] duration-200 hover:enabled:brightness-105 active:enabled:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45";
+
+export const LOBBY_WARNING_ITEM =
+  "rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5";
+
+export const LOBBY_WARNING_IMPACT = "text-[0.78rem] font-semibold leading-snug text-amber-950";
+
+export const LOBBY_WARNING_SLIDES = "text-[0.72rem] text-amber-900/85";
+
+export const LOBBY_WARNING_ACK = "text-[0.82rem] leading-snug text-ink";
+
 export const GUIDE_PAGE_LEDE = "mb-4 max-w-[40rem] leading-[1.55] text-muted";
 
 export const GUIDE_PAGE_PICKER = "mt-4";

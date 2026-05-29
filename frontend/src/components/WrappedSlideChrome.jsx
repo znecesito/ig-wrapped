@@ -22,6 +22,7 @@ export function WrappedSlideShell({
   theme = "intro",
   extraClass = "",
   cardRef,
+  playerMode = false,
   children
 }) {
   const themeStyle = getSlideThemeStyle(theme);
@@ -33,6 +34,7 @@ export function WrappedSlideShell({
       data-slide-index={cardIndex}
       className={cn(
         CARD_SHELL,
+        playerMode && "wrapped-card--player opacity-100 translate-y-0",
         isTeaser && "border-dashed border-border-strong",
         extraClass
       )}

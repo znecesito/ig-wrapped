@@ -162,20 +162,41 @@
     }
   }
 
-  .wrapped-story .wrapped-card.wrapped-card--visible {
+  /* Full-screen story player (Phase E) */
+  .wrapped-player {
+    --wrapped-player-card-width: min(
+      calc(100vw - 1.25rem),
+      calc((100dvh - 5.5rem) * 9 / 16),
+      420px
+    );
+    --wrapped-player-card-max-height: calc(100dvh - 5.5rem);
+    --wrapped-safe-top: 5%;
+    --wrapped-safe-bottom: 6%;
+  }
+
+  .wrapped-player .wrapped-card--player {
+    max-height: var(--wrapped-player-card-max-height);
+    width: var(--wrapped-player-card-width);
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--visible {
     animation: wrapped-reveal-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  .wrapped-story .wrapped-card.wrapped-card--from-next.wrapped-card--visible {
+  .wrapped-story .wrapped-card.wrapped-card--from-next.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--from-next.wrapped-card--visible {
     animation: wrapped-nudge-down 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  .wrapped-story .wrapped-card.wrapped-card--from-prev.wrapped-card--visible {
+  .wrapped-story .wrapped-card.wrapped-card--from-prev.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--from-prev.wrapped-card--visible {
     animation: wrapped-nudge-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .wrapped-story .wrapped-card.wrapped-card--visible {
+    .wrapped-story .wrapped-card.wrapped-card--visible,
+    .wrapped-player .wrapped-card.wrapped-card--visible {
       animation: wrapped-reveal-fade 0.25s ease forwards;
     }
   }

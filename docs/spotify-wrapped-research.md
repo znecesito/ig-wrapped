@@ -104,8 +104,11 @@ Keep scroll model; reorder copy to Spotify rhythm:
 
 ## Implementation in repo
 
+- `frontend/src/config/wrappedPlayer.js` — slide count + auto-advance durations
+- `frontend/src/components/WrappedLobby.jsx` — Start Wrapped + warnings
+- `frontend/src/components/WrappedStoryPlayer.jsx` — full-screen player
 - `frontend/src/utils/wrappedInsights.js` — `buildWrappedInsights(baseline)`
-- `wrappedSlideContent.jsx` — intro, activity, leaderboards, slide 9 personality
-- `wrappedSlideClasses.js` — punch / personality typography
+- `frontend/src/utils/parseWarningImpact.js` — layman warning → affected slides
+- `wrappedSlideContent.jsx` — slide content + Spotify-style copy
 
 Update this doc when export parsers or slide order change.
