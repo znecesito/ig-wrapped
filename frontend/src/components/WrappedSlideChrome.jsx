@@ -81,7 +81,7 @@ export function WrappedSlideLayout({
   footerStat,
   bodyQuip
 }) {
-  const isHero = bodyClassName === "wrapped-card__body-zone--hero";
+  const isHero = bodyClassName === "hero" || bodyClassName === "wrapped-card__body-zone--hero";
 
   return (
     <div

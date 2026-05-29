@@ -36,7 +36,8 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 
 ## Key files touched recently
 
-- **Tailwind phase B (card shell):** `WrappedSlideChrome.jsx` + `wrappedThemes.js` (`SLIDE_THEME_VARS`) — glass 9:16 card, tint overlay, themes, reveal animations in `tailwind.css`; leaderboard overflow via `has-[.wrapped-leaderboard]`. Slide *content* (hero, stacks, podium) still in `styles.css` / `wrappedSlideContent.jsx`.
+- **Tailwind phase C (partial):** slides 0, 1, 8, 9 in `wrappedSlideContent.jsx` use `wrappedSlideClasses.js` (hero, body, bullets, code, footer links in quips). Remaining slides: activity, leaderboards, searches.
+- **Tailwind phase B (card shell):** `WrappedSlideChrome.jsx` + `wrappedThemes.js` (`SLIDE_THEME_VARS`) — glass 9:16 card, tint overlay, themes, reveal animations in `tailwind.css`; leaderboard overflow via `has-[.wrapped-leaderboard]`.
 - **Tailwind phase A (deck):** [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) — prev/next, dots, viewport, scroller.
 - `frontend/src/components/ExportGuide.jsx` — full phone + desktop rewrite: substep outline (2a/2b/…), explicit "select your Instagram account", standalone email-preference step with screenshot, "Begin the download process" parent step with notification + download-button screenshots, Choose ZIP / uncompress substep with screenshots, US "Center" spelling, inline `<GuideShot>` figures with `onError` graceful-hide.
 - `frontend/src/styles.css` — `.export-guide__shot img` width switched to `clamp(220px, 55%, 360px)` (`clamp(260px, 75%, 520px)` for `--wide`) so screenshots scale by percentage rather than fixed pixels.

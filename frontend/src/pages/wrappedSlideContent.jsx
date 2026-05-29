@@ -1,6 +1,14 @@
 import React from "react";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
+import {
+  SLIDE_BODY,
+  SLIDE_BULLET_LIST,
+  SLIDE_CODE,
+  SLIDE_FOOTER_LINK,
+  SLIDE_HERO,
+  SLIDE_HERO_COMPACT
+} from "../components/wrappedSlideClasses.js";
 import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
 
@@ -60,7 +68,7 @@ function likesFooterQuip(top) {
   return (
     <p>
       Rent&apos;s due on your attention span —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
       </a>{" "}
       earned <strong>{formatCount(top.count)}</strong> of your likes here. The algorithm simply watches.
@@ -73,7 +81,7 @@ function commentsFooterQuip(top) {
   return (
     <p>
       The comment box remembers —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
       </a>{" "}
       collected <strong>{formatCount(top.count)}</strong> of your replies here. Caps lock optional;
@@ -87,7 +95,7 @@ function storiesFooterQuip(top) {
   return (
     <p>
       Your story lane had a main character —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
+      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
         {handle}
       </a>{" "}
       shows up <strong>{formatCount(top.count)}</strong> times across polls, taps, and views here. The
@@ -202,10 +210,10 @@ export function renderWrappedSlide(index, ctx) {
           eyebrow="ig-wrapped"
           title="Your year in the feed"
           deck="Screenshot any card for Stories · all local"
-          bodyClassName="wrapped-card__body-zone--hero"
+          bodyClassName="hero"
         >
-          <p className="wrapped-card__hero">{handle}</p>
-          <p className="wrapped-card__body muted">Activity · people · DMs · searches</p>
+          <p className={SLIDE_HERO}>{handle}</p>
+          <p className={SLIDE_BODY}>Activity · people · DMs · searches</p>
         </WrappedSlideLayout>
       );
 
@@ -215,17 +223,15 @@ export function renderWrappedSlide(index, ctx) {
           eyebrow="In this export"
           title="Your activity span"
           deck="Timestamps in this folder — not full IG history"
-          bodyClassName="wrapped-card__body-zone--hero"
+          bodyClassName="hero"
         >
           {baseline.heatmapData ? (
             <>
-              <p className="wrapped-card__hero wrapped-card__hero--compact">
-                {baseline.heatmapData.dateRangeLabel}
-              </p>
-              <p className="wrapped-card__body muted">Comments · likes · media · stories</p>
+              <p className={SLIDE_HERO_COMPACT}>{baseline.heatmapData.dateRangeLabel}</p>
+              <p className={SLIDE_BODY}>Comments · likes · media · stories</p>
             </>
           ) : (
-            <p className="wrapped-card__body muted">No activity timestamps in this folder.</p>
+            <p className={SLIDE_BODY}>No activity timestamps in this folder.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -405,7 +411,7 @@ export function renderWrappedSlide(index, ctx) {
           deck="Your export is not uploaded for Wrapped"
           footerStat="Non-Followers is the only server upload"
         >
-          <ul className="wrapped-card__bullet-list">
+          <ul className={SLIDE_BULLET_LIST}>
             <li>Runs entirely in your browser</li>
             <li>Clear data from the nav on shared devices</li>
           </ul>
@@ -419,9 +425,8 @@ export function renderWrappedSlide(index, ctx) {
           title="Creator insights"
           deck="When insights JSON is in your export"
         >
-          <p className="wrapped-card__body muted">
-            <code className="wrapped-page__code">past_instagram_insights</code> could power a future
-            slide here.
+          <p className={SLIDE_BODY}>
+            <code className={SLIDE_CODE}>past_instagram_insights</code> could power a future slide here.
           </p>
         </WrappedSlideLayout>
       );
