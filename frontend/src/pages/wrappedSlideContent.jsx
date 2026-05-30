@@ -12,19 +12,11 @@ import {
   SLIDE_BODY,
   SLIDE_BODY_ON_DARK,
   SLIDE_BULLET_LIST,
-  SLIDE_BULLET_LIST_ON_DARK,
-  SLIDE_CODE,
-  SLIDE_HERO_COMPACT,
-  SLIDE_HERO_COMPACT_ON_DARK,
   SLIDE_HERO_DISPLAY,
-  SLIDE_INSIGHT_PUNCH,
   SLIDE_INSIGHT_PUNCH_ON_DARK,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT_DOMINANT,
-  SLIDE_PERSONALITY_EMOJI_HERO,
-  SLIDE_STAT_LABEL,
-  SLIDE_STAT_VALUE,
-  SLIDE_STATS_INLINE
+  SLIDE_PERSONALITY_EMOJI_HERO
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { getSlideTemplate } from "../utils/wrappedThemes.js";
@@ -208,24 +200,22 @@ function renderRankLeaderboard({
 
 export function renderWrappedSlide(index, ctx) {
   const { baseline, handle, activityBreakdown, insights } = ctx;
-  const yearLabel = insights?.exportYear ? String(insights.exportYear) : "Your export";
   const template = getSlideTemplate(index);
+  const year = insights?.exportYear;
 
   switch (index) {
     case 0:
       return (
         <WrappedSlideLayout
           template={template}
-          eyebrow={insights?.exportYear ? `${insights.exportYear} · ig-wrapped` : "ig-wrapped"}
-          title="Your feed, wrapped"
-          deck="Screenshot any card for Stories · all local"
+          title={year ? `Your ${year} feed, wrapped` : "Your feed, wrapped"}
           bodyClassName="hero"
         >
           <p className={SLIDE_HERO_DISPLAY}>{handle}</p>
           <p className={SLIDE_BODY_ON_DARK}>
             {insights?.totalActivities > 0
               ? `${formatCount(insights.totalActivities)} activities · people · DMs`
-              : "Activity · people · DMs"}
+              : "Load activity to see your recap"}
           </p>
         </WrappedSlideLayout>
       );
@@ -234,18 +224,21 @@ export function renderWrappedSlide(index, ctx) {
       return (
         <WrappedSlideLayout
           template={template}
-          eyebrow="In this export"
-          title={yearLabel === "Your export" ? "Your activity span" : `Your ${yearLabel} in the feed`}
-          deck="Timestamps in this folder — not your full IG history"
+          eyebrow="Your feed personality"
+          title={insights?.personality?.title ?? "Your vibe"}
+          deck={insights?.personality?.tagline ?? ""}
           bodyClassName="hero"
         >
-          {baseline.heatmapData ? (
+          {insights?.personality && insights.dominantPct >= 1 ? (
             <>
-              <p className={SLIDE_HERO_COMPACT_ON_DARK}>{baseline.heatmapData.dateRangeLabel}</p>
-              <p className={SLIDE_BODY_ON_DARK}>Comments · likes · media · stories</p>
+              <p className={SLIDE_PERSONALITY_EMOJI_HERO} aria-hidden>
+                {insights.personality.emoji}
+              </p>
+              <p className={SLIDE_MEGA_STAT_DOMINANT}>{insights.dominantPct}%</p>
+              <p className={SLIDE_MEGA_LABEL}>{insights.personality.label}</p>
             </>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK}>No activity timestamps in this folder.</p>
+            <p className={SLIDE_BODY_ON_DARK}>Not enough activity for a personality read yet.</p>
           )}
         </WrappedSlideLayout>
       );
@@ -254,20 +247,12 @@ export function renderWrappedSlide(index, ctx) {
       return (
         <WrappedSlideLayout
           template={template}
-          eyebrow="The big number"
-          title={
-            insights?.dominantPct >= 35 && insights?.personality
-              ? `${insights.dominantPct}% ${insights.personality.label}`
-              : "Your activity"
-          }
-          deck="What you actually did in this export"
-          footerStat={
-            baseline.heatmapData?.totalActivities > 0 ? (
-              <>
-                {formatCount(baseline.heatmapData.totalActivities)} total · peak{" "}
-                {baseline.heatmapData.activeWeekdayLabel}
-              </>
-            ) : null
+          eyebrow="Activity mix"
+          title="How you showed up"
+          deck={
+            insights?.activityWindowTrimmed
+              ? "Counts from your most recent 365 days of activity"
+              : "In this export"
           }
         >
           {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
@@ -275,24 +260,11 @@ export function renderWrappedSlide(index, ctx) {
               <p className={SLIDE_MEGA_STAT_DOMINANT}>
                 {formatCount(baseline.heatmapData.totalActivities)}
               </p>
-              <p className={SLIDE_MEGA_LABEL}>activities in this export</p>
-              {insights?.activityPunchline ? (
-                <p className={SLIDE_INSIGHT_PUNCH}>{insights.activityPunchline}</p>
-              ) : null}
+              <p className={SLIDE_MEGA_LABEL}>total activities</p>
               {renderActivityStack(
                 activityBreakdown.families,
                 activityBreakdown.maxFamilyTotal
               )}
-              <ul className={SLIDE_STATS_INLINE}>
-                <li>
-                  <span className={SLIDE_STAT_LABEL}>Busiest weekday</span>
-                  <span className={SLIDE_STAT_VALUE}>{baseline.heatmapData.activeWeekdayLabel}</span>
-                </li>
-                <li>
-                  <span className={SLIDE_STAT_LABEL}>Busiest hour</span>
-                  <span className={SLIDE_STAT_VALUE}>{baseline.heatmapData.activeHourLabel}</span>
-                </li>
-              </ul>
             </>
           ) : (
             <p className={SLIDE_BODY}>No activity data in this export.</p>
@@ -301,6 +273,73 @@ export function renderWrappedSlide(index, ctx) {
       );
 
     case 3:
+      return (
+        <WrappedSlideLayout
+          template={template}
+          eyebrow="Your rhythm"
+          title={insights?.rhythmPersona?.title ?? "When you're online"}
+          deck={
+            insights?.rhythmPersona
+              ? `${insights.rhythmPersona.activeWeekday} · ${insights.rhythmPersona.activeHour.replace(":00", "")}`
+              : "Peak weekday and hour in this export"
+          }
+          bodyClassName="hero"
+        >
+          {insights?.rhythmPersona ? (
+            <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.rhythmPersona.quip}</p>
+          ) : (
+            <p className={SLIDE_BODY_ON_DARK}>No rhythm pattern in this export yet.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+
+    case 4:
+      return (
+        <WrappedSlideLayout
+          template={template}
+          eyebrow="Dedication"
+          title="Longest streak"
+          deck="Consecutive active days"
+          bodyClassName="hero"
+        >
+          {insights?.streakDays >= 2 ? (
+            <>
+              <p className={SLIDE_MEGA_STAT_DOMINANT}>{insights.streakDays}</p>
+              <p className={SLIDE_MEGA_LABEL}>days in a row</p>
+              {insights.streakQuip ? (
+                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.streakQuip}</p>
+              ) : null}
+            </>
+          ) : (
+            <p className={SLIDE_BODY_ON_DARK}>No multi-day streak in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+
+    case 5:
+      return (
+        <WrappedSlideLayout
+          template={template}
+          eyebrow="Peak day"
+          title={insights?.busiestDayLabel ?? "Busiest day"}
+          deck="Most activity in one day"
+          bodyClassName="hero"
+        >
+          {insights?.busiestDayCount > 0 ? (
+            <>
+              <p className={SLIDE_MEGA_STAT_DOMINANT}>{formatCount(insights.busiestDayCount)}</p>
+              <p className={SLIDE_MEGA_LABEL}>activities</p>
+              {insights.busiestDayQuip ? (
+                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.busiestDayQuip}</p>
+              ) : null}
+            </>
+          ) : (
+            <p className={SLIDE_BODY_ON_DARK}>No standout day in this export.</p>
+          )}
+        </WrappedSlideLayout>
+      );
+
+    case 6:
       return renderRankSpotlight({
         eyebrow: "Likes",
         categoryLabel: "Your top liked creator",
@@ -309,7 +348,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No likes counted in this export."
       });
 
-    case 4:
+    case 7:
       return renderRankLeaderboard({
         template,
         eyebrow: "Likes",
@@ -320,7 +359,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No likes counted in this export."
       });
 
-    case 5:
+    case 8:
       return renderRankSpotlight({
         eyebrow: "Comments",
         categoryLabel: "Your top commented creator",
@@ -329,7 +368,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No comments counted in this export."
       });
 
-    case 6:
+    case 9:
       return renderRankLeaderboard({
         template,
         eyebrow: "Comments",
@@ -340,7 +379,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No comments counted in this export."
       });
 
-    case 7:
+    case 10:
       return renderRankSpotlight({
         eyebrow: "Stories",
         categoryLabel: "Your top story interaction",
@@ -349,7 +388,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No story interactions in this export."
       });
 
-    case 8:
+    case 11:
       return renderRankLeaderboard({
         template,
         eyebrow: "Stories",
@@ -360,7 +399,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No story interactions in this export."
       });
 
-    case 9:
+    case 12:
       return renderRankSpotlight({
         eyebrow: "Inbox",
         categoryLabel: "Your top DM thread",
@@ -369,7 +408,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No threads in this export."
       });
 
-    case 10:
+    case 13:
       return renderRankLeaderboard({
         template,
         eyebrow: "Inbox",
@@ -381,59 +420,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No threads in this export."
       });
 
-    case 11:
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Your feed personality"
-          title={insights?.personality?.title ?? "Still loading your vibe"}
-          deck={insights?.personality?.tagline ?? "Load activity data to see your club"}
-          bodyClassName="hero-list"
-          footerStat={
-            insights?.personality
-              ? `${insights.personality.emoji} ${insights.dominantPct >= 20 ? `${insights.dominantPct}% ${insights.personality.label}` : insights.personality.label}`
-              : null
-          }
-        >
-          {insights?.personality ? (
-            <>
-              <p className={SLIDE_PERSONALITY_EMOJI_HERO} aria-hidden>
-                {insights.personality.emoji}
-              </p>
-              <ul className={SLIDE_BULLET_LIST_ON_DARK}>
-                {insights.dominantPct >= 20 ? (
-                  <li>
-                    <strong>{insights.dominantPct}%</strong> of activity was {insights.personality.label}
-                  </li>
-                ) : null}
-                {insights.timePersona && insights.activeHour ? (
-                  <li>
-                    Peak hour <strong>{insights.activeHour}</strong> — {insights.timePersona}
-                  </li>
-                ) : null}
-                {insights.streakDays >= 2 ? (
-                  <li>
-                    Longest active streak: <strong>{insights.streakDays} days</strong> in this export
-                  </li>
-                ) : null}
-                {insights.busiestDayLabel && insights.busiestDayCount > 0 ? (
-                  <li>
-                    Busiest day: <strong>{insights.busiestDayLabel}</strong> (
-                    {formatCount(insights.busiestDayCount)} activities)
-                  </li>
-                ) : null}
-              </ul>
-            </>
-          ) : (
-            <p className={SLIDE_BODY_ON_DARK}>
-              Not enough activity in this export for a personality card. Try a longer date range in
-              Instagram&apos;s export settings.
-            </p>
-          )}
-        </WrappedSlideLayout>
-      );
-
-    case 12:
+    case 14:
       return (
         <WrappedSlideLayout
           template={template}

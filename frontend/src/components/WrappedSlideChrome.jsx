@@ -128,7 +128,7 @@ export function WrappedSlideLayout({
       )}
     >
       <header className={cn("shrink-0", template === "data" && "mb-0.5")}>
-        <p className={slideEyebrowClass(template)}>{eyebrow}</p>
+        {eyebrow ? <p className={slideEyebrowClass(template)}>{eyebrow}</p> : null}
         <h2 className={slideTitleClass(template)}>{title}</h2>
         {deck ? <p className={slideDeckClass(template)}>{deck}</p> : null}
       </header>

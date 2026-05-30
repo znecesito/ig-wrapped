@@ -20,6 +20,7 @@ import {
   MESSAGE_FREQUENCY_TOP_N,
   parseAndAggregateThreads
 } from "./messageFrequency.js";
+import { filterActivityEventsForWrapped } from "./wrappedExportWindow.js";
 
 /** Shared cap for likes / comments / story-interaction leaderboards on Wrapped. */
 export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 4;
@@ -104,14 +105,24 @@ export async function loadWrappedBaseline({
   const selfUsername = getEffectiveSelfUsername(detectedUsername, "");
 
   let heatmapData = null;
+  let activityWindowTrimmed = false;
   let topThreads = [];
   /** @type {Record<string, Record<string, number>> | null} */
   let socialCountsBySource = null;
 
-  if (heatmapCache?.rawEvents?.length) {
-    heatmapData = buildHeatmapData(heatmapCache.rawEvents, timezone, {
+  function buildWrappedHeatmap(rawEvents) {
+    const { events, trimmed } = filterActivityEventsForWrapped(rawEvents);
+    activityWindowTrimmed = trimmed;
+    if (!events.length) {
+      return null;
+    }
+    return buildHeatmapData(events, timezone, {
       enabledSourceIds: defaultActivitySourceIds
     });
+  }
+
+  if (heatmapCache?.rawEvents?.length) {
+    heatmapData = buildWrappedHeatmap(heatmapCache.rawEvents);
     if (heatmapCache.parseWarnings?.length) {
       warnings.push(...heatmapCache.parseWarnings);
     }
@@ -130,12 +141,12 @@ export async function loadWrappedBaseline({
         warnings.push(...parseResult.errors);
       }
       if (parseResult.events.length > 0) {
-        heatmapData = buildHeatmapData(parseResult.events, timezone, {
-          enabledSourceIds: defaultActivitySourceIds
-        });
+        heatmapData = buildWrappedHeatmap(parseResult.events);
         setHeatmapCache({
           rawEvents: parseResult.events,
-          heatmapData,
+          heatmapData: buildHeatmapData(parseResult.events, timezone, {
+            enabledSourceIds: defaultActivitySourceIds
+          }),
           enabledSourceIds: defaultActivitySourceIds,
           parseWarnings: parseResult.errors
         });
@@ -240,6 +251,7 @@ export async function loadWrappedBaseline({
 
   return {
     heatmapData,
+    activityWindowTrimmed,
     topThreads,
     mostLikedCreators,
     mostCommentedCreators,

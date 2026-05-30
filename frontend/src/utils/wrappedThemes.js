@@ -3,7 +3,10 @@ import { SLIDE_ACCENTS } from "../lib/tokens.js";
 /** Per-slide accent tint (light glass cards). */
 export const SLIDE_THEMES = [
   "intro",
+  "teaser",
+  "activity",
   "span",
+  "activity",
   "activity",
   "likes",
   "likes",
@@ -13,7 +16,6 @@ export const SLIDE_THEMES = [
   "stories",
   "dms",
   "dms",
-  "teaser",
   "privacy"
 ];
 
@@ -65,7 +67,8 @@ export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "data",
   "hero",
-  "data",
+  "hero",
+  "hero",
   "hero",
   "data",
   "hero",
@@ -73,6 +76,7 @@ export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "data",
   "hero",
+  "data",
   "trust"
 ];
 

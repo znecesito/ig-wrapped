@@ -31,6 +31,10 @@ const FAMILY_LABELS = {
   storyInteractions: "story interactions"
 };
 
+function formatCount(n) {
+  return typeof n === "number" ? n.toLocaleString() : String(n);
+}
+
 function parseHour(activeHourLabel) {
   if (!activeHourLabel || activeHourLabel === "-") {
     return null;
@@ -98,6 +102,95 @@ function timeOfDayLabel(hour) {
     return "Afternoon Scroller";
   }
   return "Evening Regular";
+}
+
+const WEEKDAY_ARCHETYPES = {
+  Sunday: "Sloth",
+  Monday: "Camel",
+  Tuesday: "Fox",
+  Wednesday: "Owl",
+  Thursday: "Raven",
+  Friday: "Panther",
+  Saturday: "Dolphin"
+};
+
+const TIME_ADJECTIVES = {
+  night: ["Nocturnal", "Midnight", "Moonlit"],
+  morning: ["Dawn", "Early-bird", "Sunrise"],
+  afternoon: ["Daylight", "Solar", "Afternoon"],
+  evening: ["Twilight", "Golden-hour", "Evening"]
+};
+
+function timeBucket(hour) {
+  if (hour == null) {
+    return "evening";
+  }
+  if (hour >= 21 || hour <= 4) {
+    return "night";
+  }
+  if (hour >= 5 && hour <= 11) {
+    return "morning";
+  }
+  if (hour >= 12 && hour <= 16) {
+    return "afternoon";
+  }
+  return "evening";
+}
+
+function pickStableIndex(seed, mod) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % mod;
+  }
+  return hash;
+}
+
+/** Peak weekday + hour persona (export-scoped rhythm). */
+export function buildRhythmPersona(activeWeekday, activeHourLabel) {
+  if (!activeWeekday || activeWeekday === "-" || !activeHourLabel || activeHourLabel === "-") {
+    return null;
+  }
+
+  const hour = parseHour(activeHourLabel);
+  const bucket = timeBucket(hour);
+  const adjectives = TIME_ADJECTIVES[bucket];
+  const archetype = WEEKDAY_ARCHETYPES[activeWeekday] ?? "Regular";
+  const adj = adjectives[pickStableIndex(`${activeWeekday}-${bucket}`, adjectives.length)];
+  const title = `${adj} ${archetype}`;
+
+  const hourDisplay = activeHourLabel.replace(":00", "");
+  const quip = `You show up hardest on ${activeWeekday}s around ${hourDisplay}. The feed learned your schedule.`;
+
+  return { title, quip, activeWeekday, activeHour: activeHourLabel };
+}
+
+export function buildStreakQuip(streakDays) {
+  if (!streakDays || streakDays < 2) {
+    return null;
+  }
+  if (streakDays >= 14) {
+    return `${streakDays} days back-to-back — you're basically on payroll for this app.`;
+  }
+  if (streakDays >= 7) {
+    return `A full week without ghosting your own feed. Respect.`;
+  }
+  if (streakDays >= 3) {
+    return `${streakDays} days in a row — consistency looks good on you.`;
+  }
+  return `${streakDays} days straight. Baby streak, big energy.`;
+}
+
+export function buildBusiestDayQuip(busiestDayLabel, busiestDayCount) {
+  if (!busiestDayLabel || !busiestDayCount) {
+    return null;
+  }
+  if (busiestDayCount >= 100) {
+    return `${busiestDayLabel} was unhinged — ${formatCount(busiestDayCount)} activities and zero chill.`;
+  }
+  if (busiestDayCount >= 30) {
+    return `Everything happened at once on ${busiestDayLabel}. Chaos, but make it Instagram.`;
+  }
+  return `${busiestDayLabel} was your loudest day in this export. The timeline felt it.`;
 }
 
 /**
@@ -223,10 +316,6 @@ export function buildRankSpotlight(rows, unit, { thread = false } = {}) {
   };
 }
 
-function formatCount(n) {
-  return typeof n === "number" ? n.toLocaleString() : String(n);
-}
-
 /**
  * Spotify-style derived insights from Wrapped baseline (export-local only).
  * @param {object | null | undefined} baseline
@@ -271,12 +360,12 @@ export function buildWrappedInsights(baseline) {
     busiestDayLabel = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
 
-  const activityPunchline =
-    dominantFamily && dominantPct >= 35
-      ? `${dominantPct}% of your activity was ${FAMILY_LABELS[dominantFamily.family] ?? dominantFamily.label}`
-      : total > 0
-        ? `${formatCount(total)} moments in this export`
-        : null;
+  const rhythmPersona = buildRhythmPersona(
+    heatmap?.activeWeekdayLabel ?? null,
+    heatmap?.activeHourLabel ?? null
+  );
+  const streakQuip = buildStreakQuip(streakDays);
+  const busiestDayQuip = buildBusiestDayQuip(busiestDayLabel, busiestDay?.count ?? 0);
 
   return {
     exportYear,
@@ -285,13 +374,16 @@ export function buildWrappedInsights(baseline) {
     dominantPct,
     personality,
     timePersona,
+    rhythmPersona,
+    streakQuip,
+    busiestDayQuip,
+    activityWindowTrimmed: baseline.activityWindowTrimmed ?? false,
     activeWeekday: heatmap?.activeWeekdayLabel ?? null,
     activeHour: heatmap?.activeHourLabel ?? null,
     streakDays,
     busiestDay,
     busiestDayLabel,
     busiestDayCount: busiestDay?.count ?? 0,
-    activityPunchline,
     likesShare: topPersonShareLines(baseline.mostLikedCreators, "likes"),
     commentsShare: topPersonShareLines(baseline.mostCommentedCreators, "comments"),
     storiesShare: topPersonShareLines(baseline.mostStoryCreators, "story taps"),
