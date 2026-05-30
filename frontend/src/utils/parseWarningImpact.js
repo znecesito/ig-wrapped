@@ -7,14 +7,6 @@ export function explainParseWarning(message) {
   const text = String(message || "").trim();
   const lower = text.toLowerCase();
 
-  if (lower.includes("profile_search")) {
-    return {
-      summary: text,
-      impact: "The profile searches slide may be empty or show partial counts.",
-      slides: ["Profile searches"]
-    };
-  }
-
   if (
     lower.includes("message") ||
     lower.includes("inbox") ||

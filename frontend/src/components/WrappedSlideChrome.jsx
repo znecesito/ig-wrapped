@@ -115,6 +115,7 @@ export function WrappedSlideLayout({
   bodyQuip
 }) {
   const isHeroBody = bodyClassName === "hero";
+  const isHeroListLeft = bodyClassName === "hero-list";
   const isHeroTemplate = template === "hero";
 
   return (
@@ -136,8 +137,10 @@ export function WrappedSlideLayout({
           "flex min-h-0 flex-[0_1_auto] flex-col items-stretch justify-center gap-[0.28rem] overflow-y-auto",
           "has-[.wrapped-leaderboard]:overflow-visible",
           template === "data" && "gap-[0.32rem]",
-          (isHeroBody || isHeroTemplate) && "items-center text-center",
-          bodyClassName && !isHeroBody && bodyClassName
+          (isHeroBody || isHeroTemplate) && !isHeroListLeft && "items-center text-center",
+          isHeroListLeft &&
+            "items-center text-center [&_ul]:mx-auto [&_ul]:w-full [&_ul]:max-w-[17rem] [&_ul]:text-left",
+          bodyClassName && !isHeroBody && !isHeroListLeft && bodyClassName
         )}
         style={{ WebkitOverflowScrolling: "touch" }}
       >

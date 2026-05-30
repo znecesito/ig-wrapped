@@ -176,6 +176,53 @@ export function topThreadShareLines(rows) {
   return shareLinesFromTopCounts(name, topCount, second?.messageCount ?? 0, "messages", total);
 }
 
+/**
+ * Spotify-style “winner” beat before a ranking slide (export-scoped — no global percentile).
+ * @param {{ username?: string, count?: number, label?: string, messageCount?: number }[]} rows
+ * @param {string} unit
+ * @param {{ thread?: boolean }} [options]
+ */
+export function buildRankSpotlight(rows, unit, { thread = false } = {}) {
+  const share = thread ? topThreadShareLines(rows) : topPersonShareLines(rows, unit);
+  if (!rows?.length) {
+    return { ...share, empty: true, name: null, topCount: 0, exportSharePct: 0, fanLine: null };
+  }
+
+  const top = rows[0];
+  const topCount = thread ? (top.messageCount ?? 0) : (top.count ?? 0);
+  const total = thread
+    ? rows.reduce((s, r) => s + (r.messageCount ?? 0), 0)
+    : rows.reduce((s, r) => s + (r.count ?? 0), 0);
+  const exportSharePct = total > 0 ? Math.round((topCount / total) * 100) : 0;
+  const name = thread
+    ? formatThreadShareName(top.label)
+    : `@${String(top.username ?? "").replace(/^@/, "")}`;
+
+  let fanLine;
+  if (exportSharePct >= 40) {
+    fanLine = `That's ${exportSharePct}% of your ${unit} in this export`;
+  } else if (rows.length > 1) {
+    const secondCount = thread ? (rows[1].messageCount ?? 0) : (rows[1].count ?? 0);
+    if (secondCount > 0 && topCount / secondCount >= 1.5) {
+      fanLine = `${(topCount / secondCount).toFixed(1)}× more ${unit} than #2 here`;
+    } else {
+      fanLine = `Your #1 for ${unit} in this export`;
+    }
+  } else {
+    fanLine = `${formatCount(topCount)} ${unit} in this export`;
+  }
+
+  return {
+    ...share,
+    empty: false,
+    name,
+    topCount,
+    unit,
+    exportSharePct,
+    fanLine
+  };
+}
+
 function formatCount(n) {
   return typeof n === "number" ? n.toLocaleString() : String(n);
 }
@@ -249,6 +296,9 @@ export function buildWrappedInsights(baseline) {
     commentsShare: topPersonShareLines(baseline.mostCommentedCreators, "comments"),
     storiesShare: topPersonShareLines(baseline.mostStoryCreators, "story taps"),
     dmsShare: topThreadShareLines(baseline.topThreads),
-    searchesShare: topPersonShareLines(baseline.profileSearches?.rows ?? [], "searches")
+    likesSpotlight: buildRankSpotlight(baseline.mostLikedCreators, "likes"),
+    commentsSpotlight: buildRankSpotlight(baseline.mostCommentedCreators, "comments"),
+    storiesSpotlight: buildRankSpotlight(baseline.mostStoryCreators, "story taps"),
+    dmsSpotlight: buildRankSpotlight(baseline.topThreads, "messages", { thread: true })
   };
 }

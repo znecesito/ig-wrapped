@@ -7,6 +7,10 @@ const STACK_BLEND_PCT = [86, 70, 56, 44, 38];
 
 export function getSlideAccent(cardIndex) {
   const theme = getSlideTheme(cardIndex);
+  return getSlideAccentForTheme(theme);
+}
+
+export function getSlideAccentForTheme(theme) {
   return SLIDE_ACCENTS[theme] ?? SLIDE_ACCENTS.intro;
 }
 

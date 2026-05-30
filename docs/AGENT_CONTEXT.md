@@ -26,22 +26,23 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 ### Wrapped flow (after export loads)
 
 1. **Lobby** — [`WrappedLobby.jsx`](../frontend/src/components/WrappedLobby.jsx): lede, handle/year, parse warnings with **layman impact** ([`parseWarningImpact.js`](../frontend/src/utils/parseWarningImpact.js)). **Start Wrapped** disabled until warnings acknowledged (checkbox). No warnings → Start enabled immediately.
-2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause**; **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (personality) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Share: screenshot hint in player.
+2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause**; **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (privacy) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Share: screenshot hint in player.
 
-### Ten slides (index 0–9)
+### Slides (index 0–12, 13 beats)
 
 | # | Slide | Notes |
 |---|--------|--------|
 | 0 | Intro | “Your feed, wrapped”, handle, export year |
 | 1 | Activity span | Date range in export (not full IG history) |
 | 2 | Activity | Mega total + dominant-family % punchline + stacks |
-| 3 | Likes | Share headlines from `wrappedInsights` |
-| 4 | Comments | Same |
-| 5 | Story interactions | Same |
-| 6 | DMs | Share headlines + leaderboard |
-| 7 | Profile searches | Share headlines + mega stat |
-| 8 | Feed personality | Club-style persona (hero) |
-| 9 | Privacy | Trust / local-only (last slide, tap to finish) |
+| 3–4 | Likes | Spotlight (#1) → ranking |
+| 5–6 | Comments | Spotlight → ranking |
+| 7–8 | Stories | Spotlight → ranking |
+| 9–10 | DMs | Spotlight → ranking |
+| 11 | Feed personality | Club-style persona (hero) |
+| 12 | Privacy | Trust / local-only (last slide, tap to finish) |
+
+Profile search slide **removed** (export stores one row per account). See [`spotify-wrapped-research.md`](spotify-wrapped-research.md) analogue table.
 
 Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
 

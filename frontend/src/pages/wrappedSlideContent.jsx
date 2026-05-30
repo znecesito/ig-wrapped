@@ -14,27 +14,19 @@ import {
   SLIDE_BULLET_LIST,
   SLIDE_BULLET_LIST_ON_DARK,
   SLIDE_CODE,
-  SLIDE_FOOTER_LINK,
   SLIDE_HERO_COMPACT,
   SLIDE_HERO_COMPACT_ON_DARK,
   SLIDE_HERO_DISPLAY,
-  SEARCH_RANK_COUNT,
-  SEARCH_RANK_NAME,
-  SEARCH_RANK_NUM,
-  SEARCH_RANK_REST,
-  SEARCH_RANK_ROW,
   SLIDE_INSIGHT_PUNCH,
+  SLIDE_INSIGHT_PUNCH_ON_DARK,
   SLIDE_MEGA_LABEL,
-  SLIDE_MEGA_STAT,
   SLIDE_MEGA_STAT_DOMINANT,
-  SLIDE_MEGA_STAT_SM,
-  SLIDE_PERSONALITY_EMOJI,
   SLIDE_PERSONALITY_EMOJI_HERO,
   SLIDE_STAT_LABEL,
   SLIDE_STAT_VALUE,
   SLIDE_STATS_INLINE
 } from "../components/wrappedSlideClasses.js";
-import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
+import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { getSlideTemplate } from "../utils/wrappedThemes.js";
 import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
 
@@ -69,80 +61,8 @@ function truncateLabel(text, max = 16) {
   return `${text.slice(0, max - 1)}…`;
 }
 
-function mergedFooterStat(username, count, unit, { thread = false } = {}) {
-  if (thread) {
-    return (
-      <>
-        <strong>{formatPrimaryDmThreadName(username)}</strong> · {formatCount(count)} {unit}
-      </>
-    );
-  }
-  const handle = `@${String(username).replace(/^@/, "")}`;
-  return (
-    <>
-      <strong>{handle}</strong> · {formatCount(count)} {unit}
-    </>
-  );
-}
-
 function profileLink(username) {
   return `${IG_PROFILE_BASE_URL}${encodeURIComponent(username)}/`;
-}
-
-function likesFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      Rent&apos;s due on your attention span —{" "}
-      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      had the edge in this export. The algorithm simply watches.
-    </p>
-  );
-}
-
-function commentsFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      The comment box remembers —{" "}
-      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      got the most replies here. Caps lock optional; sincerity wasn&apos;t.
-    </p>
-  );
-}
-
-function storiesFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      Your story lane had a main character —{" "}
-      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>
-      . The ring doesn&apos;t lie.
-    </p>
-  );
-}
-
-function dmsFooterQuip() {
-  return <p>You kept the thread hot. We won&apos;t tell who left everyone on read.</p>;
-}
-
-function searchesFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      Curiosity has a favorite —{" "}
-      <a className={SLIDE_FOOTER_LINK} href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      topped your search history in this export.
-    </p>
-  );
 }
 
 function threadStackHref(label) {
@@ -232,6 +152,60 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   );
 }
 
+/** Spotify-style winner beat before a ranking slide (export-scoped copy). */
+function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emptyMessage }) {
+  if (!spotlight || spotlight.empty || !spotlight.topCount) {
+    return (
+      <WrappedSlideLayout template="hero" eyebrow={eyebrow} title={categoryLabel} deck={emptyMessage}>
+        <p className={SLIDE_BODY_ON_DARK}>{emptyMessage}</p>
+      </WrappedSlideLayout>
+    );
+  }
+
+  return (
+    <WrappedSlideLayout
+      template="hero"
+      eyebrow={eyebrow}
+      title={categoryLabel}
+      deck={spotlight.name}
+      bodyClassName="hero"
+      footerStat={
+        spotlight.subline ? <span className="text-[var(--slide-fg-muted)]">{spotlight.subline}</span> : null
+      }
+    >
+      <p className={SLIDE_MEGA_STAT_DOMINANT}>{formatCount(spotlight.topCount)}</p>
+      <p className={SLIDE_MEGA_LABEL}>{unitLabel}</p>
+      {spotlight.fanLine ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{spotlight.fanLine}</p>
+      ) : null}
+    </WrappedSlideLayout>
+  );
+}
+
+/** Podium + stack ranking (follows spotlight). */
+function renderRankLeaderboard({
+  template,
+  eyebrow,
+  title,
+  deck,
+  rows,
+  accentTheme,
+  threadLabels = false,
+  emptyMessage
+}) {
+  const accent = getSlideAccentForTheme(accentTheme);
+
+  return (
+    <WrappedSlideLayout template={template} eyebrow={eyebrow} title={title} deck={deck}>
+      {rows.length > 0 ? (
+        renderLeaderboardBlock(rows, { threadLabels, accent })
+      ) : (
+        <p className={SLIDE_BODY}>{emptyMessage}</p>
+      )}
+    </WrappedSlideLayout>
+  );
+}
+
 export function renderWrappedSlide(index, ctx) {
   const { baseline, handle, activityBreakdown, insights } = ctx;
   const yearLabel = insights?.exportYear ? String(insights.exportYear) : "Your export";
@@ -250,8 +224,8 @@ export function renderWrappedSlide(index, ctx) {
           <p className={SLIDE_HERO_DISPLAY}>{handle}</p>
           <p className={SLIDE_BODY_ON_DARK}>
             {insights?.totalActivities > 0
-              ? `${formatCount(insights.totalActivities)} activities · people · DMs · searches`
-              : "Activity · people · DMs · searches"}
+              ? `${formatCount(insights.totalActivities)} activities · people · DMs`
+              : "Activity · people · DMs"}
           </p>
         </WrappedSlideLayout>
       );
@@ -326,151 +300,95 @@ export function renderWrappedSlide(index, ctx) {
         </WrappedSlideLayout>
       );
 
-    case 3: {
-      const rows = baseline.mostLikedCreators;
-      const top = rows[0];
-      const share = insights?.likesShare;
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Top of your likes"
-          title={share?.headline ?? "Most liked creators"}
-          deck={share?.subline ?? "Liked posts & comments · by creator"}
-          footerStat={top ? mergedFooterStat(top.username, top.count, "likes") : null}
-          bodyQuip={top ? likesFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
-          ) : (
-            <p className={SLIDE_BODY}>No likes counted in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
+    case 3:
+      return renderRankSpotlight({
+        eyebrow: "Likes",
+        categoryLabel: "Your top liked creator",
+        spotlight: insights?.likesSpotlight,
+        unitLabel: "likes in this export",
+        emptyMessage: "No likes counted in this export."
+      });
 
-    case 4: {
-      const rows = baseline.mostCommentedCreators;
-      const top = rows[0];
-      const share = insights?.commentsShare;
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Top of your comments"
-          title={share?.headline ?? "Most commented creators"}
-          deck={share?.subline ?? "Posts, reels & stories"}
-          footerStat={top ? mergedFooterStat(top.username, top.count, "comments") : null}
-          bodyQuip={top ? commentsFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
-          ) : (
-            <p className={SLIDE_BODY}>No comments counted in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
+    case 4:
+      return renderRankLeaderboard({
+        template,
+        eyebrow: "Likes",
+        title: "Top liked creators",
+        deck: "Ranked in this export",
+        rows: baseline.mostLikedCreators,
+        accentTheme: "likes",
+        emptyMessage: "No likes counted in this export."
+      });
 
-    case 5: {
-      const rows = baseline.mostStoryCreators;
-      const top = rows[0];
-      const share = insights?.storiesShare;
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Top of your stories"
-          title={share?.headline ?? "Top story interactions"}
-          deck={share?.subline ?? "Polls · views · reactions"}
-          footerStat={top ? mergedFooterStat(top.username, top.count, "interactions") : null}
-          bodyQuip={top ? storiesFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
-          ) : (
-            <p className={SLIDE_BODY}>No story interactions in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
+    case 5:
+      return renderRankSpotlight({
+        eyebrow: "Comments",
+        categoryLabel: "Your top commented creator",
+        spotlight: insights?.commentsSpotlight,
+        unitLabel: "comments in this export",
+        emptyMessage: "No comments counted in this export."
+      });
 
-    case 6: {
-      const rows = baseline.topThreads;
-      const top = rows[0];
-      const share = insights?.dmsShare;
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Inbox"
-          title={share?.headline ?? "Top DM threads"}
-          deck={share?.subline ?? `Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
-          footerStat={
-            top
-              ? mergedFooterStat(top.label, top.messageCount, "messages", { thread: true })
-              : null
-          }
-          bodyQuip={top ? dmsFooterQuip() : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
-          ) : (
-            <p className={SLIDE_BODY}>No threads in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
+    case 6:
+      return renderRankLeaderboard({
+        template,
+        eyebrow: "Comments",
+        title: "Top commented creators",
+        deck: "Posts, reels & stories",
+        rows: baseline.mostCommentedCreators,
+        accentTheme: "comments",
+        emptyMessage: "No comments counted in this export."
+      });
 
-    case 7: {
-      const rows = baseline.profileSearches?.rows ?? [];
-      const topSearch = rows[0];
-      const share = insights?.searchesShare;
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Search history"
-          title={share?.headline ?? "Profile searches"}
-          deck={share?.subline ?? "From profile_searches.json"}
-          footerStat={
-            topSearch ? (
-              <>
-                @{topSearch.username} · {formatCount(topSearch.count)} searches
-              </>
-            ) : null
-          }
-          bodyQuip={topSearch ? searchesFooterQuip(topSearch) : null}
-        >
-          {!baseline.profileSearches?.fileFound ? (
-            <p className={SLIDE_BODY}>No profile_searches.json in this folder.</p>
-          ) : baseline.profileSearches.totalSearchEvents === 0 ||
-            baseline.profileSearches.rows.length === 0 ? (
-            <p className={SLIDE_BODY}>No profile searches in this snapshot.</p>
-          ) : (
-            <>
-              <p className={SLIDE_MEGA_STAT_SM}>{formatCount(rows[0].count)}</p>
-              <p className={SLIDE_MEGA_LABEL}>profile searches</p>
-              {rows.length > 1 ? (
-                <ul className={SEARCH_RANK_REST} aria-label="Other searches">
-                  {rows.slice(1, 4).map((r, i) => (
-                    <li key={r.username} className={SEARCH_RANK_ROW}>
-                      <span className={SEARCH_RANK_NUM}>{i + 2}</span>
-                      <span className={SEARCH_RANK_NAME}>@{r.username}</span>
-                      <span className={SEARCH_RANK_COUNT}>{r.count}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
+    case 7:
+      return renderRankSpotlight({
+        eyebrow: "Stories",
+        categoryLabel: "Your top story interaction",
+        spotlight: insights?.storiesSpotlight,
+        unitLabel: "story interactions in this export",
+        emptyMessage: "No story interactions in this export."
+      });
 
     case 8:
+      return renderRankLeaderboard({
+        template,
+        eyebrow: "Stories",
+        title: "Top story interactions",
+        deck: "Polls · views · reactions",
+        rows: baseline.mostStoryCreators,
+        accentTheme: "stories",
+        emptyMessage: "No story interactions in this export."
+      });
+
+    case 9:
+      return renderRankSpotlight({
+        eyebrow: "Inbox",
+        categoryLabel: "Your top DM thread",
+        spotlight: insights?.dmsSpotlight,
+        unitLabel: "messages in this export",
+        emptyMessage: "No threads in this export."
+      });
+
+    case 10:
+      return renderRankLeaderboard({
+        template,
+        eyebrow: "Inbox",
+        title: "Top DM threads",
+        deck: `Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`,
+        rows: baseline.topThreads,
+        accentTheme: "dms",
+        threadLabels: true,
+        emptyMessage: "No threads in this export."
+      });
+
+    case 11:
       return (
         <WrappedSlideLayout
           template={template}
           eyebrow="Your feed personality"
           title={insights?.personality?.title ?? "Still loading your vibe"}
           deck={insights?.personality?.tagline ?? "Load activity data to see your club"}
-          bodyClassName="hero"
+          bodyClassName="hero-list"
           footerStat={
             insights?.personality
               ? `${insights.personality.emoji} ${insights.dominantPct >= 20 ? `${insights.dominantPct}% ${insights.personality.label}` : insights.personality.label}`
@@ -515,7 +433,7 @@ export function renderWrappedSlide(index, ctx) {
         </WrappedSlideLayout>
       );
 
-    case 9:
+    case 12:
       return (
         <WrappedSlideLayout
           template={template}

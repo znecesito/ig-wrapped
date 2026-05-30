@@ -32,9 +32,57 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 
 ---
 
-## Slide order (current, index 0–9)
+## Slide order (current, index 0–12)
 
-0 intro · 1 span · 2 activity · 3 likes · 4 comments · 5 stories · 6 DMs · 7 searches · 8 feed personality · 9 privacy
+| # | Beat | Archetype |
+|---|------|-----------|
+| 0 | Intro | Hero |
+| 1 | Activity span | Hero |
+| 2 | Activity mega total | Data |
+| 3 | Likes — **#1 spotlight** | Hero |
+| 4 | Likes — ranking | Data |
+| 5 | Comments — spotlight | Hero |
+| 6 | Comments — ranking | Data |
+| 7 | Stories — spotlight | Hero |
+| 8 | Stories — ranking | Data |
+| 9 | DMs — spotlight | Hero |
+| 10 | DMs — ranking | Data |
+| 11 | Feed personality | Hero |
+| 12 | Privacy | Trust |
+
+**Spotify 2025 pattern:** each ranking category gets a **winner slide** (one relationship + big number + export-scoped “fan” line), then a **chart slide** (podium + stack). Profile search was removed from the deck (export only stores one row per account searched).
+
+---
+
+## Card archetypes (Spotify structure → IG implementation)
+
+| Archetype | Spotify feel | IG Wrapped today | Phase H (motion) |
+|-----------|--------------|------------------|------------------|
+| **Hero** | Full-bleed type, one idea | Intro, span, each **spotlight**, personality | Stagger eyebrow → name → mega stat |
+| **Data** | One dominant stat + chart | Activity, each **ranking** (podium + stack) | Reveal stack segments in sequence |
+| **Trust** | Calm outro | Privacy (last slide) | Soft fade |
+
+Spotlight copy uses `buildRankSpotlight()` — export-scoped lines like “That’s 42% of your likes in this export”, **not** global “top 3% fan”.
+
+---
+
+## IG Wrapped analogue — mechanisms vs slides
+
+| Mechanism | Spotify example | IG analogue | On a slide today? |
+|-----------|-----------------|-------------|-------------------|
+| **Identity** | “This is *my* year” | Handle + export year (intro) | Yes · 0 |
+| **One big number** | Minutes listened | Total activities | Yes · 2 |
+| **Status** | Top 1% for artist X | % of likes/comments/etc. in **this export** | Yes · 3,5,7,9 spotlights |
+| **Relationship** | Top artist | Top liked / commented / story / DM | Yes · spotlights + rankings |
+| **Surprise** | Musical phases | Dominant family %, time persona | Yes · 2 punchline, 11 bullets |
+| **Streak / dedication** | Listening streak | Longest active days in export | Yes · 11 |
+| **Memorable day** | Special day | Busiest calendar day | Yes · 11 |
+| **Share artifact** | Per-stat cards | 9:16 story cards, screenshot | All |
+| **Search / discovery** | New artists | ~~Profile searches~~ | **Removed** (weak export signal) |
+| **Clubs / persona** | Your club | Feed personality | Yes · 11 |
+| **Global percentile** | Top 1% worldwide | — | **Never** (no IG API) |
+
+**Still optional (Phase J):** `mostUsedWords`, `past_instagram_insights`, dedicated busiest-day card, month-by-month “phases”.
 
 ---
 
@@ -46,8 +94,8 @@ Hero / data / trust templates in `WrappedSlideChrome`, `getCardSurfaceStyle()` i
 
 ### Phase G — Metrics & copy **Done**
 
-- `dmsShare` / `searchesShare`; deduped title vs body on leaderboards.
-- Slide **8** = feed personality, **9** = privacy (privacy is last / manual advance).
+- Share lines; slide **11** = personality, **12** = privacy.
+- **Local iteration:** spotlight + ranking pairs (Spotify 2025); searches slide removed.
 
 ### Phase H — Scene choreography **← NEXT**
 
@@ -81,7 +129,7 @@ Hero / data / trust templates in `WrappedSlideChrome`, `getCardSurfaceStyle()` i
 | Listening streak | Consecutive active days | `calendarDays` |
 | Memorable day | Busiest day | `calendarDays` |
 | Top podcasts | Top DM threads | `topThreads` |
-| Search/discovery | Profile searches | `profileSearches` |
+| Search/discovery | — (removed from deck) | `profileSearches` parser kept, unused in player |
 | Clubs / personality | Feed personality | `FEED_PERSONALITIES` |
 | Global top 1% | — | **omit** |
 

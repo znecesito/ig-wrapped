@@ -6,10 +6,13 @@ export const SLIDE_THEMES = [
   "span",
   "activity",
   "likes",
+  "likes",
+  "comments",
   "comments",
   "stories",
+  "stories",
   "dms",
-  "search",
+  "dms",
   "teaser",
   "privacy"
 ];
@@ -56,15 +59,18 @@ export const SLIDE_THEME_VARS = Object.fromEntries(
 export const CARD_SURFACE_BG =
   "linear-gradient(165deg, var(--slide-glass) 0%, color-mix(in srgb, var(--slide-tint) 35%, white) 100%)";
 
-/** Phase F — hero (0,1,8), data (2–7), trust (9). */
+/** hero = spotlight / intro; data = mega-stat + ranking; trust = privacy */
 export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "hero",
   "data",
+  "hero",
   "data",
+  "hero",
   "data",
+  "hero",
   "data",
-  "data",
+  "hero",
   "data",
   "hero",
   "trust"
