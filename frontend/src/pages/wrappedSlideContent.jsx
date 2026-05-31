@@ -188,6 +188,56 @@ function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emp
   );
 }
 
+/** Inbox-wide personality (all threads in export). */
+function renderInboxPersonalitySpotlight({ spotlight, emptyMessage }) {
+  if (!spotlight || spotlight.empty || !spotlight.totalMessages) {
+    return (
+      <WrappedSlideLayout
+        template="hero"
+        eyebrow="Inbox"
+        title="Your inbox personality"
+        deck={emptyMessage}
+      >
+        <p className={SLIDE_BODY_ON_DARK}>{emptyMessage}</p>
+      </WrappedSlideLayout>
+    );
+  }
+
+  return (
+    <WrappedSlideLayout
+      template="hero"
+      eyebrow="Inbox"
+      title={spotlight.title ?? "Your inbox personality"}
+      deck="Across every thread in this export"
+      bodyClassName="hero"
+      footerStat={
+        spotlight.fanLine ? (
+          <span className="text-[var(--slide-fg-muted)]" data-wrapped-beat="footer">
+            {spotlight.fanLine}
+          </span>
+        ) : null
+      }
+    >
+      <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+        {spotlight.heroPct}%
+      </p>
+      <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+        {spotlight.heroLabel}
+      </p>
+      {spotlight.selfPct != null ? (
+        <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="stat-secondary">
+          {spotlight.selfPct}% you · {spotlight.groupPct}% in groups
+        </p>
+      ) : null}
+      {spotlight.quip ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+          {spotlight.quip}
+        </p>
+      ) : null}
+    </WrappedSlideLayout>
+  );
+}
+
 /** You vs them balance in the busiest DM thread. */
 function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
   if (!spotlight || spotlight.empty || !spotlight.messageCount) {
@@ -444,12 +494,18 @@ export function renderWrappedSlide(index, ctx) {
       });
 
     case 8:
+      return renderInboxPersonalitySpotlight({
+        spotlight: insights?.inboxPersonalitySpotlight,
+        emptyMessage: "No threads in this export."
+      });
+
+    case 9:
       return renderDmBalanceSpotlight({
         spotlight: insights?.dmBalanceSpotlight,
         emptyMessage: "No threads in this export."
       });
 
-    case 9:
+    case 10:
       return (
         <WrappedSlideLayout
           template={template}

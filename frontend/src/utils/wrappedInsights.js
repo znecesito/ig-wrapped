@@ -494,6 +494,121 @@ export function buildDmBalanceSpotlight(topThread) {
 }
 
 /**
+ * Inbox-wide stats across all DM threads (export-scoped).
+ * @param {{
+ *   messageCount?: number,
+ *   selfMessageCount?: number,
+ *   otherMessageCount?: number,
+ *   isGroup?: boolean
+ * }[]} rows
+ */
+export function buildInboxPersonalitySpotlight(rows) {
+  if (!rows?.length) {
+    return {
+      empty: true,
+      title: null,
+      heroPct: 0,
+      heroLabel: null,
+      totalMessages: 0,
+      threadCount: 0,
+      groupPct: 0,
+      dmPct: 0,
+      selfPct: null,
+      quip: null,
+      fanLine: null
+    };
+  }
+
+  let totalMessages = 0;
+  let groupMessages = 0;
+  let selfTotal = 0;
+  let otherTotal = 0;
+  let groupThreadCount = 0;
+
+  for (const row of rows) {
+    const count = row.messageCount ?? 0;
+    totalMessages += count;
+    if (row.isGroup) {
+      groupMessages += count;
+      groupThreadCount += 1;
+    }
+    selfTotal += row.selfMessageCount ?? 0;
+    otherTotal += row.otherMessageCount ?? 0;
+  }
+
+  const threadCount = rows.length;
+  const dmMessages = totalMessages - groupMessages;
+  const groupPct = totalMessages > 0 ? Math.round((groupMessages / totalMessages) * 100) : 0;
+  const dmPct = totalMessages > 0 ? 100 - groupPct : 0;
+  const tracked = selfTotal + otherTotal;
+  const selfPct = tracked > 0 ? Math.round((selfTotal / tracked) * 100) : null;
+  const otherPct = selfPct != null ? 100 - selfPct : null;
+
+  let title;
+  let heroPct;
+  let heroLabel;
+  let quip;
+
+  if (groupPct >= 55) {
+    title = "Group chat person";
+    heroPct = groupPct;
+    heroLabel = "of your messages in group chats";
+    if (selfPct != null && selfPct >= 55) {
+      quip = `${groupPct}% of your texts landed in groups — and you weren't shy. Main character energy.`;
+    } else if (selfPct != null && selfPct <= 35) {
+      quip = `Groups dominate your inbox, but you mostly lurk. Quality over quantity.`;
+    } else {
+      quip = `Your inbox runs on group chats. The GC is the real feed.`;
+    }
+  } else if (dmPct >= 70) {
+    title = "1:1 texter";
+    heroPct = dmPct;
+    heroLabel = "of your messages in direct chats";
+    if (selfPct != null && selfPct >= 60) {
+      quip = `Mostly DMs, mostly you starting them. Double-text rights earned.`;
+    } else if (selfPct != null && selfPct <= 35) {
+      quip = `Private threads, but they usually text first. You're the calm reply.`;
+    } else {
+      quip = `You keep it personal — DMs over the group chaos.`;
+    }
+  } else if (selfPct != null && selfPct >= 60) {
+    title = "Inbox initiator";
+    heroPct = selfPct;
+    heroLabel = "of tracked messages were yours";
+    quip = `Across ${formatCount(threadCount)} threads, you sent the majority. The blue bubble energy is strong.`;
+  } else if (selfPct != null && selfPct <= 35) {
+    title = "Thoughtful replier";
+    heroPct = otherPct ?? 0;
+    heroLabel = "of tracked messages came from others";
+    quip = `You listen more than you broadcast — ${formatCount(totalMessages)} messages, mostly incoming.`;
+  } else {
+    title = "Balanced inbox";
+    heroPct = selfPct ?? groupPct;
+    heroLabel =
+      selfPct != null ? "of tracked messages were yours" : "of your messages in group chats";
+    quip = `A mix of groups and DMs in this export — no single lane owns you.`;
+  }
+
+  const fanLine = `${formatCount(totalMessages)} messages · ${formatCount(threadCount)} threads${
+    groupThreadCount > 0 ? ` · ${groupThreadCount} groups` : ""
+  }`;
+
+  return {
+    empty: false,
+    title,
+    heroPct,
+    heroLabel,
+    totalMessages,
+    threadCount,
+    groupPct,
+    dmPct,
+    selfPct,
+    quip,
+    fanLine
+  };
+}
+
+/**
  * Spotify-style “winner” beat before a ranking slide (export-scoped — no global percentile).
  * @param {{ username?: string, count?: number, label?: string, messageCount?: number }[]} rows
  * @param {string} unit
@@ -621,6 +736,7 @@ export function buildWrappedInsights(baseline) {
     busiestDayLabel,
     busiestDayCount: busiestDay?.count ?? 0,
     socialSpotlight: buildSocialSpotlight(baseline.mostSocialCreators),
+    inboxPersonalitySpotlight: buildInboxPersonalitySpotlight(baseline.messageThreads ?? []),
     dmBalanceSpotlight: buildDmBalanceSpotlight(baseline.topThreads?.[0] ?? null)
   };
 }

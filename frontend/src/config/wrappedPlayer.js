@@ -1,6 +1,6 @@
 /** Story player — slide count and auto-advance timing (Phase E). */
 
-export const WRAPPED_CARD_COUNT = 10;
+export const WRAPPED_CARD_COUNT = 11;
 
 export const WRAPPED_LAST_SLIDE_INDEX = WRAPPED_CARD_COUNT - 1;
 
@@ -14,7 +14,8 @@ export const WRAPPED_SLIDE_DURATIONS_MS = [
   5000, // busiest day
   5500, // social spotlight
   6000, // social ranking
-  5500, // DM you vs them
+  5500, // inbox personality
+  5500, // DM you vs them (busiest thread)
   0 // privacy — last slide, no auto-advance
 ];
 
