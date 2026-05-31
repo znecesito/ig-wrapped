@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../lib/utils.js";
-import { WrappedSlideShell } from "./WrappedSlideChrome.jsx";
-import { getSlideTheme, getSlideThemeStyle, getSlideTemplate } from "../utils/wrappedThemes.js";
+import { WrappedPlayerSlide } from "./WrappedSlideChrome.jsx";
+import {
+  getCardSurfaceStyle,
+  getSlideTheme,
+  getSlideThemeStyle,
+  getSlideTemplate
+} from "../utils/wrappedThemes.js";
 import {
   getSlideDurationMs,
   WRAPPED_CARD_COUNT,
@@ -28,9 +33,8 @@ export default function WrappedStoryPlayer({
 }) {
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [enterClass, setEnterClass] = useState("wrapped-card--from-next");
 
-  const cardRef = useRef(null);
+  const slideRef = useRef(null);
   const pointerRef = useRef(null);
   const swipeRef = useRef(null);
   const rafRef = useRef(null);
@@ -42,6 +46,9 @@ export default function WrappedStoryPlayer({
   const slideTheme = getTheme(cardIndex);
   const slideThemeStyle = getSlideThemeStyle(slideTheme);
   const slideTemplate = getSlideTemplate(cardIndex);
+  const surfaceStyle = getCardSurfaceStyle(slideTheme, slideTemplate, { playerMode: true });
+  const { background: slideBackground, ...slideSurfaceVars } = surfaceStyle;
+  const isHeroTemplate = slideTemplate === "hero";
 
   const goTo = useCallback(
     (nextIndex) => {
@@ -49,8 +56,6 @@ export default function WrappedStoryPlayer({
       if (clamped === cardIndex) {
         return;
       }
-      const direction = clamped > cardIndex ? 1 : -1;
-      setEnterClass(direction > 0 ? "wrapped-card--from-next" : "wrapped-card--from-prev");
       onIndexChange(clamped);
     },
     [cardCount, cardIndex, onIndexChange]
@@ -68,15 +73,13 @@ export default function WrappedStoryPlayer({
     }
   }, [cardIndex, goTo]);
 
-  // Reset progress when slide changes
   useEffect(() => {
     setProgress(0);
     setPaused(false);
   }, [cardIndex]);
 
-  // GSAP scene timeline per slide (Phase H) — layout effect so DOM + refs are ready
   useLayoutEffect(() => {
-    const root = cardRef.current;
+    const root = slideRef.current;
     if (!root) {
       return undefined;
     }
@@ -111,7 +114,6 @@ export default function WrappedStoryPlayer({
       }
     };
 
-    // one frame so slide children (DropDownText cells) are committed
     const raf = requestAnimationFrame(startTimeline);
 
     return () => {
@@ -124,7 +126,6 @@ export default function WrappedStoryPlayer({
     };
   }, [cardIndex, autoAdvance, durationMs, goNext, slideTemplate]);
 
-  // Hold-to-pause: freeze GSAP timeline
   useEffect(() => {
     const tl = timelineRef.current;
     if (!tl) {
@@ -137,7 +138,6 @@ export default function WrappedStoryPlayer({
     }
   }, [paused]);
 
-  // Progress bar synced to timeline
   useEffect(() => {
     if (!autoAdvance) {
       return undefined;
@@ -160,7 +160,6 @@ export default function WrappedStoryPlayer({
     };
   }, [autoAdvance, cardIndex]);
 
-  // Keyboard: arrows navigate, Escape exits
   useEffect(() => {
     function onKeyDown(e) {
       if (e.key === "Escape") {
@@ -233,18 +232,33 @@ export default function WrappedStoryPlayer({
 
   return (
     <div
-      className={cn("wrapped-player fixed inset-0 z-50 flex flex-col font-sans text-ink", "wrapped-player--flat")}
-      style={slideThemeStyle}
+      className={cn(
+        "wrapped-player wrapped-player--immersive fixed inset-0 z-50 flex flex-col font-sans text-ink"
+      )}
+      style={{ ...slideThemeStyle, ...slideSurfaceVars }}
       data-slide-theme={slideTheme}
+      data-slide-template={slideTemplate}
       role="dialog"
       aria-modal="true"
       aria-label={`Wrapped story ${cardIndex + 1} of ${cardCount}`}
     >
-      <div className="wrapped-player__stage" aria-hidden />
-      <div className="wrapped-player__grain" aria-hidden />
+      <div
+        className="wrapped-player__stage"
+        style={{ background: slideBackground }}
+        aria-hidden
+      />
       <div
         className={cn(
-          "flex shrink-0 gap-1 px-2",
+          "wrapped-player__tint",
+          isHeroTemplate ? "wrapped-player__tint--hero" : "wrapped-player__tint--data"
+        )}
+        aria-hidden
+      />
+      <div className="wrapped-player__grain" aria-hidden />
+
+      <div
+        className={cn(
+          "relative z-10 flex shrink-0 gap-1 px-2",
           "pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]"
         )}
       >
@@ -286,7 +300,7 @@ export default function WrappedStoryPlayer({
       </button>
 
       <div
-        className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        className="relative z-10 flex min-h-0 flex-1 flex-col"
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
@@ -294,25 +308,19 @@ export default function WrappedStoryPlayer({
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: "manipulation" }}
       >
-        <div className="wrapped-player__card-wrap relative min-h-0 w-full flex-1">
-          <WrappedSlideShell
-            ref={cardRef}
-            key={cardIndex}
-            cardIndex={cardIndex}
-            cardCount={cardCount}
-            theme={slideTheme}
-            playerMode
-            playerFlat
-            extraClass={cn("wrapped-card--visible", enterClass)}
-          >
-            {renderSlide(cardIndex)}
-          </WrappedSlideShell>
-        </div>
+        <WrappedPlayerSlide
+          ref={slideRef}
+          key={cardIndex}
+          cardIndex={cardIndex}
+          template={slideTemplate}
+        >
+          {renderSlide(cardIndex)}
+        </WrappedPlayerSlide>
 
         <p
           className={cn(
-            "pointer-events-none mt-3 text-center text-[0.72rem]",
-            slideTemplate === "hero" ? "text-white/55" : "text-muted"
+            "pointer-events-none shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 text-center text-[0.72rem]",
+            isHeroTemplate ? "text-white/55" : "text-muted"
           )}
         >
           {isLastSlide

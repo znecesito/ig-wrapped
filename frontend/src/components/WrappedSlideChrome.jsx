@@ -27,12 +27,6 @@ const CARD_SHELL_PLAYER = [
   "rounded-[18px] border shadow-[0_20px_50px_-18px_rgb(15_23_42/0.35)]"
 ];
 
-const CARD_SHELL_PLAYER_INVISIBLE = [
-  "wrapped-card--invisible",
-  "border-0 shadow-none rounded-none",
-  "aspect-auto h-full w-full max-h-none max-w-none"
-];
-
 const CARD_TINT_OVERLAY =
   "pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(85%_55%_at_100%_0%,var(--slide-tint)_0%,transparent_58%)]";
 
@@ -48,7 +42,6 @@ export const WrappedSlideShell = forwardRef(function WrappedSlideShell(
     extraClass = "",
     cardRef,
     playerMode = false,
-    playerFlat = false,
     children
   },
   ref
@@ -66,28 +59,21 @@ export const WrappedSlideShell = forwardRef(function WrappedSlideShell(
       data-slide-template={template}
       className={cn(
         CARD_SHELL_BASE,
-        playerMode
-          ? playerFlat
-            ? CARD_SHELL_PLAYER_INVISIBLE
-            : CARD_SHELL_PLAYER
-          : CARD_SHELL_LEGACY,
+        playerMode ? CARD_SHELL_PLAYER : CARD_SHELL_LEGACY,
         playerMode && "wrapped-card--player opacity-100 translate-y-0",
         playerMode && `wrapped-card--${template}`,
-        playerFlat && "wrapped-card--fullscreen",
         isTeaser && "border-dashed border-border-strong",
         extraClass
       )}
       style={{
         ...surfaceStyle,
-        ...(isTeaser ? { borderColor: "#cbd5e1" } : null),
-        ...(playerFlat ? { boxShadow: "none", border: "none" } : null)
+        ...(isTeaser ? { borderColor: "#cbd5e1" } : null)
       }}
     >
       <div
         className={cn(isHero && playerMode ? CARD_TINT_HERO : CARD_TINT_OVERLAY)}
         aria-hidden
       />
-      {playerFlat ? null : (
       <span
         className={cn(
           "absolute top-2 right-2.5 z-[2]",
@@ -100,7 +86,6 @@ export const WrappedSlideShell = forwardRef(function WrappedSlideShell(
       >
         {cardIndex + 1}/{cardCount}
       </span>
-      )}
       <div
         className={cn(
           "relative z-[1] flex h-full min-h-0 flex-col",
@@ -122,6 +107,26 @@ export const WrappedSlideShell = forwardRef(function WrappedSlideShell(
   );
 });
 
+/** Story player — no card chrome; content centered on full-viewport slide background. */
+export const WrappedPlayerSlide = forwardRef(function WrappedPlayerSlide(
+  { cardIndex, template, children },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      data-slide-index={cardIndex}
+      data-slide-template={template}
+      className={cn(
+        "wrapped-slide-stage mx-auto flex w-full max-w-[min(100%,26rem)] min-h-0 flex-1 flex-col justify-center px-6",
+        template === "hero" && "wrapped-slide-stage--hero"
+      )}
+    >
+      {children}
+    </div>
+  );
+});
+
 export function WrappedSlideLayout({
   template = "data",
   eyebrow,
@@ -133,7 +138,6 @@ export function WrappedSlideLayout({
   bodyQuip,
   hideFooter = false
 }) {
-  const isHeroBody = bodyClassName === "hero";
   const isHeroListLeft = bodyClassName === "hero-list";
   const isHeroTemplate = template === "hero";
 
@@ -143,10 +147,12 @@ export function WrappedSlideLayout({
         "flex min-h-0 flex-1 flex-col justify-center gap-[0.32rem]",
         "has-[.wrapped-leaderboard]:gap-[0.45rem]",
         "has-[.wrapped-leaderboard]:[&_.slide-deck]:mb-0.5",
-        template === "data" && "gap-[0.38rem]"
+        template === "data" && "gap-[0.38rem]",
+        "wrapped-slide-layout w-full items-center text-center",
+        "has-[.wrapped-leaderboard]:items-center"
       )}
     >
-      <header className={cn("shrink-0", template === "data" && "mb-0.5")}>
+      <header className={cn("shrink-0 w-full", template === "data" && "mb-0.5")}>
         {eyebrow ? (
           <p className={slideEyebrowClass(template)} data-wrapped-beat="eyebrow">
             {eyebrow}
@@ -165,13 +171,11 @@ export function WrappedSlideLayout({
       </header>
       <div
         className={cn(
-          "flex min-h-0 flex-[0_1_auto] flex-col items-stretch justify-center gap-[0.28rem] overflow-y-auto",
+          "flex min-h-0 flex-[0_1_auto] w-full flex-col items-center justify-center gap-[0.28rem] overflow-y-auto text-center",
           "has-[.wrapped-leaderboard]:overflow-visible",
           template === "data" && "gap-[0.32rem]",
-          (isHeroBody || isHeroTemplate) && !isHeroListLeft && "items-center text-center",
           isHeroListLeft &&
-            "items-center text-center [&_ul]:mx-auto [&_ul]:w-full [&_ul]:max-w-[17rem] [&_ul]:text-left",
-          bodyClassName && !isHeroBody && !isHeroListLeft && bodyClassName
+            "[&_ul]:mx-auto [&_ul]:w-full [&_ul]:max-w-[17rem] [&_ul]:text-left"
         )}
         style={{ WebkitOverflowScrolling: "touch" }}
       >
@@ -183,7 +187,7 @@ export function WrappedSlideLayout({
         ) : null}
       </div>
       {hideFooter ? null : (
-      <footer className="mt-0 shrink-0 pt-0.5" data-wrapped-beat="footer">
+      <footer className="mt-auto w-full shrink-0 pt-3" data-wrapped-beat="footer">
         <p className={slideFooterClass(template)}>
           <span className={slideFooterBrandClass(template)}>ig-wrapped</span>
           {footerStat ? (

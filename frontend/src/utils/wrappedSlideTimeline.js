@@ -5,7 +5,8 @@ const HERO_DROP_SLIDE_INDICES = new Set([1, 6, 8]);
 const BAR_RACE_SLIDE_INDEX = 7;
 const INTRO_DROP_SLIDE_INDEX = 0;
 
-const INTRO_LINE_BEATS = ["title", "hero", "body"];
+const INTRO_TITLE_BEAT = "title";
+const INTRO_REST_LINE_BEATS = ["hero", "body"];
 const DROP_CHAR_DURATION = 0.85;
 const DROP_CHAR_STAGGER = 0.045;
 const DROP_CHAR_EASE = "expo.inOut";
@@ -158,16 +159,23 @@ function buildGenericTimeline(rootEl, { durationMs, template, onComplete, reduce
   return padTimeline(tl, totalSec);
 }
 
-/** Slide 0 — CodePen-style per-character drop (title → handle → activities). */
+/** Slide 0 — title drops first, then handle + activities + footer together. */
 function buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const totalSec = Math.max(0.5, durationMs / 1000);
   const tl = makeTimeline({ durationMs, onComplete });
-  const lines = INTRO_LINE_BEATS.map((beat) => rootEl.querySelector(`[data-wrapped-beat="${beat}"]`)).filter(
-    Boolean
-  );
-  const allChars = lines.flatMap((line) => [...line.querySelectorAll(".wrapped-drop-text__char")]);
+  const titleLine = rootEl.querySelector(`[data-wrapped-beat="${INTRO_TITLE_BEAT}"]`);
+  const restLines = INTRO_REST_LINE_BEATS.map((beat) =>
+    rootEl.querySelector(`[data-wrapped-beat="${beat}"]`)
+  ).filter(Boolean);
+  const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
+  const titleChars = titleLine
+    ? [...titleLine.querySelectorAll(".wrapped-drop-text__char")]
+    : [];
+  const restChars = restLines.flatMap((line) => [
+    ...line.querySelectorAll(".wrapped-drop-text__char")
+  ]);
 
-  if (!lines.length) {
+  if (!titleLine && !restLines.length && !footerEl) {
     if (import.meta.env.DEV) {
       console.warn("[wrapped] intro slide: no drop lines found in", rootEl);
     }
@@ -176,28 +184,24 @@ function buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced }) {
   }
 
   if (reduced) {
-    gsap.set(lines, { autoAlpha: 1 });
-    gsap.set(allChars, { yPercent: 0, opacity: 1, visibility: "visible" });
+    gsap.set([titleLine, ...restLines, footerEl].filter(Boolean), { autoAlpha: 1, opacity: 1, y: 0 });
+    gsap.set([...titleChars, ...restChars], { yPercent: 0, visibility: "visible" });
     tl.to({}, { duration: totalSec });
     return tl;
   }
 
-  gsap.set(lines, { autoAlpha: 1 });
-  gsap.set(allChars, { yPercent: -103, opacity: 1, visibility: "visible" });
+  gsap.set([titleLine, ...restLines].filter(Boolean), { autoAlpha: 1 });
+  gsap.set(titleChars, { yPercent: -103, opacity: 1, visibility: "visible" });
+  gsap.set(restChars, { yPercent: -103, opacity: 1, visibility: "visible" });
+  if (footerEl) {
+    gsap.set(footerEl, { opacity: 0, y: 14 });
+  }
 
   let cursor = 0.25;
 
-  for (const line of lines) {
-    const chars = [...line.querySelectorAll(".wrapped-drop-text__char")];
-    if (!chars.length) {
-      if (import.meta.env.DEV) {
-        console.warn("[wrapped] intro line missing char cells:", line);
-      }
-      continue;
-    }
-
+  if (titleChars.length) {
     tl.to(
-      chars,
+      titleChars,
       {
         yPercent: 0,
         duration: DROP_CHAR_DURATION,
@@ -206,8 +210,37 @@ function buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced }) {
       },
       cursor
     );
+    cursor += DROP_CHAR_DURATION + titleChars.length * DROP_CHAR_STAGGER + INTRO_LINE_GAP;
+  }
 
-    cursor += DROP_CHAR_DURATION + chars.length * DROP_CHAR_STAGGER + INTRO_LINE_GAP;
+  if (restChars.length) {
+    tl.to(
+      restChars,
+      {
+        yPercent: 0,
+        duration: DROP_CHAR_DURATION,
+        stagger: DROP_CHAR_STAGGER,
+        ease: DROP_CHAR_EASE
+      },
+      cursor
+    );
+  }
+
+  if (footerEl) {
+    tl.to(
+      footerEl,
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.48,
+        ease: "power2.out"
+      },
+      cursor
+    );
+  }
+
+  if (restChars.length) {
+    cursor += DROP_CHAR_DURATION + restChars.length * DROP_CHAR_STAGGER;
   }
 
   return padTimeline(tl, totalSec);

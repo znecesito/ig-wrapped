@@ -316,7 +316,7 @@ export function renderWrappedSlide(index, ctx) {
           : "Load activity to see your recap";
 
       return (
-        <WrappedSlideLayout template={template} bodyClassName="hero" hideFooter>
+        <WrappedSlideLayout template={template} bodyClassName="hero">
           <DropDownText
             beat="title"
             text={introTitle}

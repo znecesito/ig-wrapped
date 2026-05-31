@@ -193,33 +193,45 @@
     border-color: #e2e8f0;
   }
 
-  /* Invisible fullscreen card — card gradient fills viewport, no outer stage */
-  .wrapped-player--flat .wrapped-player__stage {
-    display: none;
+  /* Immersive player — slide gradient is the full viewport background, no card shell */
+  .wrapped-player--immersive .wrapped-player__stage {
+    transition: background 0.45s ease;
   }
 
-  .wrapped-player--flat .wrapped-player__card-wrap {
-    width: 100%;
-    max-width: none;
-    max-height: none;
-  }
-
-  .wrapped-player--flat .wrapped-card--fullscreen {
+  .wrapped-player--immersive .wrapped-player__tint {
+    pointer-events: none;
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    max-height: none;
-    max-width: none;
+    z-index: 1;
   }
 
-  .wrapped-player--flat .wrapped-card--visible,
-  .wrapped-player--flat .wrapped-card--from-next.wrapped-card--visible,
-  .wrapped-player--flat .wrapped-card--from-prev.wrapped-card--visible {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .wrapped-player--immersive .wrapped-player__tint--hero {
+    background: radial-gradient(
+      90% 70% at 0% 100%,
+      rgb(255 255 255 / 0.14) 0%,
+      transparent 55%
+    );
+  }
+
+  .wrapped-player--immersive .wrapped-player__tint--data {
+    background: radial-gradient(
+      85% 55% at 100% 0%,
+      var(--slide-tint) 0%,
+      transparent 58%
+    );
+  }
+
+  .wrapped-player--immersive .wrapped-slide-stage {
+    transition: color 0.35s ease;
+  }
+
+  .wrapped-player--immersive .wrapped-slide-stage--hero {
+    color: var(--slide-fg, #fff);
+  }
+
+  .wrapped-player--immersive .wrapped-leaderboard {
+    width: 100%;
+    align-items: center;
   }
 
   .wrapped-player__stage {
@@ -251,7 +263,7 @@
     background-size: 180px 180px;
   }
 
-  .wrapped-player > :not(.wrapped-player__stage):not(.wrapped-player__grain) {
+  .wrapped-player > :not(.wrapped-player__stage):not(.wrapped-player__grain):not(.wrapped-player__tint) {
     position: relative;
     z-index: 2;
   }
