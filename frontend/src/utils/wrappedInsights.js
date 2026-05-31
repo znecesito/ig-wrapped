@@ -43,6 +43,35 @@ function parseHour(activeHourLabel) {
   return match ? Number(match[1]) : null;
 }
 
+const WEEKDAY_FULL = {
+  Sun: "Sunday",
+  Mon: "Monday",
+  Tue: "Tuesday",
+  Wed: "Wednesday",
+  Thu: "Thursday",
+  Fri: "Friday",
+  Sat: "Saturday"
+};
+
+/** "20:00" → "8pm" */
+export function formatHour12(activeHourLabel) {
+  const hour = parseHour(activeHourLabel);
+  if (hour == null) {
+    return activeHourLabel;
+  }
+  const h12 = hour % 12 || 12;
+  const ampm = hour < 12 ? "am" : "pm";
+  return `${h12}${ampm}`;
+}
+
+/** "Sat" → "Saturday" */
+export function formatWeekdayFull(shortLabel) {
+  if (!shortLabel || shortLabel === "-") {
+    return shortLabel;
+  }
+  return WEEKDAY_FULL[shortLabel] ?? shortLabel;
+}
+
 function maxConsecutiveActiveDays(calendarDays) {
   if (!calendarDays?.length) {
     return 0;
@@ -158,10 +187,19 @@ export function buildRhythmPersona(activeWeekday, activeHourLabel) {
   const adj = adjectives[pickStableIndex(`${activeWeekday}-${bucket}`, adjectives.length)];
   const title = `${adj} ${archetype}`;
 
-  const hourDisplay = activeHourLabel.replace(":00", "");
-  const quip = `You show up hardest on ${activeWeekday}s around ${hourDisplay}. The feed learned your schedule.`;
+  const displayWeekday = formatWeekdayFull(activeWeekday);
+  const displayHour = formatHour12(activeHourLabel);
+  const quip = `You show up hardest on ${displayWeekday}s around ${displayHour}. The feed learned your schedule.`;
 
-  return { title, quip, activeWeekday, activeHour: activeHourLabel };
+  return {
+    title,
+    quip,
+    activeWeekday,
+    activeHour: activeHourLabel,
+    displayWeekday,
+    displayHour,
+    deckLabel: `${displayWeekday} · ${displayHour}`
+  };
 }
 
 export function buildStreakQuip(streakDays) {
@@ -269,6 +307,192 @@ export function topThreadShareLines(rows) {
   return shareLinesFromTopCounts(name, topCount, second?.messageCount ?? 0, "messages", total);
 }
 
+function buildSpotlightQuip({ name, unit, thread, exportSharePct, topCount, ratioToSecond, dominantType }) {
+  if (thread) {
+    if (exportSharePct >= 40) {
+      return `${name} caught ${exportSharePct}% of your messages here. The group chat knows.`;
+    }
+    if (ratioToSecond >= 1.5) {
+      return `${name} ran your inbox this export. Reply-all energy.`;
+    }
+    return `${name} — your most active thread. Screenshots optional.`;
+  }
+
+  const quipUnit =
+    dominantType === "stories"
+      ? "story taps"
+      : dominantType === "comments"
+        ? "comments"
+        : unit;
+
+  if (quipUnit === "likes" || (dominantType === "likes" && unit === "interactions")) {
+    if (exportSharePct >= 40) {
+      return `${name} had your thumb on speed dial — ${exportSharePct}% of your likes.`;
+    }
+    return `${name} earned the most double-taps in this export. Rent's due.`;
+  }
+
+  if (quipUnit === "comments") {
+    if (ratioToSecond >= 1.5) {
+      return `${name} owned the comment box. Caps lock optional; sincerity wasn't.`;
+    }
+    return `${name} got the most replies from you. The thread remembers.`;
+  }
+
+  if (quipUnit === "story taps") {
+    return `${name} was your story lane main character. The ring doesn't lie.`;
+  }
+
+  return `${name} topped your ${unit} in this export.`;
+}
+
+const DOMINANT_TYPE_LABELS = {
+  likes: "Mostly likes",
+  comments: "Mostly comments",
+  stories: "Mostly story taps"
+};
+
+/**
+ * Merged social spotlight (#1 across likes, comments, story interactions).
+ * @param {{ username: string, count: number, dominantType?: string }[]} rows
+ */
+export function buildSocialSpotlight(rows) {
+  const leaderboardRows = rows?.map((r) => ({ username: r.username, count: r.count })) ?? [];
+  const share = topPersonShareLines(leaderboardRows, "interactions");
+  if (!rows?.length) {
+    return {
+      ...share,
+      empty: true,
+      name: null,
+      topCount: 0,
+      exportSharePct: 0,
+      fanLine: null,
+      quip: null,
+      topRow: null,
+      dominantType: null,
+      dominantLabel: null
+    };
+  }
+
+  const top = rows[0];
+  const topCount = top.count ?? 0;
+  const total = rows.reduce((s, r) => s + (r.count ?? 0), 0);
+  const exportSharePct = total > 0 ? Math.round((topCount / total) * 100) : 0;
+  const name = `@${String(top.username ?? "").replace(/^@/, "")}`;
+  const dominantType = top.dominantType ?? "likes";
+  const dominantLabel = DOMINANT_TYPE_LABELS[dominantType] ?? "Mixed interactions";
+
+  const secondCount = rows.length > 1 ? (rows[1].count ?? 0) : 0;
+  const ratioToSecond = secondCount > 0 ? topCount / secondCount : 0;
+
+  let fanLine;
+  if (exportSharePct >= 40) {
+    fanLine = `${dominantLabel} · ${exportSharePct}% of your interactions here`;
+  } else if (rows.length > 1 && ratioToSecond >= 1.5) {
+    fanLine = `${dominantLabel} · ${ratioToSecond.toFixed(1)}× more than #2`;
+  } else if (rows.length > 1) {
+    fanLine = `${dominantLabel} · ${formatCount(topCount)} interactions · #2 has ${formatCount(secondCount)}`;
+  } else {
+    fanLine = `${dominantLabel} · ${formatCount(topCount)} interactions in this export`;
+  }
+
+  const quip = buildSpotlightQuip({
+    name,
+    unit: "interactions",
+    dominantType,
+    exportSharePct,
+    topCount,
+    ratioToSecond
+  });
+
+  return {
+    ...share,
+    empty: false,
+    name,
+    topCount,
+    unit: "interactions",
+    exportSharePct,
+    fanLine,
+    quip,
+    topRow: top,
+    dominantType,
+    dominantLabel
+  };
+}
+
+/**
+ * You vs them balance in the top DM thread (export-scoped).
+ * @param {{ label?: string, messageCount?: number, selfMessageCount?: number, otherMessageCount?: number, isGroup?: boolean } | null | undefined} topThread
+ */
+export function buildDmBalanceSpotlight(topThread) {
+  if (!topThread?.messageCount) {
+    return {
+      empty: true,
+      name: null,
+      selfPct: 0,
+      otherPct: 0,
+      messageCount: 0,
+      isGroup: false,
+      quip: null,
+      fanLine: null,
+      topRow: null
+    };
+  }
+
+  const name = formatThreadShareName(topThread.label);
+  const selfCount = topThread.selfMessageCount ?? 0;
+  const otherCount = topThread.otherMessageCount ?? 0;
+  const tracked = selfCount + otherCount;
+  const messageCount = topThread.messageCount ?? 0;
+  const selfPct = tracked > 0 ? Math.round((selfCount / tracked) * 100) : 0;
+  const otherPct = tracked > 0 ? 100 - selfPct : 0;
+  const isGroup = Boolean(topThread.isGroup);
+
+  let quip;
+  if (tracked === 0) {
+    quip = isGroup
+      ? `${name} is your busiest thread — sender breakdown wasn't available.`
+      : `${name} is your busiest thread in this export.`;
+  } else if (isGroup) {
+    if (selfPct >= 60) {
+      quip = `You carry ${name}. The group chat feels it.`;
+    } else if (selfPct <= 30) {
+      quip = `Mostly listening in ${name}. Rare double-text energy.`;
+    } else {
+      quip = `Balanced contributor in ${name}. You show up, then step back.`;
+    }
+  } else if (selfPct >= 70) {
+    quip = `You set the pace with ${name}. They'll catch up.`;
+  } else if (selfPct <= 30) {
+    quip = `${name} runs this thread. You're on read-receipt island.`;
+  } else if (selfPct >= 45 && selfPct <= 55) {
+    quip = `Even split with ${name}. True conversation energy.`;
+  } else if (selfPct > 55) {
+    quip = `You lead the back-and-forth with ${name}. Initiator club.`;
+  } else {
+    quip = `${name} texts more — you're the thoughtful replier.`;
+  }
+
+  const fanLine =
+    tracked > 0
+      ? `${formatCount(messageCount)} messages · ${formatCount(otherCount)} from others`
+      : `${formatCount(messageCount)} messages in this export`;
+
+  return {
+    empty: false,
+    name,
+    selfPct,
+    otherPct,
+    selfMessageCount: selfCount,
+    otherMessageCount: otherCount,
+    messageCount,
+    isGroup,
+    quip,
+    fanLine,
+    topRow: topThread
+  };
+}
+
 /**
  * Spotify-style “winner” beat before a ranking slide (export-scoped — no global percentile).
  * @param {{ username?: string, count?: number, label?: string, messageCount?: number }[]} rows
@@ -278,7 +502,7 @@ export function topThreadShareLines(rows) {
 export function buildRankSpotlight(rows, unit, { thread = false } = {}) {
   const share = thread ? topThreadShareLines(rows) : topPersonShareLines(rows, unit);
   if (!rows?.length) {
-    return { ...share, empty: true, name: null, topCount: 0, exportSharePct: 0, fanLine: null };
+    return { ...share, empty: true, name: null, topCount: 0, exportSharePct: 0, fanLine: null, quip: null, topRow: null, thread };
   }
 
   const top = rows[0];
@@ -291,19 +515,28 @@ export function buildRankSpotlight(rows, unit, { thread = false } = {}) {
     ? formatThreadShareName(top.label)
     : `@${String(top.username ?? "").replace(/^@/, "")}`;
 
+  const secondCount = rows.length > 1 ? (thread ? (rows[1].messageCount ?? 0) : (rows[1].count ?? 0)) : 0;
+  const ratioToSecond = secondCount > 0 ? topCount / secondCount : 0;
+
   let fanLine;
   if (exportSharePct >= 40) {
     fanLine = `That's ${exportSharePct}% of your ${unit} in this export`;
+  } else if (rows.length > 1 && ratioToSecond >= 1.5) {
+    fanLine = `${ratioToSecond.toFixed(1)}× more ${unit} than #2 here`;
   } else if (rows.length > 1) {
-    const secondCount = thread ? (rows[1].messageCount ?? 0) : (rows[1].count ?? 0);
-    if (secondCount > 0 && topCount / secondCount >= 1.5) {
-      fanLine = `${(topCount / secondCount).toFixed(1)}× more ${unit} than #2 here`;
-    } else {
-      fanLine = `Your #1 for ${unit} in this export`;
-    }
+    fanLine = `${formatCount(topCount)} ${unit} · #2 has ${formatCount(secondCount)}`;
   } else {
     fanLine = `${formatCount(topCount)} ${unit} in this export`;
   }
+
+  const quip = buildSpotlightQuip({
+    name,
+    unit,
+    thread,
+    exportSharePct,
+    topCount,
+    ratioToSecond
+  });
 
   return {
     ...share,
@@ -312,7 +545,10 @@ export function buildRankSpotlight(rows, unit, { thread = false } = {}) {
     topCount,
     unit,
     exportSharePct,
-    fanLine
+    fanLine,
+    quip,
+    topRow: top,
+    thread
   };
 }
 
@@ -384,13 +620,7 @@ export function buildWrappedInsights(baseline) {
     busiestDay,
     busiestDayLabel,
     busiestDayCount: busiestDay?.count ?? 0,
-    likesShare: topPersonShareLines(baseline.mostLikedCreators, "likes"),
-    commentsShare: topPersonShareLines(baseline.mostCommentedCreators, "comments"),
-    storiesShare: topPersonShareLines(baseline.mostStoryCreators, "story taps"),
-    dmsShare: topThreadShareLines(baseline.topThreads),
-    likesSpotlight: buildRankSpotlight(baseline.mostLikedCreators, "likes"),
-    commentsSpotlight: buildRankSpotlight(baseline.mostCommentedCreators, "comments"),
-    storiesSpotlight: buildRankSpotlight(baseline.mostStoryCreators, "story taps"),
-    dmsSpotlight: buildRankSpotlight(baseline.topThreads, "messages", { thread: true })
+    socialSpotlight: buildSocialSpotlight(baseline.mostSocialCreators),
+    dmBalanceSpotlight: buildDmBalanceSpotlight(baseline.topThreads?.[0] ?? null)
   };
 }

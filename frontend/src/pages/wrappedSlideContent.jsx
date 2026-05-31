@@ -1,5 +1,6 @@
 import React from "react";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
+import WrappedSpotlightHero from "../components/WrappedSpotlightHero.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
 import {
   ACTIVITY_STACK,
@@ -20,7 +21,6 @@ import {
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { getSlideTemplate } from "../utils/wrappedThemes.js";
-import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
 
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
 
@@ -144,7 +144,7 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   );
 }
 
-/** Spotify-style winner beat before a ranking slide (export-scoped copy). */
+/** Spotify-style winner / spotlight beat before a ranking slide. */
 function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emptyMessage }) {
   if (!spotlight || spotlight.empty || !spotlight.topCount) {
     return (
@@ -159,16 +159,100 @@ function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emp
       template="hero"
       eyebrow={eyebrow}
       title={categoryLabel}
-      deck={spotlight.name}
       bodyClassName="hero"
       footerStat={
-        spotlight.subline ? <span className="text-[var(--slide-fg-muted)]">{spotlight.subline}</span> : null
+        spotlight.fanLine ? (
+          <span className="text-[var(--slide-fg-muted)]" data-wrapped-beat="footer">
+            {spotlight.fanLine}
+          </span>
+        ) : null
       }
     >
-      <p className={SLIDE_MEGA_STAT_DOMINANT}>{formatCount(spotlight.topCount)}</p>
-      <p className={SLIDE_MEGA_LABEL}>{unitLabel}</p>
-      {spotlight.fanLine ? (
-        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{spotlight.fanLine}</p>
+      <WrappedSpotlightHero
+        name={spotlight.name}
+        row={spotlight.topRow}
+        threadLabels={spotlight.thread}
+      />
+      <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+        {formatCount(spotlight.topCount)}
+      </p>
+      <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+        {unitLabel}
+      </p>
+      {spotlight.quip ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+          {spotlight.quip}
+        </p>
+      ) : null}
+    </WrappedSlideLayout>
+  );
+}
+
+/** You vs them balance in the busiest DM thread. */
+function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
+  if (!spotlight || spotlight.empty || !spotlight.messageCount) {
+    return (
+      <WrappedSlideLayout
+        template="hero"
+        eyebrow="Inbox"
+        title="You vs them"
+        deck={emptyMessage}
+      >
+        <p className={SLIDE_BODY_ON_DARK}>{emptyMessage}</p>
+      </WrappedSlideLayout>
+    );
+  }
+
+  const balanceLabel = spotlight.isGroup ? "you in this group" : "you sent";
+
+  return (
+    <WrappedSlideLayout
+      template="hero"
+      eyebrow="Inbox"
+      title={spotlight.isGroup ? "Your group chat energy" : "You vs them"}
+      deck={`Busiest thread · ${spotlight.name}`}
+      bodyClassName="hero"
+      footerStat={
+        spotlight.fanLine ? (
+          <span className="text-[var(--slide-fg-muted)]" data-wrapped-beat="footer">
+            {spotlight.fanLine}
+          </span>
+        ) : null
+      }
+    >
+      <WrappedSpotlightHero
+        name={spotlight.name}
+        row={spotlight.topRow}
+        threadLabels
+      />
+      {spotlight.selfPct > 0 || spotlight.otherPct > 0 ? (
+        <>
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+            {spotlight.selfPct}%
+          </p>
+          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+            {balanceLabel}
+          </p>
+          {!spotlight.isGroup ? (
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="stat-secondary">
+              {spotlight.otherPct}% from {spotlight.name}
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <>
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+            {formatCount(spotlight.messageCount)}
+          </p>
+          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+            messages in this export
+          </p>
+        </>
+      )}
+      {spotlight.quip ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+          {spotlight.quip}
+        </p>
       ) : null}
     </WrappedSlideLayout>
   );
@@ -279,14 +363,14 @@ export function renderWrappedSlide(index, ctx) {
           eyebrow="Your rhythm"
           title={insights?.rhythmPersona?.title ?? "When you're online"}
           deck={
-            insights?.rhythmPersona
-              ? `${insights.rhythmPersona.activeWeekday} · ${insights.rhythmPersona.activeHour.replace(":00", "")}`
-              : "Peak weekday and hour in this export"
+            insights?.rhythmPersona?.deckLabel ?? "Peak weekday and hour in this export"
           }
           bodyClassName="hero"
         >
           {insights?.rhythmPersona ? (
-            <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.rhythmPersona.quip}</p>
+            <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+              {insights.rhythmPersona.quip}
+            </p>
           ) : (
             <p className={SLIDE_BODY_ON_DARK}>No rhythm pattern in this export yet.</p>
           )}
@@ -341,86 +425,31 @@ export function renderWrappedSlide(index, ctx) {
 
     case 6:
       return renderRankSpotlight({
-        eyebrow: "Likes",
-        categoryLabel: "Your top liked creator",
-        spotlight: insights?.likesSpotlight,
-        unitLabel: "likes in this export",
-        emptyMessage: "No likes counted in this export."
+        eyebrow: "People",
+        categoryLabel: "Your #1 person",
+        spotlight: insights?.socialSpotlight,
+        unitLabel: "interactions in this export",
+        emptyMessage: "No likes, comments, or story interactions in this export."
       });
 
     case 7:
       return renderRankLeaderboard({
         template,
-        eyebrow: "Likes",
-        title: "Top liked creators",
-        deck: "Ranked in this export",
-        rows: baseline.mostLikedCreators,
-        accentTheme: "likes",
-        emptyMessage: "No likes counted in this export."
+        eyebrow: "People",
+        title: "Top accounts",
+        deck: "Likes · comments · story taps",
+        rows: baseline.mostSocialCreators,
+        accentTheme: "activity",
+        emptyMessage: "No social interactions in this export."
       });
 
     case 8:
-      return renderRankSpotlight({
-        eyebrow: "Comments",
-        categoryLabel: "Your top commented creator",
-        spotlight: insights?.commentsSpotlight,
-        unitLabel: "comments in this export",
-        emptyMessage: "No comments counted in this export."
+      return renderDmBalanceSpotlight({
+        spotlight: insights?.dmBalanceSpotlight,
+        emptyMessage: "No threads in this export."
       });
 
     case 9:
-      return renderRankLeaderboard({
-        template,
-        eyebrow: "Comments",
-        title: "Top commented creators",
-        deck: "Posts, reels & stories",
-        rows: baseline.mostCommentedCreators,
-        accentTheme: "comments",
-        emptyMessage: "No comments counted in this export."
-      });
-
-    case 10:
-      return renderRankSpotlight({
-        eyebrow: "Stories",
-        categoryLabel: "Your top story interaction",
-        spotlight: insights?.storiesSpotlight,
-        unitLabel: "story interactions in this export",
-        emptyMessage: "No story interactions in this export."
-      });
-
-    case 11:
-      return renderRankLeaderboard({
-        template,
-        eyebrow: "Stories",
-        title: "Top story interactions",
-        deck: "Polls · views · reactions",
-        rows: baseline.mostStoryCreators,
-        accentTheme: "stories",
-        emptyMessage: "No story interactions in this export."
-      });
-
-    case 12:
-      return renderRankSpotlight({
-        eyebrow: "Inbox",
-        categoryLabel: "Your top DM thread",
-        spotlight: insights?.dmsSpotlight,
-        unitLabel: "messages in this export",
-        emptyMessage: "No threads in this export."
-      });
-
-    case 13:
-      return renderRankLeaderboard({
-        template,
-        eyebrow: "Inbox",
-        title: "Top DM threads",
-        deck: `Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`,
-        rows: baseline.topThreads,
-        accentTheme: "dms",
-        threadLabels: true,
-        emptyMessage: "No threads in this export."
-      });
-
-    case 14:
       return (
         <WrappedSlideLayout
           template={template}

@@ -8,13 +8,8 @@ export const SLIDE_THEMES = [
   "span",
   "activity",
   "activity",
-  "likes",
-  "likes",
-  "comments",
-  "comments",
-  "stories",
-  "stories",
-  "dms",
+  "activity",
+  "activity",
   "dms",
   "privacy"
 ];
@@ -72,11 +67,6 @@ export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "data",
   "hero",
-  "data",
-  "hero",
-  "data",
-  "hero",
-  "data",
   "trust"
 ];
 

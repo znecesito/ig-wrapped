@@ -15,8 +15,8 @@ export function explainParseWarning(message) {
   ) {
     return {
       summary: text,
-      impact: "The top DM threads slide may be missing or incomplete.",
-      slides: ["Top DM threads"]
+      impact: "The inbox slide may be missing or incomplete.",
+      slides: ["You vs them"]
     };
   }
 
@@ -30,8 +30,8 @@ export function explainParseWarning(message) {
   ) {
     return {
       summary: text,
-      impact: "Likes, comments, or story interaction leaderboards may be incomplete.",
-      slides: ["Most liked", "Most commented", "Story interactions"]
+      impact: "Social interaction leaderboards may be incomplete.",
+      slides: ["Your #1 person", "Top accounts"]
     };
   }
 

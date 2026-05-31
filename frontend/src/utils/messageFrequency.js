@@ -131,6 +131,47 @@ function participantMatchesSelf(p, selfNorm) {
 }
 
 /**
+ * @param {unknown} senderName
+ * @param {unknown[] | null} participants
+ * @param {string | null} selfNorm
+ */
+function senderMatchesSelf(senderName, participants, selfNorm) {
+  if (senderName == null || !selfNorm) {
+    return false;
+  }
+  const senderDisplay = sanitizeDisplayName(String(senderName));
+  const senderHandle = sanitizeInstagramHandle(String(senderName));
+
+  if (Array.isArray(participants)) {
+    for (const p of participants) {
+      if (!participantMatchesSelf(p, selfNorm)) {
+        continue;
+      }
+      const selfLabel = participantLabelForDisplay(p);
+      if (selfLabel && senderDisplay && selfLabel.toLowerCase() === senderDisplay.toLowerCase()) {
+        return true;
+      }
+      const selfHandle = getRawUsername(p);
+      if (
+        selfHandle &&
+        senderHandle &&
+        normalizeInstagramUsername(selfHandle) === normalizeInstagramUsername(senderHandle)
+      ) {
+        return true;
+      }
+    }
+  }
+
+  if (senderHandle && normalizeInstagramUsername(senderHandle) === selfNorm) {
+    return true;
+  }
+  if (senderDisplay && normalizeInstagramUsername(senderDisplay) === selfNorm) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Folder names for named groups use the segment before the first "_"; the rest is IDs / hashes.
  * @param {string} folderBasename
  */
@@ -394,7 +435,15 @@ export function discoverMessageThreads(fileList) {
  * @param {Map<string, File[]>} threadBuckets
  * @param {{ selfUsername?: string | null }} [options]
  * @returns {Promise<{
- *   rows: { threadKey: string, label: string, messageCount: number, warnings: string[] }[],
+ *   rows: {
+ *     threadKey: string,
+ *     label: string,
+ *     messageCount: number,
+ *     selfMessageCount: number,
+ *     otherMessageCount: number,
+ *     isGroup: boolean,
+ *     warnings: string[]
+ *   }[],
  *   warnings: string[],
  *   stats: {
  *     threadsConsidered: number,
@@ -420,12 +469,14 @@ export async function parseAndAggregateThreads(threadBuckets, options = {}) {
   let threadsWithMessages = 0;
   let totalMessages = 0;
 
-  /** @type { { threadKey: string, label: string, messageCount: number, warnings: string[] }[] } */
+  /** @type { { threadKey: string, label: string, messageCount: number, selfMessageCount: number, otherMessageCount: number, isGroup: boolean, warnings: string[] }[] } */
   const rows = [];
 
   for (const [threadKey, threadFiles] of threadBuckets) {
     threadsConsidered += 1;
     let messageCount = 0;
+    let selfMessageCount = 0;
+    let otherMessageCount = 0;
     /** @type {unknown[] | null} */
     let participants = null;
     /** @type {string | null} */
@@ -448,12 +499,19 @@ export async function parseAndAggregateThreads(threadBuckets, options = {}) {
         }
         messageCount += payload.messages.length;
         filesParsed += 1;
-        if (
-          !participants &&
-          Array.isArray(payload.participants) &&
-          payload.participants.length > 0
-        ) {
+        if (!participants && Array.isArray(payload.participants) && payload.participants.length > 0) {
           participants = payload.participants;
+        }
+        for (const msg of payload.messages) {
+          if (!msg || typeof msg !== "object") {
+            continue;
+          }
+          const sender = /** @type {{ sender_name?: unknown }} */ (msg).sender_name;
+          if (senderMatchesSelf(sender, participants, selfNorm)) {
+            selfMessageCount += 1;
+          } else {
+            otherMessageCount += 1;
+          }
         }
         if (threadTitle == null && typeof payload.title === "string" && payload.title.trim()) {
           threadTitle = payload.title.trim();
@@ -478,11 +536,15 @@ export async function parseAndAggregateThreads(threadBuckets, options = {}) {
     totalMessages += messageCount;
     globalWarnings.push(...rowWarnings);
     const label = buildThreadLabel(participants || [], selfNorm, folderBasename, threadTitle, threadPath);
+    const isGroup = Array.isArray(participants) && participants.length > 2;
 
     rows.push({
       threadKey: threadKey,
       label,
       messageCount,
+      selfMessageCount,
+      otherMessageCount,
+      isGroup,
       warnings: rowWarnings
     });
   }

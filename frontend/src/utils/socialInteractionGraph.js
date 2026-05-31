@@ -623,6 +623,94 @@ export function buildTopInteractions(countsBySource, enabledSourceIds, limit = 5
   return entries.slice(0, limit).map(([username, count]) => ({ username, count }));
 }
 
+/** @typedef {"likes" | "comments" | "stories"} SocialDominantType */
+
+/**
+ * Pick dominant interaction family for one account (ties: stories → comments → likes).
+ * @param {{ likes: number, comments: number, stories: number }} breakdown
+ * @returns {SocialDominantType}
+ */
+function pickSocialDominantType(breakdown) {
+  const order = /** @type {const} */ (["stories", "comments", "likes"]);
+  let best = /** @type {SocialDominantType} */ ("likes");
+  let bestVal = -1;
+  for (const key of order) {
+    const val = breakdown[key] ?? 0;
+    if (val > bestVal) {
+      bestVal = val;
+      best = key;
+    }
+  }
+  return best;
+}
+
+/**
+ * Merged likes + comments + story interactions per account, with per-family breakdown.
+ *
+ * @param {Record<string, Record<string, number>>} countsBySource
+ * @param {number} [limit]
+ * @returns {{
+ *   username: string,
+ *   count: number,
+ *   breakdown: { likes: number, comments: number, stories: number },
+ *   dominantType: SocialDominantType
+ * }[]}
+ */
+export function buildTopSocialCreatorsWithBreakdown(countsBySource, limit = 5) {
+  if (!countsBySource) {
+    return [];
+  }
+
+  const categories = getSocialCategories();
+  const fieldByCategory = {
+    likes: "likes",
+    comments: "comments",
+    storyInteractions: "stories"
+  };
+
+  /** @type {Map<string, { likes: number, comments: number, stories: number, count: number }>} */
+  const merged = new Map();
+
+  for (const cat of categories) {
+    const field = fieldByCategory[cat.id];
+    if (!field) {
+      continue;
+    }
+    for (const sourceId of cat.sourceIds) {
+      const bucket = countsBySource[sourceId];
+      if (!bucket) {
+        continue;
+      }
+      for (const [username, count] of Object.entries(bucket)) {
+        const row = merged.get(username) ?? {
+          likes: 0,
+          comments: 0,
+          stories: 0,
+          count: 0
+        };
+        row[field] += count;
+        row.count += count;
+        merged.set(username, row);
+      }
+    }
+  }
+
+  const lim = Number(limit) > 0 ? Number(limit) : 5;
+  return [...merged.entries()]
+    .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+    .slice(0, lim)
+    .map(([username, row]) => ({
+      username,
+      count: row.count,
+      breakdown: {
+        likes: row.likes,
+        comments: row.comments,
+        stories: row.stories
+      },
+      dominantType: pickSocialDominantType(row)
+    }));
+}
+
 /**
  * Top accounts per social category (comments / likes / story interactions), merging all source ids in each category.
  *

@@ -8,6 +8,7 @@ import {
 } from "./commentHeatmap.js";
 import {
   buildTopInteractions,
+  buildTopSocialCreatorsWithBreakdown,
   discoverSocialInteractionFiles,
   getEffectiveSelfUsername,
   getSocialCategories,
@@ -248,11 +249,19 @@ export async function loadWrappedBaseline({
   const mostLikedCreators = buildSocialLeaderboard(likesSourceIds);
   const mostCommentedCreators = buildSocialLeaderboard(commentsCategorySourceIds);
   const mostStoryCreators = buildSocialLeaderboard(storyInteractionsCategorySourceIds);
+  const mostSocialCreators =
+    socialCountsBySource != null
+      ? buildTopSocialCreatorsWithBreakdown(
+          socialCountsBySource,
+          WRAPPED_SOCIAL_LEADERBOARD_LIMIT
+        )
+      : [];
 
   return {
     heatmapData,
     activityWindowTrimmed,
     topThreads,
+    mostSocialCreators,
     mostLikedCreators,
     mostCommentedCreators,
     mostStoryCreators,

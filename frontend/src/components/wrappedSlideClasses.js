@@ -46,6 +46,19 @@ export const SLIDE_HERO =
 export const SLIDE_HERO_DISPLAY =
   "m-0 font-display text-[clamp(1.85rem,8.5vw,2.45rem)] font-extrabold leading-[1.02] tracking-tight text-[var(--slide-fg,#0f172a)] break-words";
 
+/** Spotlight winner slide — large @handle under avatar */
+export const SPOTLIGHT_HANDLE =
+  "font-display text-[clamp(1.65rem,7.5vw,2.15rem)] font-extrabold leading-[1.05] tracking-tight text-[var(--slide-fg)] break-all";
+
+export const SPOTLIGHT_AVATAR_RING =
+  "rounded-full p-[3px] bg-gradient-to-br from-white/90 to-white/25 shadow-[0_6px_24px_rgba(15,23,42,0.22)]";
+
+export const SPOTLIGHT_AVATAR =
+  "flex size-[clamp(4.25rem,20vw,5.5rem)] items-center justify-center overflow-hidden rounded-full border-2 border-white/90";
+
+export const SPOTLIGHT_AVATAR_INITIALS =
+  "text-[clamp(1.35rem,6vw,1.75rem)] font-extrabold tracking-wide text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.15)]";
+
 export const SLIDE_HERO_COMPACT =
   "m-0 font-display text-[clamp(1.05rem,4.5vw,1.32rem)] font-bold leading-[1.08] tracking-tight text-ink break-words";
 
