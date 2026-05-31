@@ -193,6 +193,35 @@
     border-color: #e2e8f0;
   }
 
+  /* Invisible fullscreen card — card gradient fills viewport, no outer stage */
+  .wrapped-player--flat .wrapped-player__stage {
+    display: none;
+  }
+
+  .wrapped-player--flat .wrapped-player__card-wrap {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+  }
+
+  .wrapped-player--flat .wrapped-card--fullscreen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    max-height: none;
+    max-width: none;
+  }
+
+  .wrapped-player--flat .wrapped-card--visible,
+  .wrapped-player--flat .wrapped-card--from-next.wrapped-card--visible,
+  .wrapped-player--flat .wrapped-card--from-prev.wrapped-card--visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
   .wrapped-player__stage {
     pointer-events: none;
     position: absolute;
@@ -231,17 +260,39 @@
   .wrapped-player [data-wrapped-beat],
   .wrapped-player [data-wrapped-beat-segment],
   .wrapped-player [data-wrapped-drop],
-  .wrapped-player [data-podium-rank] {
+  .wrapped-player [data-podium-rank],
+  .wrapped-player .wrapped-drop-text__char {
     will-change: opacity, transform;
+  }
+
+  .wrapped-drop-text {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0;
+    padding-bottom: 0.12em;
+    line-height: 1.05;
+  }
+
+  .wrapped-drop-text__char {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    /* initial hide — GSAP owns transform via yPercent (don't set transform here) */
+    visibility: hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .wrapped-player [data-wrapped-beat],
     .wrapped-player [data-wrapped-beat-segment],
     .wrapped-player [data-wrapped-drop],
-    .wrapped-player [data-podium-rank] {
+    .wrapped-player [data-podium-rank],
+    .wrapped-player .wrapped-drop-text__char {
       opacity: 1 !important;
       transform: none !important;
+      visibility: visible !important;
     }
   }
 

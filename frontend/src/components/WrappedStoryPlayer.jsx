@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../lib/utils.js";
 import { WrappedSlideShell } from "./WrappedSlideChrome.jsx";
 import { getSlideTheme, getSlideThemeStyle, getSlideTemplate } from "../utils/wrappedThemes.js";
@@ -74,35 +74,49 @@ export default function WrappedStoryPlayer({
     setPaused(false);
   }, [cardIndex]);
 
-  // GSAP scene timeline per slide (Phase H)
-  useEffect(() => {
+  // GSAP scene timeline per slide (Phase H) — layout effect so DOM + refs are ready
+  useLayoutEffect(() => {
     const root = cardRef.current;
     if (!root) {
       return undefined;
     }
 
-    killSlideTimeline(timelineRef.current);
-    timelineRef.current = null;
+    let cancelled = false;
+    let tl = null;
 
-    const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
-    const tl = createSlideBeatTimeline(root, {
-      slideIndex: cardIndex,
-      durationMs: animDurationMs,
-      template: slideTemplate,
-      onComplete: () => {
-        if (autoAdvance) {
-          goNext();
-        }
+    const startTimeline = () => {
+      if (cancelled) {
+        return;
       }
-    });
 
-    timelineRef.current = tl;
+      killSlideTimeline(timelineRef.current);
+      timelineRef.current = null;
 
-    if (tl) {
-      tl.play(0);
-    }
+      const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
+      tl = createSlideBeatTimeline(root, {
+        slideIndex: cardIndex,
+        durationMs: animDurationMs,
+        template: slideTemplate,
+        onComplete: () => {
+          if (autoAdvance) {
+            goNext();
+          }
+        }
+      });
+
+      timelineRef.current = tl;
+
+      if (tl) {
+        tl.play(0);
+      }
+    };
+
+    // one frame so slide children (DropDownText cells) are committed
+    const raf = requestAnimationFrame(startTimeline);
 
     return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
       killSlideTimeline(tl);
       if (timelineRef.current === tl) {
         timelineRef.current = null;
@@ -219,7 +233,7 @@ export default function WrappedStoryPlayer({
 
   return (
     <div
-      className={cn("wrapped-player fixed inset-0 z-50 flex flex-col font-sans text-ink")}
+      className={cn("wrapped-player fixed inset-0 z-50 flex flex-col font-sans text-ink", "wrapped-player--flat")}
       style={slideThemeStyle}
       data-slide-theme={slideTheme}
       role="dialog"
@@ -280,12 +294,7 @@ export default function WrappedStoryPlayer({
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: "manipulation" }}
       >
-        <div
-          className={cn(
-            "wrapped-player__card-wrap wrapped-story w-[var(--wrapped-player-card-width)]",
-            "max-h-[var(--wrapped-player-card-max-height)] shrink-0"
-          )}
-        >
+        <div className="wrapped-player__card-wrap relative min-h-0 w-full flex-1">
           <WrappedSlideShell
             ref={cardRef}
             key={cardIndex}
@@ -293,13 +302,19 @@ export default function WrappedStoryPlayer({
             cardCount={cardCount}
             theme={slideTheme}
             playerMode
+            playerFlat
             extraClass={cn("wrapped-card--visible", enterClass)}
           >
             {renderSlide(cardIndex)}
           </WrappedSlideShell>
         </div>
 
-        <p className="pointer-events-none mt-3 text-center text-[0.72rem] text-muted">
+        <p
+          className={cn(
+            "pointer-events-none mt-3 text-center text-[0.72rem]",
+            slideTemplate === "hero" ? "text-white/55" : "text-muted"
+          )}
+        >
           {isLastSlide
             ? "Tap to go back · screenshot to share · swipe down when you're done"
             : paused

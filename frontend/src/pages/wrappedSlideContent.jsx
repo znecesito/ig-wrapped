@@ -1,7 +1,9 @@
 import React from "react";
+import DropDownText from "../components/DropDownText.jsx";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import WrappedSpotlightHero from "../components/WrappedSpotlightHero.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
+import { cn } from "../lib/utils.js";
 import {
   ACTIVITY_STACK,
   ACTIVITY_STACK_COMPACT,
@@ -17,7 +19,8 @@ import {
   SLIDE_INSIGHT_PUNCH_ON_DARK,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT_DOMINANT,
-  SLIDE_PERSONALITY_EMOJI_HERO
+  SLIDE_PERSONALITY_EMOJI_HERO,
+  slideTitleClass
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
 import { getSlideTemplate } from "../utils/wrappedThemes.js";
@@ -305,23 +308,25 @@ export function renderWrappedSlide(index, ctx) {
   const year = insights?.exportYear;
 
   switch (index) {
-    case 0:
+    case 0: {
+      const introTitle = year ? `Your ${year} feed, wrapped` : "Your feed, wrapped";
+      const activityLine =
+        insights?.totalActivities > 0
+          ? `${formatCount(insights.totalActivities)} activities · people · DMs`
+          : "Load activity to see your recap";
+
       return (
-        <WrappedSlideLayout
-          template={template}
-          title={year ? `Your ${year} feed, wrapped` : "Your feed, wrapped"}
-          bodyClassName="hero"
-        >
-          <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="hero" data-wrapped-drop>
-            {handle}
-          </p>
-          <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
-            {insights?.totalActivities > 0
-              ? `${formatCount(insights.totalActivities)} activities · people · DMs`
-              : "Load activity to see your recap"}
-          </p>
+        <WrappedSlideLayout template={template} bodyClassName="hero" hideFooter>
+          <DropDownText
+            beat="title"
+            text={introTitle}
+            className={cn(slideTitleClass(template), "mb-4")}
+          />
+          <DropDownText beat="hero" text={handle} className={cn(SLIDE_HERO_DISPLAY, "mb-3")} />
+          <DropDownText beat="body" text={activityLine} className={SLIDE_BODY_ON_DARK} />
         </WrappedSlideLayout>
       );
+    }
 
     case 1:
       return (

@@ -1,8 +1,15 @@
 import gsap from "gsap";
 
 /** Slides with hero “drop from sky” beats. */
-const HERO_DROP_SLIDE_INDICES = new Set([0, 1, 6, 8]);
+const HERO_DROP_SLIDE_INDICES = new Set([1, 6, 8]);
 const BAR_RACE_SLIDE_INDEX = 7;
+const INTRO_DROP_SLIDE_INDEX = 0;
+
+const INTRO_LINE_BEATS = ["title", "hero", "body"];
+const DROP_CHAR_DURATION = 0.85;
+const DROP_CHAR_STAGGER = 0.045;
+const DROP_CHAR_EASE = "expo.inOut";
+const INTRO_LINE_GAP = 0.4;
 
 /** Stagger order for generic scene beats. */
 const BEAT_SEQUENCE = [
@@ -146,6 +153,61 @@ function buildGenericTimeline(rootEl, { durationMs, template, onComplete, reduce
       },
       cursor
     );
+  }
+
+  return padTimeline(tl, totalSec);
+}
+
+/** Slide 0 — CodePen-style per-character drop (title → handle → activities). */
+function buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced }) {
+  const totalSec = Math.max(0.5, durationMs / 1000);
+  const tl = makeTimeline({ durationMs, onComplete });
+  const lines = INTRO_LINE_BEATS.map((beat) => rootEl.querySelector(`[data-wrapped-beat="${beat}"]`)).filter(
+    Boolean
+  );
+  const allChars = lines.flatMap((line) => [...line.querySelectorAll(".wrapped-drop-text__char")]);
+
+  if (!lines.length) {
+    if (import.meta.env.DEV) {
+      console.warn("[wrapped] intro slide: no drop lines found in", rootEl);
+    }
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  if (reduced) {
+    gsap.set(lines, { autoAlpha: 1 });
+    gsap.set(allChars, { yPercent: 0, opacity: 1, visibility: "visible" });
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  gsap.set(lines, { autoAlpha: 1 });
+  gsap.set(allChars, { yPercent: -103, opacity: 1, visibility: "visible" });
+
+  let cursor = 0.25;
+
+  for (const line of lines) {
+    const chars = [...line.querySelectorAll(".wrapped-drop-text__char")];
+    if (!chars.length) {
+      if (import.meta.env.DEV) {
+        console.warn("[wrapped] intro line missing char cells:", line);
+      }
+      continue;
+    }
+
+    tl.to(
+      chars,
+      {
+        yPercent: 0,
+        duration: DROP_CHAR_DURATION,
+        stagger: DROP_CHAR_STAGGER,
+        ease: DROP_CHAR_EASE
+      },
+      cursor
+    );
+
+    cursor += DROP_CHAR_DURATION + chars.length * DROP_CHAR_STAGGER + INTRO_LINE_GAP;
   }
 
   return padTimeline(tl, totalSec);
@@ -341,6 +403,10 @@ export function createSlideBeatTimeline(
   }
 
   const reduced = prefersReducedMotion();
+
+  if (slideIndex === INTRO_DROP_SLIDE_INDEX) {
+    return buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced });
+  }
 
   if (slideIndex === BAR_RACE_SLIDE_INDEX) {
     return buildBarRaceTimeline(rootEl, { durationMs, onComplete, reduced });
