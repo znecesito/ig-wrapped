@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../lib/utils.js";
 import { WrappedSlideShell } from "./WrappedSlideChrome.jsx";
-import { getSlideTheme, getSlideThemeStyle } from "../utils/wrappedThemes.js";
+import { getSlideTheme, getSlideThemeStyle, getSlideTemplate } from "../utils/wrappedThemes.js";
 import {
   getSlideDurationMs,
   WRAPPED_CARD_COUNT,
   WRAPPED_LAST_SLIDE_INDEX
 } from "../config/wrappedPlayer.js";
+import {
+  createSlideBeatTimeline,
+  killSlideTimeline
+} from "../utils/wrappedSlideTimeline.js";
 
 const TAP_MAX_MS = 280;
+const PRIVACY_ANIM_MS = 3200;
 
 /**
  * Full-screen story player: progress segments, tap nav, hold-to-pause, auto-advance.
@@ -25,17 +30,18 @@ export default function WrappedStoryPlayer({
   const [progress, setProgress] = useState(0);
   const [enterClass, setEnterClass] = useState("wrapped-card--from-next");
 
+  const cardRef = useRef(null);
   const pointerRef = useRef(null);
   const swipeRef = useRef(null);
   const rafRef = useRef(null);
-  const slideStartRef = useRef(null);
-  const remainingMsRef = useRef(getSlideDurationMs(cardIndex));
+  const timelineRef = useRef(null);
 
   const durationMs = getSlideDurationMs(cardIndex);
   const isLastSlide = cardIndex >= WRAPPED_LAST_SLIDE_INDEX;
   const autoAdvance = durationMs > 0 && !isLastSlide;
   const slideTheme = getTheme(cardIndex);
   const slideThemeStyle = getSlideThemeStyle(slideTheme);
+  const slideTemplate = getSlideTemplate(cardIndex);
 
   const goTo = useCallback(
     (nextIndex) => {
@@ -66,33 +72,66 @@ export default function WrappedStoryPlayer({
   useEffect(() => {
     setProgress(0);
     setPaused(false);
-    remainingMsRef.current = getSlideDurationMs(cardIndex);
-    slideStartRef.current = null;
   }, [cardIndex]);
 
-  // Auto-advance timer (rAF-based progress)
+  // GSAP scene timeline per slide (Phase H)
   useEffect(() => {
-    if (!autoAdvance || paused) {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
+    const root = cardRef.current;
+    if (!root) {
       return undefined;
     }
 
-    const total = remainingMsRef.current;
+    killSlideTimeline(timelineRef.current);
+    timelineRef.current = null;
 
-    const tick = (now) => {
-      if (slideStartRef.current == null) {
-        slideStartRef.current = now;
+    const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
+    const tl = createSlideBeatTimeline(root, {
+      durationMs: animDurationMs,
+      template: slideTemplate,
+      onComplete: () => {
+        if (autoAdvance) {
+          goNext();
+        }
       }
-      const elapsed = now - slideStartRef.current;
-      const pct = Math.min(1, elapsed / total);
-      setProgress(pct);
+    });
 
-      if (pct >= 1) {
-        goNext();
-        return;
+    timelineRef.current = tl;
+
+    if (tl) {
+      tl.play(0);
+    }
+
+    return () => {
+      killSlideTimeline(tl);
+      if (timelineRef.current === tl) {
+        timelineRef.current = null;
+      }
+    };
+  }, [cardIndex, autoAdvance, durationMs, goNext, slideTemplate]);
+
+  // Hold-to-pause: freeze GSAP timeline
+  useEffect(() => {
+    const tl = timelineRef.current;
+    if (!tl) {
+      return;
+    }
+    if (paused) {
+      tl.pause();
+    } else {
+      tl.play();
+    }
+  }, [paused]);
+
+  // Progress bar synced to timeline
+  useEffect(() => {
+    if (!autoAdvance) {
+      return undefined;
+    }
+
+    const tick = () => {
+      const tl = timelineRef.current;
+      if (tl) {
+        setProgress(tl.progress());
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -104,19 +143,7 @@ export default function WrappedStoryPlayer({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [autoAdvance, paused, cardIndex, goNext]);
-
-  // Pause: persist remaining time
-  useEffect(() => {
-    if (paused && autoAdvance && slideStartRef.current != null) {
-      const elapsed = performance.now() - slideStartRef.current;
-      remainingMsRef.current = Math.max(0, remainingMsRef.current - elapsed);
-      slideStartRef.current = null;
-    }
-    if (!paused && autoAdvance) {
-      slideStartRef.current = null;
-    }
-  }, [paused, autoAdvance]);
+  }, [autoAdvance, cardIndex]);
 
   // Keyboard: arrows navigate, Escape exits
   useEffect(() => {
@@ -259,6 +286,7 @@ export default function WrappedStoryPlayer({
           )}
         >
           <WrappedSlideShell
+            ref={cardRef}
             key={cardIndex}
             cardIndex={cardIndex}
             cardCount={cardCount}

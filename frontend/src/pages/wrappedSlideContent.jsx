@@ -103,6 +103,7 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false, compa
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
             className={ACTIVITY_STACK_SEGMENT}
+            data-wrapped-beat-segment
             style={{
               flexGrow,
               backgroundColor: fam.color
@@ -137,7 +138,7 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   });
 
   return (
-    <div className={LEADERBOARD}>
+    <div className={LEADERBOARD} data-wrapped-beat="chart">
       <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
       {renderActivityStack(stackFamilies, maxCount, { linkable: true, compact: true })}
     </div>
@@ -162,9 +163,7 @@ function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emp
       bodyClassName="hero"
       footerStat={
         spotlight.fanLine ? (
-          <span className="text-[var(--slide-fg-muted)]" data-wrapped-beat="footer">
-            {spotlight.fanLine}
-          </span>
+          <span className="text-[var(--slide-fg-muted)]">{spotlight.fanLine}</span>
         ) : null
       }
     >
@@ -214,9 +213,7 @@ function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
       bodyClassName="hero"
       footerStat={
         spotlight.fanLine ? (
-          <span className="text-[var(--slide-fg-muted)]" data-wrapped-beat="footer">
-            {spotlight.fanLine}
-          </span>
+          <span className="text-[var(--slide-fg-muted)]">{spotlight.fanLine}</span>
         ) : null
       }
     >
@@ -295,8 +292,10 @@ export function renderWrappedSlide(index, ctx) {
           title={year ? `Your ${year} feed, wrapped` : "Your feed, wrapped"}
           bodyClassName="hero"
         >
-          <p className={SLIDE_HERO_DISPLAY}>{handle}</p>
-          <p className={SLIDE_BODY_ON_DARK}>
+          <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="hero">
+            {handle}
+          </p>
+          <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
             {insights?.totalActivities > 0
               ? `${formatCount(insights.totalActivities)} activities · people · DMs`
               : "Load activity to see your recap"}
@@ -315,14 +314,20 @@ export function renderWrappedSlide(index, ctx) {
         >
           {insights?.personality && insights.dominantPct >= 1 ? (
             <>
-              <p className={SLIDE_PERSONALITY_EMOJI_HERO} aria-hidden>
+              <p className={SLIDE_PERSONALITY_EMOJI_HERO} data-wrapped-beat="hero" aria-hidden>
                 {insights.personality.emoji}
               </p>
-              <p className={SLIDE_MEGA_STAT_DOMINANT}>{insights.dominantPct}%</p>
-              <p className={SLIDE_MEGA_LABEL}>{insights.personality.label}</p>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+                {insights.dominantPct}%
+              </p>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                {insights.personality.label}
+              </p>
             </>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK}>Not enough activity for a personality read yet.</p>
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+              Not enough activity for a personality read yet.
+            </p>
           )}
         </WrappedSlideLayout>
       );
@@ -341,17 +346,23 @@ export function renderWrappedSlide(index, ctx) {
         >
           {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
             <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT}>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
                 {formatCount(baseline.heatmapData.totalActivities)}
               </p>
-              <p className={SLIDE_MEGA_LABEL}>total activities</p>
-              {renderActivityStack(
-                activityBreakdown.families,
-                activityBreakdown.maxFamilyTotal
-              )}
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                total activities
+              </p>
+              <div data-wrapped-beat="chart">
+                {renderActivityStack(
+                  activityBreakdown.families,
+                  activityBreakdown.maxFamilyTotal
+                )}
+              </div>
             </>
           ) : (
-            <p className={SLIDE_BODY}>No activity data in this export.</p>
+            <p className={SLIDE_BODY} data-wrapped-beat="body">
+              No activity data in this export.
+            </p>
           )}
         </WrappedSlideLayout>
       );
@@ -372,7 +383,9 @@ export function renderWrappedSlide(index, ctx) {
               {insights.rhythmPersona.quip}
             </p>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK}>No rhythm pattern in this export yet.</p>
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+              No rhythm pattern in this export yet.
+            </p>
           )}
         </WrappedSlideLayout>
       );
@@ -388,14 +401,22 @@ export function renderWrappedSlide(index, ctx) {
         >
           {insights?.streakDays >= 2 ? (
             <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT}>{insights.streakDays}</p>
-              <p className={SLIDE_MEGA_LABEL}>days in a row</p>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+                {insights.streakDays}
+              </p>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                days in a row
+              </p>
               {insights.streakQuip ? (
-                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.streakQuip}</p>
+                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+                  {insights.streakQuip}
+                </p>
               ) : null}
             </>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK}>No multi-day streak in this export.</p>
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+              No multi-day streak in this export.
+            </p>
           )}
         </WrappedSlideLayout>
       );
@@ -411,14 +432,22 @@ export function renderWrappedSlide(index, ctx) {
         >
           {insights?.busiestDayCount > 0 ? (
             <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT}>{formatCount(insights.busiestDayCount)}</p>
-              <p className={SLIDE_MEGA_LABEL}>activities</p>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+                {formatCount(insights.busiestDayCount)}
+              </p>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                activities
+              </p>
               {insights.busiestDayQuip ? (
-                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK}>{insights.busiestDayQuip}</p>
+                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+                  {insights.busiestDayQuip}
+                </p>
               ) : null}
             </>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK}>No standout day in this export.</p>
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+              No standout day in this export.
+            </p>
           )}
         </WrappedSlideLayout>
       );
@@ -458,9 +487,9 @@ export function renderWrappedSlide(index, ctx) {
           deck="Your export is not uploaded for Wrapped"
           footerStat="Non-Followers is the only server upload"
         >
-          <ul className={SLIDE_BULLET_LIST}>
-            <li>Runs entirely in your browser</li>
-            <li>Clear data from the nav on shared devices</li>
+          <ul className={SLIDE_BULLET_LIST} data-wrapped-beat="body">
+            <li data-wrapped-beat-segment>Runs entirely in your browser</li>
+            <li data-wrapped-beat-segment>Clear data from the nav on shared devices</li>
           </ul>
         </WrappedSlideLayout>
       );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { cn } from "../lib/utils.js";
 import {
   slideBodyQuipClass,
@@ -33,16 +33,19 @@ const CARD_TINT_OVERLAY =
 const CARD_TINT_HERO =
   "pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(90%_70%_at_0%_100%,rgb(255_255_255/0.14)_0%,transparent_55%)]";
 
-export function WrappedSlideShell({
-  cardIndex,
-  cardCount,
-  theme = "intro",
-  template: templateProp,
-  extraClass = "",
-  cardRef,
-  playerMode = false,
-  children
-}) {
+export const WrappedSlideShell = forwardRef(function WrappedSlideShell(
+  {
+    cardIndex,
+    cardCount,
+    theme = "intro",
+    template: templateProp,
+    extraClass = "",
+    cardRef,
+    playerMode = false,
+    children
+  },
+  ref
+) {
   const template = templateProp ?? getSlideTemplate(cardIndex);
   const isTeaser = theme === "teaser";
   const isHero = template === "hero";
@@ -51,7 +54,7 @@ export function WrappedSlideShell({
 
   return (
     <article
-      ref={cardRef}
+      ref={ref ?? cardRef}
       data-slide-index={cardIndex}
       data-slide-template={template}
       className={cn(
@@ -102,7 +105,7 @@ export function WrappedSlideShell({
       </div>
     </article>
   );
-}
+});
 
 export function WrappedSlideLayout({
   template = "data",
@@ -128,9 +131,19 @@ export function WrappedSlideLayout({
       )}
     >
       <header className={cn("shrink-0", template === "data" && "mb-0.5")}>
-        {eyebrow ? <p className={slideEyebrowClass(template)}>{eyebrow}</p> : null}
-        <h2 className={slideTitleClass(template)}>{title}</h2>
-        {deck ? <p className={slideDeckClass(template)}>{deck}</p> : null}
+        {eyebrow ? (
+          <p className={slideEyebrowClass(template)} data-wrapped-beat="eyebrow">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className={slideTitleClass(template)} data-wrapped-beat="title">
+          {title}
+        </h2>
+        {deck ? (
+          <p className={slideDeckClass(template)} data-wrapped-beat="deck">
+            {deck}
+          </p>
+        ) : null}
       </header>
       <div
         className={cn(
@@ -145,9 +158,13 @@ export function WrappedSlideLayout({
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {children}
-        {bodyQuip ? <div className={slideBodyQuipClass(template)}>{bodyQuip}</div> : null}
+        {bodyQuip ? (
+          <div className={slideBodyQuipClass(template)} data-wrapped-beat="quip">
+            {bodyQuip}
+          </div>
+        ) : null}
       </div>
-      <footer className="mt-0 shrink-0 pt-0.5">
+      <footer className="mt-0 shrink-0 pt-0.5" data-wrapped-beat="footer">
         <p className={slideFooterClass(template)}>
           <span className={slideFooterBrandClass(template)}>ig-wrapped</span>
           {footerStat ? (

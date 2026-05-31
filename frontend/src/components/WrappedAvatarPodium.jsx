@@ -74,7 +74,10 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
   );
 
   return (
-    <li className={cn(PODIUM_ITEM, isLead && PODIUM_ITEM_LEAD)}>
+    <li
+      className={cn(PODIUM_ITEM, isLead && PODIUM_ITEM_LEAD)}
+      data-wrapped-beat-segment
+    >
       {href ? (
         <a
           className={PODIUM_AVATAR_LINK}

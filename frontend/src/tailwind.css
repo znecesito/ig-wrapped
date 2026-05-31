@@ -227,6 +227,20 @@
     z-index: 2;
   }
 
+  /* Phase H — scene beats start hidden until GSAP reveals them */
+  .wrapped-player [data-wrapped-beat],
+  .wrapped-player [data-wrapped-beat-segment] {
+    will-change: opacity, transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-player [data-wrapped-beat],
+    .wrapped-player [data-wrapped-beat-segment] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
   .wrapped-story .wrapped-card.wrapped-card--visible,
   .wrapped-player .wrapped-card.wrapped-card--visible {
     animation: wrapped-reveal-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
