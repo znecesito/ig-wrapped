@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-29
+**Last updated:** 2026-05-29 — **deck frozen at 10 slides**; **start Phase H in a fresh session** (read this file + research doc first).
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc). Spotify metrics research: [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 
@@ -8,9 +8,9 @@ Short "where we left off" for contributors and AI assistants. For invariant stac
 
 ## Branch and deploy
 
-- **Active branch:** `feat/tailwind-foundation` (ahead of `main`; Tailwind migration + Wrapped player + insights). Merge to `main` only after preview sign-off on real iPhone + export.
+- **Active branch:** `feat/tailwind-foundation` (ahead of `main`; Tailwind + Wrapped player + deck restructure).
 - **Vercel:** `main` → production; this branch → **preview URL** per push. Test `/wrapped` on preview, not only localhost.
-- **Commits (recent):** Tailwind A–D, hybrid insights, **Phase E** story player + lobby, **Phase F** IG-native visual templates + player backdrop.
+- **Recent commits:** Phase E–F player/templates; consolidated social (merged likes/comments/stories); DM **you vs them** on busiest thread only; removed inbox-wide personality slide (redundant with slide 8).
 
 ---
 
@@ -28,21 +28,22 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 1. **Lobby** — [`WrappedLobby.jsx`](../frontend/src/components/WrappedLobby.jsx): lede, handle/year, parse warnings with **layman impact** ([`parseWarningImpact.js`](../frontend/src/utils/parseWarningImpact.js)). **Start Wrapped** disabled until warnings acknowledged (checkbox). No warnings → Start enabled immediately.
 2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause**; **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (privacy) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Share: screenshot hint in player.
 
-### Slides (index 0–12, 13 beats)
+### Slides (index 0–9, **10 beats**)
 
-| # | Slide | Notes |
-|---|--------|--------|
-| 0 | Intro | “Your feed, wrapped”, handle, export year |
-| 1 | Activity span | Date range in export (not full IG history) |
-| 2 | Activity | Mega total + dominant-family % punchline + stacks |
-| 3–4 | Likes | Spotlight (#1) → ranking |
-| 5–6 | Comments | Spotlight → ranking |
-| 7–8 | Stories | Spotlight → ranking |
-| 9–10 | DMs | Spotlight → ranking |
-| 11 | Feed personality | Club-style persona (hero) |
-| 12 | Privacy | Trust / local-only (last slide, tap to finish) |
+| # | Slide | Template | Notes |
+|---|--------|----------|--------|
+| 0 | Intro | hero | Year + `@handle` + activity count lede |
+| 1 | Feed personality | hero | Dominant activity family % + club-style persona |
+| 2 | Activity mix | data | Total activities + family stack; **365-day trim** when export span &gt; 1 year ([`wrappedExportWindow.js`](../frontend/src/utils/wrappedExportWindow.js)) |
+| 3 | Your rhythm | hero | Peak weekday + hour persona + quip (`formatHour12`, full weekday names) |
+| 4 | Longest streak | hero | Consecutive active days |
+| 5 | Busiest day | hero | Max activities in one calendar day |
+| 6 | **#1 person** | hero | Merged likes + comments + story taps; quip by **dominant type** per account ([`buildSocialSpotlight`](../frontend/src/utils/wrappedInsights.js)); [`WrappedSpotlightHero`](../frontend/src/components/WrappedSpotlightHero.jsx) |
+| 7 | Top accounts | data | Merged social ranking ([`buildTopSocialCreatorsWithBreakdown`](../frontend/src/utils/socialInteractionGraph.js)); [`WrappedAvatarPodium`](../frontend/src/components/WrappedAvatarPodium.jsx) |
+| 8 | **You vs them** | hero | **Busiest DM thread only** — % you sent vs others ([`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js)); sender from `sender_name` in message JSON |
+| 9 | Privacy | trust | Local-only outro (last slide) |
 
-Profile search slide **removed** (export stores one row per account). See [`spotify-wrapped-research.md`](spotify-wrapped-research.md) analogue table.
+**Removed from deck (do not re-add without product sign-off):** separate likes/comments/stories spotlight pairs; DM thread ranking slide; profile search slide; parasocial slide; **inbox-wide personality** slide (overlapped slide 8).
 
 Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
 
@@ -58,6 +59,7 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - **Visual direction:** **IG-native** (rose/purple gradients, bold type) — **not** Spotify 2025 B/W/lime clone.
 - **No fake global percentiles**; export-scoped copy only.
 - **No** `html-to-image` / scroller Save unless dedicated export layout returns.
+- **One DM beat:** busiest-thread you vs them only (no aggregate inbox personality card).
 
 ---
 
@@ -66,27 +68,27 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | Phase | Status | Summary |
 |-------|--------|---------|
 | **Tailwind 1** | Done | `tailwind.css`, `tokens.js`, `cn()`, Vite plugin |
-| **A** | Done | Deck chrome → `WrappedStoryDeck.jsx` (legacy; superseded by player) |
-| **B** | Done | Card shell → `WrappedSlideChrome.jsx`, `wrappedThemes.js` |
-| **C** | Done | All slide content → `wrappedSlideClasses.js`, `wrappedSlideContent.jsx` |
-| **D** | Done | Token sync, CSS cleanup, page/guide Tailwind classes |
-| **Hybrid v1** | Done | `wrappedInsights.js`, Spotify-style copy on slides 0–2, 3–5, 9 |
+| **A–D** | Done | Deck chrome, card shell, slide content, token sync |
+| **Hybrid v1** | Done | `wrappedInsights.js`, personality + share copy |
 | **E** | Done | Lobby + `WrappedStoryPlayer`, `WrappedPlayerContext`, `parseWarningImpact.js`, `wrappedPlayer.js` |
-| **F** | Done | Hero/data/trust slide templates, per-slide player backdrop + grain, bold lobby CTA, pilot slides 0/2/9 + rollout 1–8 |
-| **G** | Done | `dmsShare` / `searchesShare`, deduped leaderboard copy, slides 8 = personality / 9 = privacy (privacy last) |
+| **F** | Done | Hero/data/trust templates, player backdrop + grain, `WrappedSpotlightHero` |
+| **G + deck restructure** | Done | Merged social slides; DM you vs them; 365-day activity window; rhythm/streak/busiest-day beats; spotlight quips; `data-wrapped-beat` hooks for motion |
 
 ---
 
 ## Roadmap — immediate and remaining
 
-### **Phase H — Scene choreography (Spotify-style presentation)** ← **NEXT**
+### **Phase H — Scene choreography (Spotify-style presentation)** ← **NEXT (new session)**
 
-**Not** small CSS fades only. Each slide = **timed scene** synced with `WRAPPED_SLIDE_DURATIONS_MS` in `wrappedPlayer.js`.
+**Goal:** Timed scene beats per slide, synced with `WRAPPED_SLIDE_DURATIONS_MS` in [`wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js) (10 entries).
 
-- Stagger: eyebrow → title → mega stat → punchline → chart (80–120ms steps).
-- Hold-to-pause must freeze GSAP/timeline + progress bar.
-- **Tool:** Prefer **GSAP** for timelines; optional **Lottie** on 2–3 hero slides if assets exist. **Not** 21st.dev drop-in (TS/shadcn assumptions). Approve one animation dep in `package.json`.
-- User wants presentation quality comparable to Wrapped **beats**, within JS + Tailwind stack.
+- Stagger: eyebrow → title → hero (`data-wrapped-beat`) → stat → quip → chart/footer.
+- **Hold-to-pause** must freeze GSAP timeline + progress bar (see [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx)).
+- **Tool:** Prefer **GSAP** (one animation dep). Approve in `package.json` before adding.
+- Hooks already on spotlight slides: `data-wrapped-beat="hero"`, `"stat"`, `"quip"`, `"footer"`, etc.
+- **Do not** change slide count or copy unless user asks — motion only.
+
+**Session start checklist:** Read this file → confirm `WRAPPED_CARD_COUNT === 10` → test one slide timeline → roll out to all indices.
 
 ---
 
@@ -95,17 +97,15 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - Unlock audio on **Start Wrapped** (user gesture).
 - Short royalty-free loops per `FEED_PERSONALITIES` key (4–5 files in `public/audio/`).
 - Mute toggle in player; hold pauses music.
-- Default on vs muted-at-start: **TBD** (user leaned cinematic on Start; confirm in session).
 - Cannot use user’s real Spotify/IG music taste.
 
 ---
 
-### **Phase J — Extra data slides (optional)**
+### **Phase J — Extra slides (optional)**
 
-- `mostUsedWords.js` → word-personality slide when export has text.
+- `mostUsedWords.js` → word slide when export has captions/DM text.
 - `past_instagram_insights` when file present.
-- Busiest-day as dedicated card; month-by-month “phases” from `calendarDays`.
-- May bump slide count or replace weak slides — coordinate with `WRAPPED_CARD_COUNT`.
+- **Avatars:** `WrappedAvatarPodium` supports `row.imageUrl`; export has **your** `profile_photos.json` only — third-party faces need opt-in server/proxy (see research doc). **No Playwright by default.**
 
 ---
 
@@ -113,8 +113,8 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 - PR `feat/tailwind-foundation` → `main`.
 - iPhone Safari: lobby → full playthrough → hold → exit → screenshot test.
-- Remove dead `WrappedStoryDeck.jsx` if unused.
-- Update production; optional nav/guide Tailwind cleanup.
+- Remove dead [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) if unused.
+- Update production.
 
 ---
 
@@ -123,28 +123,28 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | Area | Files |
 |------|--------|
 | Player | `WrappedStoryPlayer.jsx`, `WrappedLobby.jsx`, `WrappedPlayerContext.jsx`, `config/wrappedPlayer.js` |
-| Slides | `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `wrappedSlideClasses.js`, `wrappedThemes.js` |
-| Data | `wrappedData.js`, `wrappedInsights.js`, parsers in `utils/` |
-| Styling | `tailwind.css` (tokens, player, card animations), `styles.css` (nav, guide, legacy) |
+| Slides | `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `wrappedSlideClasses.js`, `wrappedThemes.js`, `WrappedSpotlightHero.jsx` |
+| Data | `wrappedData.js`, `wrappedInsights.js`, `wrappedExportWindow.js`, `socialInteractionGraph.js`, `messageFrequency.js` |
+| Styling | `tailwind.css`, `styles.css` |
 | Docs | `spotify-wrapped-research.md`, this file |
 
-**Legacy / unused:** [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) — pre–Phase E vertical scroller; safe to delete in Phase K cleanup.
+**Legacy / unused:** `WrappedStoryDeck.jsx` — pre–Phase E scroller; delete in Phase K.
 
 ---
 
 ## Known gaps / troubleshooting
 
-- **Blank dev page:** `rm -rf frontend/node_modules/.vite` → restart `npm run dev` (stale cache after removed deps).
-- **Save to PNG:** Only with purpose-built 1080×1920 layout — not rasterizing player DOM.
+- **Blank dev page:** `rm -rf frontend/node_modules/.vite` → restart `npm run dev`.
+- **DM you vs them:** Uses **busiest thread** (`topThreads[0]`). If `selfUsername` missing, sender split may be empty → fallback copy.
+- **Social leaderboards:** Not date-filtered (no per-event timestamps in social JSON); activity heatmap **is** trimmed to last 365 days when span &gt; 1 year.
 - Large ZIP OOM on mobile Safari — future worker/stream unzip.
-- Parsers break when Meta changes export JSON — harden as needed.
 
 ---
 
-## For the next session
+## For the next session (Phase H)
 
 1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Implement **Phase H** unless user reprioritizes.
+3. Implement **Phase H** motion only unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for player + screenshot legibility.

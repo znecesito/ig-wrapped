@@ -108,8 +108,6 @@ export async function loadWrappedBaseline({
   let heatmapData = null;
   let activityWindowTrimmed = false;
   let topThreads = [];
-  /** All parsed inbox threads (for inbox-wide Wrapped stats). */
-  let messageThreads = [];
   /** @type {Record<string, Record<string, number>> | null} */
   let socialCountsBySource = null;
 
@@ -190,7 +188,6 @@ export async function loadWrappedBaseline({
     if (messagesCache.parseWarnings?.length) {
       warnings.push(...messagesCache.parseWarnings);
     }
-    messageThreads = messagesCache.rows;
     topThreads = messagesCache.rows.slice(0, WRAPPED_THREAD_CARD_LIMIT);
   } else {
     const discovery = discoverMessageThreads(files);
@@ -210,7 +207,6 @@ export async function loadWrappedBaseline({
           threadBuckets: discovery.threadBuckets,
           parseWarnings: parsed.warnings
         });
-        messageThreads = parsed.rows;
         topThreads = parsed.rows.slice(0, WRAPPED_THREAD_CARD_LIMIT);
       }
     }
@@ -265,7 +261,6 @@ export async function loadWrappedBaseline({
     heatmapData,
     activityWindowTrimmed,
     topThreads,
-    messageThreads,
     mostSocialCreators,
     mostLikedCreators,
     mostCommentedCreators,

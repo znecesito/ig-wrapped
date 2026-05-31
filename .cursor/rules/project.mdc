@@ -38,7 +38,7 @@ alwaysApply: true
 
 ### Ten slides (0–9)
 
-intro → span → activity → likes → comments → stories → DMs → searches → privacy → **feed personality**. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js).
+intro → personality → activity mix → rhythm → streak → busiest day → **#1 person** (merged social) → top accounts → **you vs them** (busiest DM) → privacy. `WRAPPED_CARD_COUNT = 10`. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js). **Phase H next** — see [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md).
 
 ### Product constraints
 
@@ -51,8 +51,8 @@ intro → span → activity → likes → comments → stories → DMs → searc
 | Phase | Focus |
 |-------|--------|
 | **F** | Done — IG-native templates (hero/data/trust), player backdrop, lobby CTA |
-| **G** | Done — DMs/searches share copy, copy dedupe, slide 8 personality / 9 privacy |
-| **H** ← next | GSAP scene choreography synced to slide durations |
+| **G** | Done — merged social + DM you vs them; deck restructure; spotlight quips |
+| **H** ← next | GSAP scene choreography synced to slide durations (`data-wrapped-beat` hooks in place) |
 | **I** | Personality-mapped ambient audio + mute |
 | **J** | Optional extra slides (words, insights JSON) |
 | **K** | Merge `feat/tailwind-foundation` → `main`, cleanup |

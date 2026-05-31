@@ -1,6 +1,6 @@
 # ig-wrapped
 
-**Instagram Wrapped** in your browser: load your official export (ZIP or folder), tap **Start Wrapped**, and play through ten portrait story cards—activity, top people, DMs, searches, and your feed personality. Your export stays on your device; nothing is uploaded for Wrapped.
+**Instagram Wrapped** in your browser: load your official export (ZIP or folder), tap **Start Wrapped**, and play through **ten** portrait story cards—activity, rhythm, top people, DMs, and your feed personality. Your export stays on your device; nothing is uploaded for Wrapped.
 
 ## What you can do today
 
@@ -61,15 +61,14 @@ Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge
 | Phase | Status | Summary |
 | --- | --- | --- |
 | Tailwind + slides A–D | Done | Design system, card shell, all slide content |
-| Hybrid insights | Done | Personality slide, share-style copy on key slides |
-| **E Story player** | Done | Lobby, Start Wrapped, full-screen tap/hold/auto-advance |
-| **F Visual (IG-native)** | **Next** | Bold full-bleed cards, hero/data templates in player |
-| G Metrics polish | Planned | DMs + searches share lines |
-| H Motion | Planned | GSAP-style scene beats per slide |
+| E Story player | Done | Lobby, Start Wrapped, full-screen tap/hold/auto-advance |
+| F Visual (IG-native) | Done | Hero/data/trust templates, player backdrop |
+| G Deck + copy | Done | Merged social, DM you vs them, rhythm/streak/day beats |
+| **H Motion** | **Next** | GSAP-style scene beats per slide |
 | I Music | Planned | Optional ambient loops by personality |
 | K Ship | Planned | Merge to `main` after iPhone QA |
 
-See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for file paths, locked UX decisions, and session handoff.
+See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for the **10-slide** deck, locked UX, and Phase H handoff.
 
 ## Run locally
 
@@ -131,7 +130,7 @@ Root **`backend`**, start **`npm start`**, health at `GET /health`.
 
 ## For contributors / AI assistants
 
-- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, phases, locked decisions, next = **Phase F**)
+- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 10-slide deck, next = **Phase H**)
 - **Metrics / Spotify mapping:** [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md)
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
 

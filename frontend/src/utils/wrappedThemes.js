@@ -11,7 +11,6 @@ export const SLIDE_THEMES = [
   "activity",
   "activity",
   "dms",
-  "dms",
   "privacy"
 ];
 
@@ -67,7 +66,6 @@ export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "hero",
   "data",
-  "hero",
   "hero",
   "trust"
 ];
