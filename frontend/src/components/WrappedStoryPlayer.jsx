@@ -86,6 +86,7 @@ export default function WrappedStoryPlayer({
 
     const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
     const tl = createSlideBeatTimeline(root, {
+      slideIndex: cardIndex,
       durationMs: animDurationMs,
       template: slideTemplate,
       onComplete: () => {

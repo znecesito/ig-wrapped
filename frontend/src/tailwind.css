@@ -229,13 +229,17 @@
 
   /* Phase H — scene beats start hidden until GSAP reveals them */
   .wrapped-player [data-wrapped-beat],
-  .wrapped-player [data-wrapped-beat-segment] {
+  .wrapped-player [data-wrapped-beat-segment],
+  .wrapped-player [data-wrapped-drop],
+  .wrapped-player [data-podium-rank] {
     will-change: opacity, transform;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .wrapped-player [data-wrapped-beat],
-    .wrapped-player [data-wrapped-beat-segment] {
+    .wrapped-player [data-wrapped-beat-segment],
+    .wrapped-player [data-wrapped-drop],
+    .wrapped-player [data-podium-rank] {
       opacity: 1 !important;
       transform: none !important;
     }

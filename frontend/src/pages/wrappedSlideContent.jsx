@@ -77,9 +77,17 @@ function stackLinkLabel(row, { threadLabels }) {
 }
 
 /** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
-function renderActivityStack(families, maxFamilyTotal, { linkable = false, compact = false } = {}) {
+function renderActivityStack(
+  families,
+  maxFamilyTotal,
+  { linkable = false, compact = false, raceMode = false } = {}
+) {
   return (
-    <div className={compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK} aria-label="Breakdown">
+    <div
+      className={compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK}
+      aria-label="Breakdown"
+      {...(raceMode ? { "data-wrapped-race-stack": true } : {})}
+    >
       {families.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
         const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
@@ -103,14 +111,26 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false, compa
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
             className={ACTIVITY_STACK_SEGMENT}
-            data-wrapped-beat-segment
+            {...(raceMode
+              ? {
+                  "data-wrapped-race-segment": true,
+                  "data-race-rank": String(index),
+                  "data-race-flex": String(flexGrow),
+                  "data-race-count": String(total)
+                }
+              : { "data-wrapped-beat-segment": true })}
             style={{
-              flexGrow,
+              flexGrow: raceMode ? 0.01 : flexGrow,
               backgroundColor: fam.color
             }}
           >
             <span className={ACTIVITY_STACK_LABEL}>{labelNode}</span>
-            <span className={ACTIVITY_STACK_VAL}>{formatCount(total)}</span>
+            <span
+              className={ACTIVITY_STACK_VAL}
+              {...(raceMode ? { "data-race-count": String(total) } : {})}
+            >
+              {raceMode ? "0" : formatCount(total)}
+            </span>
           </div>
         );
       })}
@@ -138,9 +158,9 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   });
 
   return (
-    <div className={LEADERBOARD} data-wrapped-beat="chart">
-      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
-      {renderActivityStack(stackFamilies, maxCount, { linkable: true, compact: true })}
+    <div className={LEADERBOARD}>
+      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} raceMode />
+      {renderActivityStack(stackFamilies, maxCount, { linkable: true, compact: true, raceMode: true })}
     </div>
   );
 }
@@ -172,7 +192,7 @@ function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emp
         row={spotlight.topRow}
         threadLabels={spotlight.thread}
       />
-      <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+      <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
         {formatCount(spotlight.topCount)}
       </p>
       <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
@@ -224,7 +244,7 @@ function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
       />
       {spotlight.selfPct > 0 || spotlight.otherPct > 0 ? (
         <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
             {spotlight.selfPct}%
           </p>
           <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
@@ -238,7 +258,7 @@ function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
         </>
       ) : (
         <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
             {formatCount(spotlight.messageCount)}
           </p>
           <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
@@ -292,7 +312,7 @@ export function renderWrappedSlide(index, ctx) {
           title={year ? `Your ${year} feed, wrapped` : "Your feed, wrapped"}
           bodyClassName="hero"
         >
-          <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="hero">
+          <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="hero" data-wrapped-drop>
             {handle}
           </p>
           <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
@@ -314,10 +334,10 @@ export function renderWrappedSlide(index, ctx) {
         >
           {insights?.personality && insights.dominantPct >= 1 ? (
             <>
-              <p className={SLIDE_PERSONALITY_EMOJI_HERO} data-wrapped-beat="hero" aria-hidden>
+              <p className={SLIDE_PERSONALITY_EMOJI_HERO} data-wrapped-beat="hero" data-wrapped-drop aria-hidden>
                 {insights.personality.emoji}
               </p>
-              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
                 {insights.dominantPct}%
               </p>
               <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">

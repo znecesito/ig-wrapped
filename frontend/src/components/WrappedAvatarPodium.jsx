@@ -46,7 +46,7 @@ function threadProfileHref(label) {
   return profileHref(bare);
 }
 
-function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
+function PodiumAvatar({ row, rank, threadLabels, imageUrl, raceMode }) {
   const key = avatarKeyForWrappedRow(row, { threadLabels });
   const initials = initialsForWrappedRow(row, { threadLabels });
   const bg = avatarColorForKey(key);
@@ -76,7 +76,9 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
   return (
     <li
       className={cn(PODIUM_ITEM, isLead && PODIUM_ITEM_LEAD)}
-      data-wrapped-beat-segment
+      {...(raceMode
+        ? { "data-podium-rank": String(rank - 1) }
+        : { "data-wrapped-beat-segment": true })}
     >
       {href ? (
         <a
@@ -98,7 +100,7 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
   );
 }
 
-export default function WrappedAvatarPodium({ rows, threadLabels = false }) {
+export default function WrappedAvatarPodium({ rows, threadLabels = false, raceMode = false }) {
   if (!rows?.length) {
     return null;
   }
@@ -112,6 +114,7 @@ export default function WrappedAvatarPodium({ rows, threadLabels = false }) {
           rank={index + 1}
           threadLabels={threadLabels}
           imageUrl={row.imageUrl}
+          raceMode={raceMode}
         />
       ))}
     </ol>

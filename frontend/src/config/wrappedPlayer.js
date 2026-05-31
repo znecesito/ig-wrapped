@@ -13,7 +13,7 @@ export const WRAPPED_SLIDE_DURATIONS_MS = [
   5000, // streak
   5000, // busiest day
   5500, // social spotlight (#1 person)
-  6000, // social ranking
+  7500, // social ranking (bar race)
   5500, // DM you vs them (busiest thread)
   0 // privacy — last slide, no auto-advance
 ];

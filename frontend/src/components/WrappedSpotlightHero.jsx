@@ -26,12 +26,17 @@ export default function WrappedSpotlightHero({ name, row, threadLabels = false }
 
   return (
     <div className="wrapped-spotlight-hero flex flex-col items-center gap-2.5" data-wrapped-beat="hero">
-      <div className={SPOTLIGHT_AVATAR_RING} data-wrapped-beat="avatar" aria-hidden>
+      <div
+        className={SPOTLIGHT_AVATAR_RING}
+        data-wrapped-beat="avatar"
+        data-wrapped-drop
+        aria-hidden
+      >
         <span className={SPOTLIGHT_AVATAR} style={{ backgroundColor: bg }}>
           <span className={SPOTLIGHT_AVATAR_INITIALS}>{initials}</span>
         </span>
       </div>
-      <p className={cn(SPOTLIGHT_HANDLE, "m-0")} data-wrapped-beat="handle">
+      <p className={cn(SPOTLIGHT_HANDLE, "m-0")} data-wrapped-beat="handle" data-wrapped-drop>
         {name}
       </p>
     </div>
