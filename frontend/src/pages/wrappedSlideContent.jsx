@@ -83,13 +83,14 @@ function stackLinkLabel(row, { threadLabels }) {
 function renderActivityStack(
   families,
   maxFamilyTotal,
-  { linkable = false, compact = false, raceMode = false } = {}
+  { linkable = false, compact = false, raceMode = false, growMode = false } = {}
 ) {
   return (
     <div
       className={compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK}
       aria-label="Breakdown"
       {...(raceMode ? { "data-wrapped-race-stack": true } : {})}
+      {...(growMode ? { "data-activity-stack": true } : {})}
     >
       {families.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
@@ -110,20 +111,27 @@ function renderActivityStack(
             <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{text}</span>
           );
 
+        const segmentProps = raceMode
+          ? {
+              "data-wrapped-race-segment": true,
+              "data-race-rank": String(index),
+              "data-race-flex": String(flexGrow),
+              "data-race-count": String(total)
+            }
+          : growMode
+            ? {
+                "data-activity-segment": true,
+                "data-activity-flex": String(flexGrow)
+              }
+            : { "data-wrapped-beat-segment": true };
+
         return (
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
             className={ACTIVITY_STACK_SEGMENT}
-            {...(raceMode
-              ? {
-                  "data-wrapped-race-segment": true,
-                  "data-race-rank": String(index),
-                  "data-race-flex": String(flexGrow),
-                  "data-race-count": String(total)
-                }
-              : { "data-wrapped-beat-segment": true })}
+            {...segmentProps}
             style={{
-              flexGrow: raceMode ? 0.01 : flexGrow,
+              flexGrow: raceMode || growMode ? 0.01 : flexGrow,
               backgroundColor: fam.color
             }}
           >
@@ -336,15 +344,19 @@ export function renderWrappedSlide(index, ctx) {
         <WrappedSlideLayout template={template} hideHeader>
           {hasData ? (
             <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
-                <span data-activity-count-value={total}>0</span>
-              </p>
               <div className="w-full max-w-[17rem]" data-wrapped-beat="chart">
                 {renderActivityStack(
                   activityBreakdown.families,
-                  activityBreakdown.maxFamilyTotal
+                  activityBreakdown.maxFamilyTotal,
+                  { growMode: true }
                 )}
               </div>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+                {formatCount(total)}
+              </p>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                total activity all year
+              </p>
               {insights?.activityQuip ? (
                 <p className={SLIDE_INSIGHT_PUNCH} data-wrapped-beat="quip">
                   {insights.activityQuip}

@@ -425,19 +425,23 @@ function buildBarRaceTimeline(rootEl, { durationMs, onComplete, reduced }) {
   return padTimeline(tl, totalSec);
 }
 
-/** Activity slide — count-up stat, then chart, then quip + footer together. */
+/** Activity slide — stacked bars grow first, then stat + quip + footer together. */
 function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const totalSec = Math.max(0.5, durationMs / 1000);
   const tl = makeTimeline({ durationMs, onComplete });
 
-  const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
-  const countEl = rootEl.querySelector("[data-activity-count-value]");
   const chartEl = rootEl.querySelector('[data-wrapped-beat="chart"]');
+  const segments = [...rootEl.querySelectorAll("[data-activity-segment]")];
+  const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
+  const statLabelEl = rootEl.querySelector('[data-wrapped-beat="stat-label"]');
   const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
   const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
   const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
 
-  if (!statEl || !countEl) {
+  const summaryEls = [statEl, statLabelEl, quipEl].filter(Boolean);
+  const targets = [chartEl, ...segments, ...summaryEls, footerEl, bodyEl].filter(Boolean);
+
+  if (!chartEl || !segments.length) {
     return buildGenericTimeline(rootEl, {
       durationMs,
       template: "data",
@@ -446,22 +450,24 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
     });
   }
 
-  const target = parseInt(countEl.dataset.activityCountValue ?? "0", 10);
-  const targets = [statEl, chartEl, quipEl, footerEl, bodyEl].filter(Boolean);
-
   if (reduced) {
-    countEl.textContent = target.toLocaleString();
+    segments.forEach((seg) => {
+      const flex = parseFloat(seg.dataset.activityFlex) || 1;
+      gsap.set(seg, { flexGrow: flex });
+    });
     resetMotionTargets(targets);
     tl.to({}, { duration: totalSec });
     return tl;
   }
 
-  gsap.set(statEl, { opacity: 0, scale: 0.28, transformOrigin: "center center" });
-  if (chartEl) {
-    gsap.set(chartEl, { opacity: 0, y: 22, scale: 0.96 });
-  }
-  if (quipEl) {
-    gsap.set(quipEl, { opacity: 0, y: 14 });
+  gsap.set(chartEl, { opacity: 1 });
+  gsap.set(segments, { flexGrow: 0.01, opacity: 1 });
+  segments.forEach((seg) => {
+    gsap.set(seg.querySelectorAll("span"), { opacity: 0 });
+  });
+
+  if (summaryEls.length) {
+    gsap.set(summaryEls, { opacity: 0, y: 14 });
   }
   if (footerEl) {
     gsap.set(footerEl, { opacity: 0, y: 14 });
@@ -470,55 +476,39 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
     gsap.set(bodyEl, { opacity: 0, y: 14 });
   }
 
-  const countDuration = Math.min(2.8, Math.max(1.5, totalSec * 0.4));
-  const counter = { v: 0 };
+  const stackStart = 0.2;
+  const growDuration = 0.48;
+  const growStagger = 0.1;
 
-  tl.to(
-    statEl,
-    {
-      opacity: 1,
-      scale: 1,
-      duration: countDuration * 0.75,
-      ease: "back.out(1.7)"
-    },
-    0.12
-  );
+  // Bottom segment first — vertical stack grows like a column chart
+  [...segments].reverse().forEach((seg, index) => {
+    const finalFlex = parseFloat(seg.dataset.activityFlex) || 1;
+    const at = stackStart + index * growStagger;
 
-  tl.to(
-    counter,
-    {
-      v: target,
-      duration: countDuration,
-      ease: "power2.out",
-      onUpdate: () => {
-        countEl.textContent = Math.round(counter.v).toLocaleString();
-      }
-    },
-    0.18
-  );
-
-  tl.to(statEl, { scale: 1.05, duration: 0.16, ease: "power1.out" }, countDuration * 0.42);
-  tl.to(statEl, { scale: 1, duration: 0.2, ease: "power1.inOut" }, countDuration * 0.42 + 0.16);
-
-  const chartAt = countDuration + 0.32;
-  if (chartEl) {
     tl.to(
-      chartEl,
-      { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "power2.out" },
-      chartAt
+      seg,
+      { flexGrow: finalFlex, duration: growDuration, ease: "power2.out" },
+      at
     );
-  }
 
-  const quipAt = chartAt + (chartEl ? 0.5 : 0) + 0.2;
-  const revealTargets = [quipEl, footerEl].filter(Boolean);
+    const labels = seg.querySelectorAll("span");
+    if (labels.length) {
+      tl.to(labels, { opacity: 1, duration: 0.22, ease: "power1.out" }, at + growDuration * 0.55);
+    }
+  });
+
+  const stackEnd = stackStart + (segments.length - 1) * growStagger + growDuration;
+  const revealAt = stackEnd + 0.18;
+  const revealTargets = [...summaryEls, footerEl].filter(Boolean);
+
   if (revealTargets.length) {
     tl.to(
       revealTargets,
-      { opacity: 1, y: 0, duration: 0.48, stagger: 0.06, ease: "power2.out" },
-      quipAt
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: "power2.out" },
+      revealAt
     );
   } else if (bodyEl) {
-    tl.to(bodyEl, { opacity: 1, y: 0, duration: 0.48, ease: "power2.out" }, quipAt);
+    tl.to(bodyEl, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, revealAt);
   }
 
   return padTimeline(tl, totalSec);
