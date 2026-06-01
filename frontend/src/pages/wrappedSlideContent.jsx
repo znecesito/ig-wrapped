@@ -6,10 +6,13 @@ import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
 import { cn } from "../lib/utils.js";
 import {
   ACTIVITY_STACK,
+  ACTIVITY_STACK_TALL,
   ACTIVITY_STACK_COMPACT,
   ACTIVITY_STACK_LABEL,
   ACTIVITY_STACK_LINK,
   ACTIVITY_STACK_SEGMENT,
+  ACTIVITY_STACK_SEGMENT_GROW,
+  ACTIVITY_STACK_BAR_FILL,
   ACTIVITY_STACK_VAL,
   LEADERBOARD,
   SLIDE_BODY,
@@ -49,6 +52,18 @@ function formatCount(n) {
   return typeof n === "number" ? n.toLocaleString() : n;
 }
 
+/** Visual flex weight — small real counts still get a readable slice of the stack. */
+function activityStackFlexGrow(total, maxFamilyTotal, { growMode = false } = {}) {
+  if (!growMode) {
+    return maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+  }
+  const floor = Math.max(maxFamilyTotal * 0.14, 3);
+  if (total <= 0) {
+    return floor * 0.5;
+  }
+  return Math.max(total, floor);
+}
+
 function truncateLabel(text, max = 16) {
   if (!text || text.length <= max) {
     return text;
@@ -85,16 +100,20 @@ function renderActivityStack(
   maxFamilyTotal,
   { linkable = false, compact = false, raceMode = false, growMode = false } = {}
 ) {
+  const items = families;
+
   return (
     <div
-      className={compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK}
+      className={
+        growMode ? ACTIVITY_STACK_TALL : compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK
+      }
       aria-label="Breakdown"
       {...(raceMode ? { "data-wrapped-race-stack": true } : {})}
       {...(growMode ? { "data-activity-stack": true } : {})}
     >
-      {families.map((fam, index) => {
+      {items.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
-        const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+        const flexGrow = activityStackFlexGrow(total, maxFamilyTotal, { growMode });
         const text = fam.linkLabel ?? fam.label ?? fam.displayLabel;
         const labelNode =
           linkable && fam.href ? (
@@ -128,20 +147,40 @@ function renderActivityStack(
         return (
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
-            className={ACTIVITY_STACK_SEGMENT}
+            className={growMode ? ACTIVITY_STACK_SEGMENT_GROW : ACTIVITY_STACK_SEGMENT}
             {...segmentProps}
             style={{
-              flexGrow: raceMode || growMode ? 0.01 : flexGrow,
-              backgroundColor: fam.color
+              flexGrow: raceMode ? 0.01 : flexGrow,
+              ...(growMode ? null : { backgroundColor: fam.color })
             }}
           >
-            <span className={ACTIVITY_STACK_LABEL}>{labelNode}</span>
-            <span
-              className={ACTIVITY_STACK_VAL}
-              {...(raceMode ? { "data-race-count": String(total) } : {})}
-            >
-              {raceMode ? "0" : formatCount(total)}
-            </span>
+            {growMode ? (
+              <div
+                className={ACTIVITY_STACK_BAR_FILL}
+                data-activity-bar-fill
+                style={{
+                  backgroundColor: fam.color,
+                  ...(total <= 0 ? { opacity: 0.45 } : null)
+                }}
+              >
+                <span className={ACTIVITY_STACK_LABEL} data-activity-bar-label>
+                  {labelNode}
+                </span>
+                <span className={ACTIVITY_STACK_VAL} data-activity-bar-value>
+                  {formatCount(total)}
+                </span>
+              </div>
+            ) : (
+              <>
+                <span className={ACTIVITY_STACK_LABEL}>{labelNode}</span>
+                <span
+                  className={ACTIVITY_STACK_VAL}
+                  {...(raceMode ? { "data-race-count": String(total) } : {})}
+                >
+                  {raceMode ? "0" : formatCount(total)}
+                </span>
+              </>
+            )}
           </div>
         );
       })}
@@ -344,7 +383,7 @@ export function renderWrappedSlide(index, ctx) {
         <WrappedSlideLayout template={template} hideHeader>
           {hasData ? (
             <>
-              <div className="w-full max-w-[17rem]" data-wrapped-beat="chart">
+              <div className="w-full max-w-[18rem]" data-wrapped-beat="chart">
                 {renderActivityStack(
                   activityBreakdown.families,
                   activityBreakdown.maxFamilyTotal,

@@ -188,11 +188,23 @@ export const SLIDE_STAT_VALUE =
 export const ACTIVITY_STACK =
   "flex h-[min(9.5rem,22vh)] min-h-[6rem] flex-col overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--slide-accent)_18%,#e2e8f0)] bg-white/55 shadow-[inset_0_1px_2px_rgb(15_23_42/0.05)]";
 
+/** Slide 1 activity breakdown — extra vertical room for small categories */
+export const ACTIVITY_STACK_TALL =
+  "flex h-[min(12.5rem,32vh)] min-h-[9rem] flex-col overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--slide-accent)_18%,#e2e8f0)] bg-white/55 shadow-[inset_0_1px_2px_rgb(15_23_42/0.05)]";
+
 export const ACTIVITY_STACK_COMPACT =
   "flex h-[min(8rem,18vh)] min-h-[5rem] flex-col overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--slide-accent)_18%,#e2e8f0)] bg-white/55 shadow-[inset_0_1px_2px_rgb(15_23_42/0.05)]";
 
 export const ACTIVITY_STACK_SEGMENT =
   "flex min-h-5 items-center justify-between gap-1.5 px-[0.45rem] py-[0.3rem] text-ink";
+
+/** Grow-mode segment shell — final flex slot; inner fill animates */
+export const ACTIVITY_STACK_SEGMENT_GROW =
+  "relative min-h-[1.75rem] shrink-0 overflow-hidden";
+
+/** Inner bar that scales up from the bottom inside its slot */
+export const ACTIVITY_STACK_BAR_FILL =
+  "absolute inset-x-0 bottom-0 top-0 flex w-full items-center justify-between gap-1.5 px-[0.45rem] py-[0.3rem] text-ink";
 
 export const ACTIVITY_STACK_LABEL =
   "min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[0.64rem] font-extrabold uppercase tracking-wide";

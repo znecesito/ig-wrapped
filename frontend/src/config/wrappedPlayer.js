@@ -6,8 +6,8 @@ export const WRAPPED_LAST_SLIDE_INDEX = WRAPPED_CARD_COUNT - 1;
 
 /** Auto-advance duration per slide (ms). Last slide uses 0 — hold until tap. */
 export const WRAPPED_SLIDE_DURATIONS_MS = [
-  6500, // intro — match activity slide pace
-  6500, // activity total + breakdown
+  5000, // intro
+  8000, // activity — sequential bar beats need room
   4500, // peak rhythm
   4000, // streak
   4000, // busiest day

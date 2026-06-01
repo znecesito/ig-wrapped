@@ -62,7 +62,21 @@ function padTimeline(tl, totalSec) {
 }
 
 function resetMotionTargets(targets) {
-  gsap.set(targets, { opacity: 1, y: 0, scale: 1, scaleX: 1, flexGrow: undefined });
+  gsap.set(targets, { opacity: 1, y: 0, scale: 1, scaleX: 1, scaleY: 1, flexGrow: undefined });
+}
+
+function resetActivitySegments(segments) {
+  segments.forEach((seg) => {
+    const flex = parseFloat(seg.dataset.activityFlex) || 1;
+    gsap.set(seg, { flexGrow: flex });
+    const fill = seg.querySelector("[data-activity-bar-fill]");
+    if (fill) {
+      gsap.set(fill, { scaleY: 1, transformOrigin: "center bottom" });
+    }
+    seg.querySelectorAll("[data-activity-bar-label], [data-activity-bar-value]").forEach((el) => {
+      gsap.set(el, { opacity: 1, x: 0, y: 0 });
+    });
+  });
 }
 
 function collectBeats(rootEl) {
@@ -439,7 +453,6 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
 
   const summaryEls = [statEl, statLabelEl, quipEl].filter(Boolean);
-  const targets = [chartEl, ...segments, ...summaryEls, footerEl, bodyEl].filter(Boolean);
 
   if (!chartEl || !segments.length) {
     return buildGenericTimeline(rootEl, {
@@ -451,19 +464,30 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   }
 
   if (reduced) {
-    segments.forEach((seg) => {
-      const flex = parseFloat(seg.dataset.activityFlex) || 1;
-      gsap.set(seg, { flexGrow: flex });
-    });
-    resetMotionTargets(targets);
+    resetActivitySegments(segments);
+    resetMotionTargets([chartEl, ...summaryEls, footerEl, bodyEl].filter(Boolean));
     tl.to({}, { duration: totalSec });
     return tl;
   }
 
   gsap.set(chartEl, { opacity: 1 });
-  gsap.set(segments, { flexGrow: 0.01, opacity: 1 });
   segments.forEach((seg) => {
-    gsap.set(seg.querySelectorAll("span"), { opacity: 0 });
+    const flex = parseFloat(seg.dataset.activityFlex) || 1;
+    gsap.set(seg, { flexGrow: flex, opacity: 1 });
+
+    const fill = seg.querySelector("[data-activity-bar-fill]");
+    if (fill) {
+      gsap.set(fill, { scaleY: 0, transformOrigin: "center bottom" });
+    }
+
+    const label = seg.querySelector("[data-activity-bar-label]");
+    const value = seg.querySelector("[data-activity-bar-value]");
+    if (label) {
+      gsap.set(label, { opacity: 0, x: -12, y: 6 });
+    }
+    if (value) {
+      gsap.set(value, { opacity: 0, x: 12, y: 6 });
+    }
   });
 
   if (summaryEls.length) {
@@ -477,28 +501,42 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   }
 
   const stackStart = 0.2;
-  const growDuration = 0.48;
-  const growStagger = 0.1;
+  const growDuration = 0.68;
+  const barPause = 0.42;
+  const labelDuration = 0.32;
 
-  // Bottom segment first — vertical stack grows like a column chart
-  [...segments].reverse().forEach((seg, index) => {
-    const finalFlex = parseFloat(seg.dataset.activityFlex) || 1;
-    const at = stackStart + index * growStagger;
+  // Top-down: comments → likes → media → story interactions; pause between each
+  let cursor = stackStart;
+  segments.forEach((seg) => {
+    const fill = seg.querySelector("[data-activity-bar-fill]");
+    const label = seg.querySelector("[data-activity-bar-label]");
+    const value = seg.querySelector("[data-activity-bar-value]");
 
-    tl.to(
-      seg,
-      { flexGrow: finalFlex, duration: growDuration, ease: "power2.out" },
-      at
-    );
-
-    const labels = seg.querySelectorAll("span");
-    if (labels.length) {
-      tl.to(labels, { opacity: 1, duration: 0.22, ease: "power1.out" }, at + growDuration * 0.55);
+    if (fill) {
+      tl.to(fill, { scaleY: 1, duration: growDuration, ease: "power3.out" }, cursor);
     }
+
+    const labelAt = cursor + growDuration * 0.58;
+    if (label) {
+      tl.to(
+        label,
+        { opacity: 1, x: 0, y: 0, duration: labelDuration, ease: "power2.out" },
+        labelAt
+      );
+    }
+    if (value) {
+      tl.to(
+        value,
+        { opacity: 1, x: 0, y: 0, duration: labelDuration, ease: "power2.out" },
+        labelAt + 0.09
+      );
+    }
+
+    cursor += growDuration + barPause;
   });
 
-  const stackEnd = stackStart + (segments.length - 1) * growStagger + growDuration;
-  const revealAt = stackEnd + 0.18;
+  const stackEnd = cursor - barPause;
+  const revealAt = stackEnd + 0.28;
   const revealTargets = [...summaryEls, footerEl].filter(Boolean);
 
   if (revealTargets.length) {
