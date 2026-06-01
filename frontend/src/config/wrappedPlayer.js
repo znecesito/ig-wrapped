@@ -9,7 +9,7 @@ export const WRAPPED_SLIDE_DURATIONS_MS = [
   5000, // intro
   8000, // activity
   7000, // rhythm
-  18000, // people rank chart (+9s admire time after animation)
+  12000, // people rank chart
   4500, // DM you vs them
   0 // privacy — last slide, no auto-advance
 ];
