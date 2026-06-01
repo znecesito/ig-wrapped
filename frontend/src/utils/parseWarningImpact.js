@@ -31,7 +31,7 @@ export function explainParseWarning(message) {
     return {
       summary: text,
       impact: "Social interaction leaderboards may be incomplete.",
-      slides: ["Your #1 person", "Top accounts"]
+      slides: ["People"]
     };
   }
 

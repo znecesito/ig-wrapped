@@ -55,7 +55,7 @@ function buildRhythmBasketballSecondLine(activeWeekday, hour) {
     return "Early reps before clock-in, I see you.";
   }
   if (hour != null && hour >= 12 && hour <= 16) {
-    return "You checked in and got minutes in broad daylight";
+    return "You checked in and got minutes in broad daylight.";
   }
   return "You like to play ball after hours.";
 }
@@ -218,6 +218,36 @@ export function buildRhythmPersona(activeWeekday, activeHourLabel) {
     displayHour,
     deckLabel: `${displayWeekday} · ${displayHour}`
   };
+}
+
+const PEOPLE_CATEGORY_LABELS = {
+  likes: "likes",
+  comments: "comments",
+  stories: "stories"
+};
+
+export function buildPeopleQuip(topAccount) {
+  if (!topAccount?.username) {
+    return null;
+  }
+  const handle = `@${String(topAccount.username).replace(/^@/, "")}`;
+  const dominant = topAccount.dominantType ?? "likes";
+  const total = topAccount.count ?? 0;
+  const breakdown = topAccount.breakdown ?? { likes: 0, comments: 0, stories: 0 };
+  const dominantCount = breakdown[dominant] ?? 0;
+  const pct = total > 0 ? Math.round((dominantCount / total) * 100) : 0;
+  const categoryLabel = PEOPLE_CATEGORY_LABELS[dominant] ?? "interactions";
+
+  let quipLine;
+  if (dominant === "comments") {
+    quipLine = "Y'all had your own press conferences on each post!";
+  } else if (dominant === "stories") {
+    quipLine = "You never missed a story run.";
+  } else {
+    quipLine = "Your thumb stayed hot!";
+  }
+
+  return `You interacted the most with ${handle}. ${pct}% of your interactions were ${categoryLabel}! ${quipLine}`;
 }
 
 export function buildActivityQuip(total) {
@@ -640,6 +670,8 @@ export function buildWrappedInsights(baseline) {
   const streakQuip = buildStreakQuip(streakDays);
   const busiestDayQuip = buildBusiestDayQuip(busiestDayLabel, busiestDay?.count ?? 0);
   const activityQuip = buildActivityQuip(total);
+  const topSocial = baseline.mostSocialCreators?.[0] ?? null;
+  const peopleQuip = buildPeopleQuip(topSocial);
 
   return {
     exportYear,
@@ -648,6 +680,7 @@ export function buildWrappedInsights(baseline) {
     dominantPct,
     personality,
     activityQuip,
+    peopleQuip,
     timePersona,
     rhythmPersona,
     streakQuip,

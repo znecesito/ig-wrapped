@@ -1,8 +1,8 @@
 import gsap from "gsap";
 
 /** Slides with hero “drop from sky” beats. */
-const HERO_DROP_SLIDE_INDICES = new Set([5, 7]);
-const BAR_RACE_SLIDE_INDEX = 6;
+const HERO_DROP_SLIDE_INDICES = new Set([4]);
+const PEOPLE_SLIDE_INDEX = 3;
 const ACTIVITY_SLIDE_INDEX = 1;
 const RHYTHM_SLIDE_INDEX = 2;
 const INTRO_DROP_SLIDE_INDEX = 0;
@@ -698,6 +698,153 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   return padTimeline(tl, totalSec);
 }
 
+function peopleLabelOpacity(rank, topN) {
+  if (rank <= topN) {
+    return 1;
+  }
+  if (rank >= topN + 1) {
+    return 0;
+  }
+  return 1 - (rank - topN);
+}
+
+function setPeopleLabelAtProgress(labelEl, coords, progress, topN) {
+  if (!coords.length) {
+    return;
+  }
+  const maxIdx = coords.length - 1;
+  const t = Math.max(0, Math.min(maxIdx, progress));
+  const i = Math.floor(t);
+  const frac = t - i;
+  const p0 = coords[i];
+  const p1 = coords[Math.min(i + 1, maxIdx)];
+  const y = p0.y + (p1.y - p0.y) * frac;
+  const rank = p0.rank + (p1.rank - p0.rank) * frac;
+  gsap.set(labelEl, { attr: { y }, opacity: peopleLabelOpacity(rank, topN) });
+}
+
+/** People slide — fluid rank lines with labels traveling on the right. */
+function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
+  const totalSec = Math.max(0.5, durationMs / 1000);
+  const tl = makeTimeline({ durationMs, onComplete });
+
+  setStaticBeatsVisible(rootEl);
+
+  const chartEl = rootEl.querySelector("[data-people-chart]");
+  const seriesGroups = [...rootEl.querySelectorAll("[data-people-series]")];
+  const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
+  const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
+  const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
+  const topN = parseInt(chartEl?.dataset.peopleTopN ?? "5", 10);
+
+  if (!seriesGroups.length) {
+    return buildGenericTimeline(rootEl, {
+      durationMs,
+      template: "data",
+      onComplete,
+      reduced
+    });
+  }
+
+  const seriesMeta = seriesGroups.map((groupEl) => {
+    const pathEl = groupEl.querySelector("[data-people-path]");
+    const labelEl = groupEl.querySelector("[data-people-label]");
+    let coords = [];
+    if (labelEl?.dataset.peopleCoords) {
+      try {
+        coords = JSON.parse(labelEl.dataset.peopleCoords);
+      } catch {
+        coords = [];
+      }
+    }
+    const len = pathEl?.getTotalLength?.() || 1;
+    return { pathEl, labelEl, coords, len };
+  }).filter((row) => row.pathEl);
+
+  if (reduced) {
+    seriesMeta.forEach(({ pathEl, labelEl, coords }) => {
+      gsap.set(pathEl, { strokeDashoffset: 0, opacity: 1 });
+      if (labelEl && coords.length) {
+        const last = coords[coords.length - 1];
+        gsap.set(labelEl, {
+          attr: { y: last.y },
+          opacity: peopleLabelOpacity(last.rank, topN)
+        });
+      }
+    });
+    resetMotionTargets([quipEl, footerEl, bodyEl].filter(Boolean));
+    if (chartEl) {
+      gsap.set(chartEl, { opacity: 1 });
+    }
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  if (chartEl) {
+    gsap.set(chartEl, { opacity: 1 });
+  }
+
+  seriesMeta.forEach(({ pathEl, labelEl, coords, len }) => {
+    gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len, opacity: 1 });
+    if (labelEl && coords.length) {
+      setPeopleLabelAtProgress(labelEl, coords, 0, topN);
+    }
+  });
+
+  if (quipEl) {
+    gsap.set(quipEl, { opacity: 0, y: 14 });
+  }
+  if (footerEl) {
+    gsap.set(footerEl, { opacity: 0, y: 14 });
+  }
+  if (bodyEl) {
+    gsap.set(bodyEl, { opacity: 0, y: 14 });
+  }
+
+  const drawStart = 0.25;
+  const drawDuration = Math.min(5.2, totalSec * 0.58);
+  const seriesStagger = 0.06;
+
+  seriesMeta.forEach(({ pathEl, labelEl, coords }, index) => {
+    const start = drawStart + index * seriesStagger;
+    tl.to(
+      pathEl,
+      { strokeDashoffset: 0, duration: drawDuration, ease: "none" },
+      start
+    );
+
+    if (labelEl && coords.length > 1) {
+      const state = { progress: 0 };
+      tl.to(
+        state,
+        {
+          progress: coords.length - 1,
+          duration: drawDuration,
+          ease: "none",
+          onUpdate: () => {
+            setPeopleLabelAtProgress(labelEl, coords, state.progress, topN);
+          }
+        },
+        start
+      );
+    }
+  });
+
+  const revealAt = drawStart + drawDuration + seriesStagger * seriesMeta.length + 0.2;
+  const revealTargets = [quipEl, footerEl].filter(Boolean);
+  if (revealTargets.length) {
+    tl.to(
+      revealTargets,
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: "power2.out" },
+      revealAt
+    );
+  } else if (bodyEl) {
+    tl.to(bodyEl, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, revealAt);
+  }
+
+  return padTimeline(tl, totalSec);
+}
+
 /**
  * Build a GSAP timeline for one slide's scene beats, padded to durationMs.
  */
@@ -723,8 +870,8 @@ export function createSlideBeatTimeline(
     return buildRhythmSlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
-  if (slideIndex === BAR_RACE_SLIDE_INDEX) {
-    return buildBarRaceTimeline(rootEl, { durationMs, onComplete, reduced });
+  if (slideIndex === PEOPLE_SLIDE_INDEX) {
+    return buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
   if (HERO_DROP_SLIDE_INDICES.has(slideIndex)) {

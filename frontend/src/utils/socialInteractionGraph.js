@@ -1,3 +1,5 @@
+import { extractTimestampMs } from "./commentHeatmap.js";
+
 const ACTIVITY_ROOT_SEGMENT = "your_instagram_activity";
 
 /** Standard export path suffix (case-insensitive match on webkitRelativePath). */
@@ -590,6 +592,84 @@ export async function parseSocialInteractionCounts(discovery, options = {}) {
       countedInteractions,
       skippedMissingOwner,
       skippedSelfAccount
+    }
+  };
+}
+
+/**
+ * Timestamped social events for monthly rank charts.
+ * @param {{ sourceMatches?: { id: string, files: File[] }[] }} discovery
+ * @param {{ selfUsername?: string | null }} [options]
+ * @returns {Promise<{ events: { username: string, timestampMs: number, categoryId: string }[], errors: string[], stats: object }>}
+ */
+export async function parseSocialInteractionEvents(discovery, options = {}) {
+  const selfRaw = options.selfUsername;
+  const selfNorm =
+    selfRaw != null && String(selfRaw).trim()
+      ? normalizeInstagramUsername(String(selfRaw))
+      : null;
+
+  /** @type {{ username: string, timestampMs: number, categoryId: string }[]} */
+  const events = [];
+  const errors = [];
+  let filesParsed = 0;
+  let itemsSeen = 0;
+  let validTimestamps = 0;
+  let skippedMissingOwner = 0;
+  let skippedSelfAccount = 0;
+  let skippedNoTimestamp = 0;
+
+  for (const source of discovery.sourceMatches || []) {
+    const descriptor = SOCIAL_INTERACTION_DESCRIPTORS.find((d) => d.id === source.id);
+    if (!descriptor) {
+      continue;
+    }
+    for (const file of source.files) {
+      try {
+        const payload = await parseJsonFile(file);
+        const rawItems = descriptor.parsePayload(payload);
+        const items = Array.isArray(rawItems) ? rawItems : [];
+        filesParsed += 1;
+        itemsSeen += items.length;
+
+        for (const item of items) {
+          const username = descriptor.extractTargetUsername(item);
+          if (!username) {
+            skippedMissingOwner += 1;
+            continue;
+          }
+          if (selfNorm && normalizeInstagramUsername(username) === selfNorm) {
+            skippedSelfAccount += 1;
+            continue;
+          }
+          const timestampMs = extractTimestampMs(item);
+          if (timestampMs == null) {
+            skippedNoTimestamp += 1;
+            continue;
+          }
+          events.push({
+            username,
+            timestampMs,
+            categoryId: descriptor.categoryId
+          });
+          validTimestamps += 1;
+        }
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : String(err));
+      }
+    }
+  }
+
+  return {
+    events,
+    errors,
+    stats: {
+      filesParsed,
+      itemsSeen,
+      validTimestamps,
+      skippedMissingOwner,
+      skippedSelfAccount,
+      skippedNoTimestamp
     }
   };
 }

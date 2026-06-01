@@ -6,9 +6,6 @@ export const SLIDE_THEMES = [
   "activity",
   "span",
   "activity",
-  "activity",
-  "activity",
-  "activity",
   "dms",
   "privacy"
 ];
@@ -59,9 +56,6 @@ export const CARD_SURFACE_BG =
 export const SLIDE_TEMPLATE_BY_INDEX = [
   "hero",
   "data",
-  "hero",
-  "hero",
-  "hero",
   "hero",
   "data",
   "hero",

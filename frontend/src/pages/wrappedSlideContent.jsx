@@ -1,5 +1,6 @@
 import React from "react";
 import DropDownText from "../components/DropDownText.jsx";
+import PeopleRankChart from "../components/PeopleRankChart.jsx";
 import RhythmDayFlip from "../components/RhythmDayFlip.jsx";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import WrappedSpotlightHero from "../components/WrappedSpotlightHero.jsx";
@@ -444,93 +445,32 @@ export function renderWrappedSlide(index, ctx) {
 
     case 3:
       return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Dedication"
-          title="Longest streak"
-          deck="Consecutive active days"
-          bodyClassName="hero"
-        >
-          {insights?.streakDays >= 2 ? (
+        <WrappedSlideLayout template={template} hideHeader>
+          {baseline.peopleRankHistory && insights?.peopleQuip ? (
             <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
-                {insights.streakDays}
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+                People
               </p>
-              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-                days in a row
+              <PeopleRankChart history={baseline.peopleRankHistory} />
+              <p className={SLIDE_INSIGHT_PUNCH} data-wrapped-beat="quip">
+                {insights.peopleQuip}
               </p>
-              {insights.streakQuip ? (
-                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
-                  {insights.streakQuip}
-                </p>
-              ) : null}
             </>
           ) : (
-            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
-              No multi-day streak in this export.
+            <p className={SLIDE_BODY} data-wrapped-beat="body">
+              No social interactions in this export.
             </p>
           )}
         </WrappedSlideLayout>
       );
 
     case 4:
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Peak day"
-          title={insights?.busiestDayLabel ?? "Busiest day"}
-          deck="Most activity in one day"
-          bodyClassName="hero"
-        >
-          {insights?.busiestDayCount > 0 ? (
-            <>
-              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
-                {formatCount(insights.busiestDayCount)}
-              </p>
-              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-                activities
-              </p>
-              {insights.busiestDayQuip ? (
-                <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
-                  {insights.busiestDayQuip}
-                </p>
-              ) : null}
-            </>
-          ) : (
-            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
-              No standout day in this export.
-            </p>
-          )}
-        </WrappedSlideLayout>
-      );
-
-    case 5:
-      return renderRankSpotlight({
-        eyebrow: "People",
-        categoryLabel: "Your #1 person",
-        spotlight: insights?.socialSpotlight,
-        unitLabel: "interactions in this export",
-        emptyMessage: "No likes, comments, or story interactions in this export."
-      });
-
-    case 6:
-      return renderRankLeaderboard({
-        template,
-        eyebrow: "People",
-        title: "Top accounts",
-        deck: "Likes · comments · story taps",
-        rows: baseline.mostSocialCreators,
-        accentTheme: "activity",
-        emptyMessage: "No social interactions in this export."
-      });
-
-    case 7:
       return renderDmBalanceSpotlight({
         spotlight: insights?.dmBalanceSpotlight,
         emptyMessage: "No threads in this export."
       });
 
-    case 8:
+    case 5:
       return (
         <WrappedSlideLayout
           template={template}
