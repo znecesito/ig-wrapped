@@ -6,17 +6,17 @@ export const WRAPPED_LAST_SLIDE_INDEX = WRAPPED_CARD_COUNT - 1;
 
 /** Auto-advance duration per slide (ms). Last slide uses 0 — hold until tap. */
 export const WRAPPED_SLIDE_DURATIONS_MS = [
-  9000, // intro — char drop lines need room
-  7500, // activity total + breakdown
-  5500, // peak rhythm
-  5000, // streak
-  5000, // busiest day
-  5500, // social spotlight (#1 person)
-  7500, // social ranking (bar race)
-  5500, // DM you vs them (busiest thread)
+  8000, // intro — char drop lines need room
+  6500, // activity total + breakdown
+  4500, // peak rhythm
+  4000, // streak
+  4000, // busiest day
+  4500, // social spotlight (#1 person)
+  6500, // social ranking (bar race)
+  4500, // DM you vs them (busiest thread)
   0 // privacy — last slide, no auto-advance
 ];
 
 export function getSlideDurationMs(slideIndex) {
-  return WRAPPED_SLIDE_DURATIONS_MS[slideIndex] ?? 5500;
+  return WRAPPED_SLIDE_DURATIONS_MS[slideIndex] ?? 4500;
 }

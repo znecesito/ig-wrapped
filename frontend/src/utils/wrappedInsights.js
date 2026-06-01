@@ -207,15 +207,15 @@ export function buildActivityQuip(total) {
     return "Even a quiet export still tells a story.";
   }
   if (total < 100) {
-    return "You showed up when it counted. That's love for the game.";
+    return "Role-player stats — but you were in the rotation.";
   }
   if (total < 1000) {
-    return "You were putting in numbers. That's just love for the game!";
+    return "You were putting up numbers. That's just love for the game!";
   }
   if (total < 10000) {
-    return "You were putting in work. That's love for the game.";
+    return "You were putting in work. Sixth Man of the Year vibes.";
   }
-  return "You were putting in numbers at scale. Absolute love for the game.";
+  return "Triple-double territory — if Instagram tracked those.";
 }
 
 export function buildStreakQuip(streakDays) {
