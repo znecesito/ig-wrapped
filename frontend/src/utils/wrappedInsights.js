@@ -43,6 +43,23 @@ function parseHour(activeHourLabel) {
   return match ? Number(match[1]) : null;
 }
 
+function isWeekend(activeWeekday) {
+  return activeWeekday === "Sat" || activeWeekday === "Sun";
+}
+
+function buildRhythmBasketballSecondLine(activeWeekday, hour) {
+  if (isWeekend(activeWeekday)) {
+    return "No days off huh?";
+  }
+  if (hour != null && hour >= 5 && hour <= 11) {
+    return "Early reps before clock-in, I see you.";
+  }
+  if (hour != null && hour >= 12 && hour <= 16) {
+    return "You checked in and got minutes in broad daylight";
+  }
+  return "You like to play ball after hours.";
+}
+
 const WEEKDAY_FULL = {
   Sun: "Sunday",
   Mon: "Monday",
@@ -189,7 +206,8 @@ export function buildRhythmPersona(activeWeekday, activeHourLabel) {
 
   const displayWeekday = formatWeekdayFull(activeWeekday);
   const displayHour = formatHour12(activeHourLabel);
-  const quip = `${displayWeekday}s around ${displayHour} is when you use IG the most. That's warm-up jumper hours.`;
+  const rhythmSecondLine = buildRhythmBasketballSecondLine(activeWeekday, hour);
+  const quip = `${displayWeekday}s around ${displayHour} is when you use IG the most. ${rhythmSecondLine}`;
 
   return {
     title,
@@ -207,9 +225,12 @@ export function buildActivityQuip(total) {
     return "Even a quiet export still tells a story.";
   }
   if (total < 100) {
-    return "Role-player stats — but you were in the rotation.";
+    return "Every bucket counts. You still got shots up.";
   }
   if (total < 1000) {
+    return "Role-player stats — but you were in the rotation.";
+  }
+  if (total < 5000) {
     return "You were putting up numbers. That's just love for the game!";
   }
   if (total < 10000) {
