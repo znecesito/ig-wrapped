@@ -319,7 +319,7 @@ export default function WrappedStoryPlayer({
 
         <p
           className={cn(
-            "pointer-events-none shrink-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 text-center text-[0.72rem]",
+            "pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 text-center text-[0.72rem]",
             isHeroTemplate ? "text-white/55" : "text-muted"
           )}
         >

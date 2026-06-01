@@ -44,9 +44,8 @@ export function explainParseWarning(message) {
   ) {
     return {
       summary: text,
-      impact:
-        "Activity totals, date span, rhythm stats, and your feed personality may be affected.",
-      slides: ["Activity span", "Activity", "Feed personality"]
+      impact: "Activity totals, date span, and rhythm stats may be affected.",
+      slides: ["Activity", "Your rhythm"]
     };
   }
 

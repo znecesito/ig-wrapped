@@ -16,10 +16,10 @@ import {
   SLIDE_BODY_ON_DARK,
   SLIDE_BULLET_LIST,
   SLIDE_HERO_DISPLAY,
+  SLIDE_INSIGHT_PUNCH,
   SLIDE_INSIGHT_PUNCH_ON_DARK,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT_DOMINANT,
-  SLIDE_PERSONALITY_EMOJI_HERO,
   slideTitleClass
 } from "../components/wrappedSlideClasses.js";
 import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
@@ -328,61 +328,28 @@ export function renderWrappedSlide(index, ctx) {
       );
     }
 
-    case 1:
-      return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Your feed personality"
-          title={insights?.personality?.title ?? "Your vibe"}
-          deck={insights?.personality?.tagline ?? ""}
-          bodyClassName="hero"
-        >
-          {insights?.personality && insights.dominantPct >= 1 ? (
-            <>
-              <p className={SLIDE_PERSONALITY_EMOJI_HERO} data-wrapped-beat="hero" data-wrapped-drop aria-hidden>
-                {insights.personality.emoji}
-              </p>
-              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
-                {insights.dominantPct}%
-              </p>
-              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-                {insights.personality.label}
-              </p>
-            </>
-          ) : (
-            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
-              Not enough activity for a personality read yet.
-            </p>
-          )}
-        </WrappedSlideLayout>
-      );
+    case 1: {
+      const total = baseline.heatmapData?.totalActivities ?? 0;
+      const hasData = baseline.heatmapData && total > 0;
 
-    case 2:
       return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Activity mix"
-          title="How you showed up"
-          deck={
-            insights?.activityWindowTrimmed
-              ? "Counts from your most recent 365 days of activity"
-              : "In this export"
-          }
-        >
-          {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
+        <WrappedSlideLayout template={template} hideHeader>
+          {hasData ? (
             <>
               <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
-                {formatCount(baseline.heatmapData.totalActivities)}
+                <span data-activity-count-value={total}>0</span>
               </p>
-              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-                total activities
-              </p>
-              <div data-wrapped-beat="chart">
+              <div className="w-full max-w-[17rem]" data-wrapped-beat="chart">
                 {renderActivityStack(
                   activityBreakdown.families,
                   activityBreakdown.maxFamilyTotal
                 )}
               </div>
+              {insights?.activityQuip ? (
+                <p className={SLIDE_INSIGHT_PUNCH} data-wrapped-beat="quip">
+                  {insights.activityQuip}
+                </p>
+              ) : null}
             </>
           ) : (
             <p className={SLIDE_BODY} data-wrapped-beat="body">
@@ -391,8 +358,9 @@ export function renderWrappedSlide(index, ctx) {
           )}
         </WrappedSlideLayout>
       );
+    }
 
-    case 3:
+    case 2:
       return (
         <WrappedSlideLayout
           template={template}
@@ -415,7 +383,7 @@ export function renderWrappedSlide(index, ctx) {
         </WrappedSlideLayout>
       );
 
-    case 4:
+    case 3:
       return (
         <WrappedSlideLayout
           template={template}
@@ -446,7 +414,7 @@ export function renderWrappedSlide(index, ctx) {
         </WrappedSlideLayout>
       );
 
-    case 5:
+    case 4:
       return (
         <WrappedSlideLayout
           template={template}
@@ -477,7 +445,7 @@ export function renderWrappedSlide(index, ctx) {
         </WrappedSlideLayout>
       );
 
-    case 6:
+    case 5:
       return renderRankSpotlight({
         eyebrow: "People",
         categoryLabel: "Your #1 person",
@@ -486,7 +454,7 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No likes, comments, or story interactions in this export."
       });
 
-    case 7:
+    case 6:
       return renderRankLeaderboard({
         template,
         eyebrow: "People",
@@ -497,13 +465,13 @@ export function renderWrappedSlide(index, ctx) {
         emptyMessage: "No social interactions in this export."
       });
 
-    case 8:
+    case 7:
       return renderDmBalanceSpotlight({
         spotlight: insights?.dmBalanceSpotlight,
         emptyMessage: "No threads in this export."
       });
 
-    case 9:
+    case 8:
       return (
         <WrappedSlideLayout
           template={template}

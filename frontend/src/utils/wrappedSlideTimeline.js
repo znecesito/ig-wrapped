@@ -1,8 +1,9 @@
 import gsap from "gsap";
 
 /** Slides with hero “drop from sky” beats. */
-const HERO_DROP_SLIDE_INDICES = new Set([1, 6, 8]);
-const BAR_RACE_SLIDE_INDEX = 7;
+const HERO_DROP_SLIDE_INDICES = new Set([5, 7]);
+const BAR_RACE_SLIDE_INDEX = 6;
+const ACTIVITY_SLIDE_INDEX = 1;
 const INTRO_DROP_SLIDE_INDEX = 0;
 
 const INTRO_TITLE_BEAT = "title";
@@ -424,6 +425,105 @@ function buildBarRaceTimeline(rootEl, { durationMs, onComplete, reduced }) {
   return padTimeline(tl, totalSec);
 }
 
+/** Activity slide — count-up stat, then chart, then quip + footer together. */
+function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
+  const totalSec = Math.max(0.5, durationMs / 1000);
+  const tl = makeTimeline({ durationMs, onComplete });
+
+  const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
+  const countEl = rootEl.querySelector("[data-activity-count-value]");
+  const chartEl = rootEl.querySelector('[data-wrapped-beat="chart"]');
+  const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
+  const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
+  const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
+
+  if (!statEl || !countEl) {
+    return buildGenericTimeline(rootEl, {
+      durationMs,
+      template: "data",
+      onComplete,
+      reduced
+    });
+  }
+
+  const target = parseInt(countEl.dataset.activityCountValue ?? "0", 10);
+  const targets = [statEl, chartEl, quipEl, footerEl, bodyEl].filter(Boolean);
+
+  if (reduced) {
+    countEl.textContent = target.toLocaleString();
+    resetMotionTargets(targets);
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  gsap.set(statEl, { opacity: 0, scale: 0.28, transformOrigin: "center center" });
+  if (chartEl) {
+    gsap.set(chartEl, { opacity: 0, y: 22, scale: 0.96 });
+  }
+  if (quipEl) {
+    gsap.set(quipEl, { opacity: 0, y: 14 });
+  }
+  if (footerEl) {
+    gsap.set(footerEl, { opacity: 0, y: 14 });
+  }
+  if (bodyEl) {
+    gsap.set(bodyEl, { opacity: 0, y: 14 });
+  }
+
+  const countDuration = Math.min(2.8, Math.max(1.5, totalSec * 0.4));
+  const counter = { v: 0 };
+
+  tl.to(
+    statEl,
+    {
+      opacity: 1,
+      scale: 1,
+      duration: countDuration * 0.75,
+      ease: "back.out(1.7)"
+    },
+    0.12
+  );
+
+  tl.to(
+    counter,
+    {
+      v: target,
+      duration: countDuration,
+      ease: "power2.out",
+      onUpdate: () => {
+        countEl.textContent = Math.round(counter.v).toLocaleString();
+      }
+    },
+    0.18
+  );
+
+  tl.to(statEl, { scale: 1.05, duration: 0.16, ease: "power1.out" }, countDuration * 0.42);
+  tl.to(statEl, { scale: 1, duration: 0.2, ease: "power1.inOut" }, countDuration * 0.42 + 0.16);
+
+  const chartAt = countDuration + 0.32;
+  if (chartEl) {
+    tl.to(
+      chartEl,
+      { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "power2.out" },
+      chartAt
+    );
+  }
+
+  const quipAt = chartAt + (chartEl ? 0.5 : 0) + 0.2;
+  const revealTargets = [quipEl, footerEl].filter(Boolean);
+  if (revealTargets.length) {
+    tl.to(
+      revealTargets,
+      { opacity: 1, y: 0, duration: 0.48, stagger: 0.06, ease: "power2.out" },
+      quipAt
+    );
+  } else if (bodyEl) {
+    tl.to(bodyEl, { opacity: 1, y: 0, duration: 0.48, ease: "power2.out" }, quipAt);
+  }
+
+  return padTimeline(tl, totalSec);
+}
+
 /**
  * Build a GSAP timeline for one slide's scene beats, padded to durationMs.
  */
@@ -439,6 +539,10 @@ export function createSlideBeatTimeline(
 
   if (slideIndex === INTRO_DROP_SLIDE_INDEX) {
     return buildIntroDropTimeline(rootEl, { durationMs, onComplete, reduced });
+  }
+
+  if (slideIndex === ACTIVITY_SLIDE_INDEX) {
+    return buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
   if (slideIndex === BAR_RACE_SLIDE_INDEX) {

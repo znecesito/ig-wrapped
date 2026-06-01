@@ -223,6 +223,13 @@
 
   .wrapped-player--immersive .wrapped-slide-stage {
     transition: color 0.35s ease;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .wrapped-player--immersive .wrapped-slide-layout {
+    flex: 0 1 auto;
+    max-height: 100%;
   }
 
   .wrapped-player--immersive .wrapped-slide-stage--hero {

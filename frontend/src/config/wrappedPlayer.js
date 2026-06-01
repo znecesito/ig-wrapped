@@ -1,14 +1,13 @@
 /** Story player — slide count and auto-advance timing (Phase E). */
 
-export const WRAPPED_CARD_COUNT = 10;
+export const WRAPPED_CARD_COUNT = 9;
 
 export const WRAPPED_LAST_SLIDE_INDEX = WRAPPED_CARD_COUNT - 1;
 
 /** Auto-advance duration per slide (ms). Last slide uses 0 — hold until tap. */
 export const WRAPPED_SLIDE_DURATIONS_MS = [
   9000, // intro — char drop lines need room
-  5500, // personality %
-  6500, // activity breakdown
+  7500, // activity total + breakdown
   5500, // peak rhythm
   5000, // streak
   5000, // busiest day

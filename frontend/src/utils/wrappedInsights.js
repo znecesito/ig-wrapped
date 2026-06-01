@@ -202,6 +202,22 @@ export function buildRhythmPersona(activeWeekday, activeHourLabel) {
   };
 }
 
+export function buildActivityQuip(total) {
+  if (!total || total < 1) {
+    return "Even a quiet export still tells a story.";
+  }
+  if (total < 100) {
+    return "You showed up when it counted. That's love for the game.";
+  }
+  if (total < 1000) {
+    return "You were putting in numbers. That's just love for the game!";
+  }
+  if (total < 10000) {
+    return "You were putting in work. That's love for the game.";
+  }
+  return "You were putting in numbers at scale. Absolute love for the game.";
+}
+
 export function buildStreakQuip(streakDays) {
   if (!streakDays || streakDays < 2) {
     return null;
@@ -602,6 +618,7 @@ export function buildWrappedInsights(baseline) {
   );
   const streakQuip = buildStreakQuip(streakDays);
   const busiestDayQuip = buildBusiestDayQuip(busiestDayLabel, busiestDay?.count ?? 0);
+  const activityQuip = buildActivityQuip(total);
 
   return {
     exportYear,
@@ -609,6 +626,7 @@ export function buildWrappedInsights(baseline) {
     dominantFamily,
     dominantPct,
     personality,
+    activityQuip,
     timePersona,
     rhythmPersona,
     streakQuip,

@@ -118,7 +118,7 @@ export const WrappedPlayerSlide = forwardRef(function WrappedPlayerSlide(
       data-slide-index={cardIndex}
       data-slide-template={template}
       className={cn(
-        "wrapped-slide-stage mx-auto flex w-full max-w-[min(100%,26rem)] min-h-0 flex-1 flex-col justify-center px-6",
+        "wrapped-slide-stage mx-auto flex w-full max-w-[min(100%,26rem)] min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-6 pb-[max(2.75rem,env(safe-area-inset-bottom)+1.75rem)] pt-4",
         template === "hero" && "wrapped-slide-stage--hero"
       )}
     >
@@ -136,39 +136,43 @@ export function WrappedSlideLayout({
   children,
   footerStat,
   bodyQuip,
-  hideFooter = false
+  hideFooter = false,
+  hideHeader = false
 }) {
   const isHeroListLeft = bodyClassName === "hero-list";
   const isHeroTemplate = template === "hero";
+  const showHeader = !hideHeader && (eyebrow || title || deck);
 
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-1 flex-col justify-center gap-[0.32rem]",
+        "wrapped-slide-layout flex w-full shrink-0 flex-col gap-[0.32rem]",
         "has-[.wrapped-leaderboard]:gap-[0.45rem]",
         "has-[.wrapped-leaderboard]:[&_.slide-deck]:mb-0.5",
         template === "data" && "gap-[0.38rem]",
-        "wrapped-slide-layout w-full items-center text-center",
+        "items-center text-center",
         "has-[.wrapped-leaderboard]:items-center"
       )}
     >
-      <header className={cn("shrink-0 w-full", template === "data" && "mb-0.5")}>
-        {eyebrow ? (
-          <p className={slideEyebrowClass(template)} data-wrapped-beat="eyebrow">
-            {eyebrow}
-          </p>
-        ) : null}
-        {title ? (
-          <h2 className={slideTitleClass(template)} data-wrapped-beat="title">
-            {title}
-          </h2>
-        ) : null}
-        {deck ? (
-          <p className={slideDeckClass(template)} data-wrapped-beat="deck">
-            {deck}
-          </p>
-        ) : null}
-      </header>
+      {showHeader ? (
+        <header className={cn("shrink-0 w-full", template === "data" && "mb-0.5")}>
+          {eyebrow ? (
+            <p className={slideEyebrowClass(template)} data-wrapped-beat="eyebrow">
+              {eyebrow}
+            </p>
+          ) : null}
+          {title ? (
+            <h2 className={slideTitleClass(template)} data-wrapped-beat="title">
+              {title}
+            </h2>
+          ) : null}
+          {deck ? (
+            <p className={slideDeckClass(template)} data-wrapped-beat="deck">
+              {deck}
+            </p>
+          ) : null}
+        </header>
+      ) : null}
       <div
         className={cn(
           "flex min-h-0 flex-[0_1_auto] w-full flex-col items-center justify-center gap-[0.28rem] overflow-y-auto text-center",
@@ -187,7 +191,7 @@ export function WrappedSlideLayout({
         ) : null}
       </div>
       {hideFooter ? null : (
-      <footer className="mt-auto w-full shrink-0 pt-3" data-wrapped-beat="footer">
+      <footer className="w-full shrink-0 pt-3" data-wrapped-beat="footer">
         <p className={slideFooterClass(template)}>
           <span className={slideFooterBrandClass(template)}>ig-wrapped</span>
           {footerStat ? (
