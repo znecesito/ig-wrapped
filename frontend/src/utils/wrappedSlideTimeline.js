@@ -71,7 +71,7 @@ function resetActivitySegments(segments) {
     gsap.set(seg, { flexGrow: flex });
     const fill = seg.querySelector("[data-activity-bar-fill]");
     if (fill) {
-      gsap.set(fill, { scaleY: 1, transformOrigin: "center bottom" });
+      gsap.set(fill, { scaleY: 1, transformOrigin: "center top" });
     }
     seg.querySelectorAll("[data-activity-bar-label], [data-activity-bar-value]").forEach((el) => {
       gsap.set(el, { opacity: 1, x: 0, y: 0 });
@@ -477,7 +477,7 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
 
     const fill = seg.querySelector("[data-activity-bar-fill]");
     if (fill) {
-      gsap.set(fill, { scaleY: 0, transformOrigin: "center bottom" });
+      gsap.set(fill, { scaleY: 0, transformOrigin: "center top" });
     }
 
     const label = seg.querySelector("[data-activity-bar-label]");
