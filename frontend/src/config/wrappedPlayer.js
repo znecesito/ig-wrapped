@@ -8,7 +8,7 @@ export const WRAPPED_LAST_SLIDE_INDEX = WRAPPED_CARD_COUNT - 1;
 export const WRAPPED_SLIDE_DURATIONS_MS = [
   5000, // intro
   8000, // activity — sequential bar beats need room
-  4500, // peak rhythm
+  7000, // peak rhythm
   4000, // streak
   4000, // busiest day
   4500, // social spotlight (#1 person)

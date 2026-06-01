@@ -189,7 +189,7 @@ export function buildRhythmPersona(activeWeekday, activeHourLabel) {
 
   const displayWeekday = formatWeekdayFull(activeWeekday);
   const displayHour = formatHour12(activeHourLabel);
-  const quip = `You show up hardest on ${displayWeekday}s around ${displayHour}. The feed learned your schedule.`;
+  const quip = `${displayWeekday}s around ${displayHour} is when you use IG the most. That's warm-up jumper hours.`;
 
   return {
     title,

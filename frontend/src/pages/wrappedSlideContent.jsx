@@ -1,5 +1,6 @@
 import React from "react";
 import DropDownText from "../components/DropDownText.jsx";
+import RhythmDayFlip from "../components/RhythmDayFlip.jsx";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
 import WrappedSpotlightHero from "../components/WrappedSpotlightHero.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
@@ -383,6 +384,9 @@ export function renderWrappedSlide(index, ctx) {
         <WrappedSlideLayout template={template} hideHeader>
           {hasData ? (
             <>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+                Activity
+              </p>
               <div className="w-full max-w-[18rem]" data-wrapped-beat="chart">
                 {renderActivityStack(
                   activityBreakdown.families,
@@ -413,19 +417,23 @@ export function renderWrappedSlide(index, ctx) {
 
     case 2:
       return (
-        <WrappedSlideLayout
-          template={template}
-          eyebrow="Your rhythm"
-          title={insights?.rhythmPersona?.title ?? "When you're online"}
-          deck={
-            insights?.rhythmPersona?.deckLabel ?? "Peak weekday and hour in this export"
-          }
-          bodyClassName="hero"
-        >
+        <WrappedSlideLayout template={template} hideHeader bodyClassName="hero">
           {insights?.rhythmPersona ? (
-            <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
-              {insights.rhythmPersona.quip}
-            </p>
+            <>
+              <p className={cn(SLIDE_MEGA_LABEL, "text-white/85")} data-wrapped-beat-static>
+                Your rhythm
+              </p>
+              <RhythmDayFlip
+                activeWeekday={insights.rhythmPersona.activeWeekday}
+                displayWeekday={insights.rhythmPersona.displayWeekday}
+              />
+              <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="rhythm-title">
+                {insights.rhythmPersona.title}
+              </p>
+              <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+                {insights.rhythmPersona.quip}
+              </p>
+            </>
           ) : (
             <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
               No rhythm pattern in this export yet.

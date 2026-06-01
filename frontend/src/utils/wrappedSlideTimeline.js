@@ -4,7 +4,18 @@ import gsap from "gsap";
 const HERO_DROP_SLIDE_INDICES = new Set([5, 7]);
 const BAR_RACE_SLIDE_INDEX = 6;
 const ACTIVITY_SLIDE_INDEX = 1;
+const RHYTHM_SLIDE_INDEX = 2;
 const INTRO_DROP_SLIDE_INDEX = 0;
+
+const RHYTHM_WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday"
+];
 
 const INTRO_TITLE_BEAT = "title";
 const INTRO_REST_LINE_BEATS = ["hero", "body"];
@@ -439,6 +450,138 @@ function buildBarRaceTimeline(rootEl, { durationMs, onComplete, reduced }) {
   return padTimeline(tl, totalSec);
 }
 
+function setStaticBeatsVisible(rootEl) {
+  rootEl.querySelectorAll("[data-wrapped-beat-static]").forEach((el) => {
+    gsap.set(el, { opacity: 1, y: 0, x: 0, scale: 1 });
+  });
+}
+
+function buildRhythmDaySequence(winnerFull, flipCount = 16) {
+  const winIdx = RHYTHM_WEEKDAYS.indexOf(winnerFull);
+  const safeWin = winIdx >= 0 ? winIdx : 0;
+  let hash = 0;
+  for (let i = 0; i < winnerFull.length; i += 1) {
+    hash = (hash * 31 + winnerFull.charCodeAt(i)) % 7;
+  }
+  const sequence = [RHYTHM_WEEKDAYS[hash]];
+  for (let i = 1; i < flipCount; i += 1) {
+    if (i === flipCount - 1) {
+      sequence.push(RHYTHM_WEEKDAYS[safeWin]);
+    } else {
+      sequence.push(RHYTHM_WEEKDAYS[(hash + i * 4 + 1) % 7]);
+    }
+  }
+  return sequence;
+}
+
+function appendWeekdayFlip(tl, { top, bottom, topLabel, bottomLabel, nextDay, duration, position, settle = false }) {
+  bottomLabel.textContent = nextDay;
+
+  tl.set(top, { rotateX: 0, transformOrigin: "center bottom" }, position);
+  tl.set(bottom, { rotateX: 90, transformOrigin: "center top" }, position);
+  tl.to(top, { rotateX: -90, duration: duration * 0.48, ease: "power2.in" }, position);
+  tl.to(
+    bottom,
+    { rotateX: 0, duration: duration * 0.52, ease: "power2.out" },
+    position + duration * 0.38
+  );
+
+  const end = position + duration;
+  tl.add(() => {
+    topLabel.textContent = nextDay;
+    gsap.set(top, { rotateX: 0 });
+    gsap.set(bottom, { rotateX: settle ? 0 : 90 });
+    if (settle) {
+      bottomLabel.textContent = nextDay;
+    }
+  }, end);
+
+  return end;
+}
+
+/** Rhythm slide — static eyebrow, weekday flip, then title + quip together. */
+function buildRhythmSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
+  const totalSec = Math.max(0.5, durationMs / 1000);
+  const tl = makeTimeline({ durationMs, onComplete });
+
+  const flipRoot = rootEl.querySelector("[data-rhythm-winner]");
+  const top = rootEl.querySelector("[data-rhythm-flip-top]");
+  const bottom = rootEl.querySelector("[data-rhythm-flip-bottom]");
+  const topLabel = rootEl.querySelector("[data-rhythm-day-top]");
+  const bottomLabel = rootEl.querySelector("[data-rhythm-day-bottom]");
+  const titleEl = rootEl.querySelector('[data-wrapped-beat="rhythm-title"]');
+  const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
+  const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
+  const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
+
+  setStaticBeatsVisible(rootEl);
+
+  const revealEls = [titleEl, quipEl].filter(Boolean);
+
+  if (!flipRoot || !top || !bottom || !topLabel || !bottomLabel) {
+    return buildGenericTimeline(rootEl, { durationMs, template: "hero", onComplete, reduced });
+  }
+
+  const winner = flipRoot.dataset.rhythmWinner || RHYTHM_WEEKDAYS[0];
+  const sequence = buildRhythmDaySequence(winner);
+
+  if (reduced) {
+    topLabel.textContent = winner;
+    bottomLabel.textContent = winner;
+    gsap.set([top, bottom], { rotateX: 0 });
+    resetMotionTargets([...revealEls, footerEl, bodyEl].filter(Boolean));
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  topLabel.textContent = sequence[0];
+  bottomLabel.textContent = sequence[1] ?? sequence[0];
+  gsap.set(top, { rotateX: 0, transformOrigin: "center bottom" });
+  gsap.set(bottom, { rotateX: 90, transformOrigin: "center top" });
+  gsap.set(flipRoot, { opacity: 1 });
+
+  if (revealEls.length) {
+    gsap.set(revealEls, { opacity: 0, y: 14 });
+  }
+  if (footerEl) {
+    gsap.set(footerEl, { opacity: 0, y: 14 });
+  }
+  if (bodyEl) {
+    gsap.set(bodyEl, { opacity: 0, y: 14 });
+  }
+
+  let cursor = 0.35;
+  for (let i = 1; i < sequence.length; i += 1) {
+    const isLast = i === sequence.length - 1;
+    const flipDur = isLast ? 0.34 : i > sequence.length - 4 ? 0.2 : 0.13;
+    cursor = appendWeekdayFlip(tl, {
+      top,
+      bottom,
+      topLabel,
+      bottomLabel,
+      nextDay: sequence[i],
+      duration: flipDur,
+      position: cursor,
+      settle: isLast
+    });
+    cursor += isLast ? 0.08 : 0.03;
+  }
+
+  const revealAt = cursor + 0.22;
+  const revealTargets = [...revealEls, footerEl].filter(Boolean);
+  if (revealTargets.length) {
+    tl.to(
+      revealTargets,
+      { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: "power2.out" },
+      revealAt
+    );
+  } else if (bodyEl) {
+    tl.to(bodyEl, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, revealAt);
+  }
+
+  return padTimeline(tl, totalSec);
+}
+
 /** Activity slide — stacked bars grow first, then stat + quip + footer together. */
 function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const totalSec = Math.max(0.5, durationMs / 1000);
@@ -466,9 +609,12 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   if (reduced) {
     resetActivitySegments(segments);
     resetMotionTargets([chartEl, ...summaryEls, footerEl, bodyEl].filter(Boolean));
+    setStaticBeatsVisible(rootEl);
     tl.to({}, { duration: totalSec });
     return tl;
   }
+
+  setStaticBeatsVisible(rootEl);
 
   gsap.set(chartEl, { opacity: 1 });
   segments.forEach((seg) => {
@@ -571,6 +717,10 @@ export function createSlideBeatTimeline(
 
   if (slideIndex === ACTIVITY_SLIDE_INDEX) {
     return buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced });
+  }
+
+  if (slideIndex === RHYTHM_SLIDE_INDEX) {
+    return buildRhythmSlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
   if (slideIndex === BAR_RACE_SLIDE_INDEX) {

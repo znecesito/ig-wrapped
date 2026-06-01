@@ -275,6 +275,85 @@
     z-index: 2;
   }
 
+  /* Rhythm slide — calendar-style weekday flip (CodePen calendar inspiration) */
+  .rhythm-day-flip {
+    width: min(100%, 16.5rem);
+    margin: 0.15rem auto 0.35rem;
+  }
+
+  .rhythm-day-flip__viewport {
+    position: relative;
+    height: clamp(4.5rem, 18vw, 5.75rem);
+    perspective: 520px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 10px 28px -12px rgb(15 23 42 / 0.35),
+      inset 0 1px 0 rgb(255 255 255 / 0.35);
+  }
+
+  .rhythm-day-flip__half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--slide-accent) 88%, white) 0%,
+      color-mix(in srgb, var(--slide-accent) 72%, #312e81) 100%
+    );
+  }
+
+  .rhythm-day-flip__half--top {
+    top: 0;
+    transform-origin: center bottom;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom: 1px solid rgb(0 0 0 / 0.12);
+  }
+
+  .rhythm-day-flip__half--bottom {
+    bottom: 0;
+    transform-origin: center top;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .rhythm-day-flip__label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: clamp(1.35rem, 6.5vw, 1.85rem) !important;
+    line-height: 1.05 !important;
+    color: var(--slide-fg, #fff);
+    text-shadow: 0 2px 8px rgb(15 23 42 / 0.22);
+  }
+
+  .rhythm-day-flip__half--top .rhythm-day-flip__label {
+    position: absolute;
+    inset: 0 0 -100% 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rhythm-day-flip__half--bottom .rhythm-day-flip__label {
+    position: absolute;
+    inset: -100% 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Static beats — visible immediately (no GSAP hide) */
+  .wrapped-player [data-wrapped-beat-static] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   /* Phase H — scene beats start hidden until GSAP reveals them */
   .wrapped-player [data-wrapped-beat],
   .wrapped-player [data-wrapped-beat-segment],
