@@ -983,12 +983,14 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const stackEl = rootEl.querySelector("[data-inbox-stack]");
   const descEl = rootEl.querySelector('[data-wrapped-beat="inbox-desc"]');
   const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
+  const statLabelEl = rootEl.querySelector('[data-wrapped-beat="stat-label"]');
   const balanceEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance"]');
+  const balanceLabelEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance-label"]');
   const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
   const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
   const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
 
-  const fadeBeats = [descEl, quipEl].filter(Boolean);
+  const fadeBeats = [descEl, statLabelEl, balanceLabelEl, quipEl].filter(Boolean);
   const percentBeats = [statEl, balanceEl].filter(Boolean);
   const copyBeats = [...fadeBeats, ...percentBeats];
 
@@ -1119,12 +1121,18 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
       fromY: 10
     });
   }
+  if (statLabelEl) {
+    cursor = animateFadeBeat(tl, statLabelEl, cursor, { duration: 0.42, fromY: 10 });
+  }
   if (balanceEl) {
     cursor = animateInboxPercentBeat(tl, balanceEl, cursor, {
       fadeDuration: 0.42,
       countDuration: 1.2,
       fromY: 10
     });
+  }
+  if (balanceLabelEl) {
+    cursor = animateFadeBeat(tl, balanceLabelEl, cursor, { duration: 0.42, fromY: 10 });
   }
   if (quipEl) {
     cursor = animateFadeBeat(tl, quipEl, cursor, { duration: 0.42, fromY: 10 });
