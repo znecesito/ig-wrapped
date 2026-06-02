@@ -982,13 +982,14 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     gsap.set(footerEl, { opacity: 0, y: 10 });
   }
 
-  let cursor = 0.12;
-  const addStep = 0.34;
+  let cursor = 0.2;
+  const addStep = 0.52;
+  const stackInDur = 0.48;
 
   for (let index = 1; index < items.length; index += 1) {
     const item = items[index];
     const stackY = index * INBOX_STACK_PEEK;
-    const targetOpacity = Math.max(0.72, 1 - index * 0.06);
+    const targetOpacity = Math.max(0.78, 1 - index * 0.08);
 
     tl.fromTo(
       item,
@@ -997,22 +998,22 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
         opacity: targetOpacity,
         y: stackY,
         scale: 1 - index * 0.012,
-        duration: 0.36,
+        duration: stackInDur,
         ease: "power2.out"
       },
       cursor
     );
     tl.to(
       stage,
-      { height: inboxStackHeight(cardH, index + 1), duration: 0.36, ease: "power2.out" },
+      { height: inboxStackHeight(cardH, index + 1), duration: stackInDur, ease: "power2.out" },
       cursor
     );
     cursor += addStep;
   }
 
-  cursor += 0.22;
+  cursor += 0.38;
 
-  const expandDur = 0.62;
+  const expandDur = 0.92;
 
   tl.add(() => {
     const measured = measureInboxStack(stackEl);
@@ -1040,30 +1041,30 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     );
   });
 
-  const revealAt = cursor + expandDur * 0.52;
-  tl.to(privacyEl, { opacity: 0, duration: 0.22, ease: "power2.in" }, revealAt);
+  const revealAt = cursor + expandDur * 0.55;
+  tl.to(privacyEl, { opacity: 0, duration: 0.28, ease: "power2.in" }, revealAt);
   tl.to(
     threadWrap,
-    { height: threadH, duration: 0.38, ease: "power3.out" },
-    revealAt + 0.06
+    { height: threadH, duration: 0.45, ease: "power3.out" },
+    revealAt + 0.08
   );
-  tl.to(threadEl, { opacity: 1, duration: 0.28, ease: "power2.out" }, revealAt + 0.14);
+  tl.to(threadEl, { opacity: 1, duration: 0.34, ease: "power2.out" }, revealAt + 0.18);
 
-  cursor += expandDur + 0.35;
+  cursor += expandDur + 0.45;
 
   tl.to(
     stackEl,
-    { opacity: 0.32, scale: 0.96, y: -6, duration: 0.38, ease: "power2.inOut" },
+    { opacity: 0.32, scale: 0.96, y: -6, duration: 0.45, ease: "power2.inOut" },
     cursor
   );
-  cursor += 0.15;
+  cursor += 0.2;
 
   copyBeats.forEach((el) => {
-    cursor = animateFadeBeat(tl, el, cursor, { duration: 0.38, fromY: 10 });
+    cursor = animateFadeBeat(tl, el, cursor, { duration: 0.42, fromY: 10 });
   });
 
   if (footerEl) {
-    tl.to(footerEl, { opacity: 1, y: 0, duration: 0.36, ease: "power2.out" }, cursor);
+    tl.to(footerEl, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, cursor);
   }
 
   return padTimeline(tl, totalSec);

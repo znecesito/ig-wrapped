@@ -43,10 +43,10 @@ function NotificationCard({ threadName, isLead }) {
  */
 export default function InboxNotificationStack({
   threadName = "this chat",
-  stackCount = 4,
+  stackCount = 3,
   className = ""
 }) {
-  const count = Math.min(5, Math.max(2, stackCount));
+  const count = Math.min(3, Math.max(2, stackCount));
 
   return (
     <div

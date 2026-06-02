@@ -292,7 +292,7 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
       </p>
       <InboxNotificationStack
         threadName={spotlight.name}
-        stackCount={spotlight.notificationStackCount ?? 4}
+        stackCount={spotlight.notificationStackCount ?? 3}
       />
       {spotlight.busiestLine ? (
         <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="inbox-desc">

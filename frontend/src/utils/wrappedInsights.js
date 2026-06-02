@@ -525,9 +525,8 @@ export function buildDmBalanceSpotlight(topThread, allThreads = []) {
     totalMessages > 0 ? Math.round((messageCount / totalMessages) * 100) : 0;
   const busiestLine = `${name} is your busiest thread.`;
   const balanceLabel = isGroup ? "you in this group" : "you sent";
-  const notificationStackCount =
-    messageCount >= 150 ? 5 : messageCount >= 60 ? 4 : 4;
-  const notificationMoreLabel = `${notificationStackCount - 1} more notifications`;
+  const notificationStackCount = 3;
+  const notificationMoreLabel = "2 more notifications";
 
   let quip;
   if (tracked === 0) {
