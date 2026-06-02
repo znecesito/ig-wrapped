@@ -94,6 +94,19 @@ export const SLIDE_INSIGHT_PUNCH =
 export const SLIDE_INSIGHT_PUNCH_ON_DARK =
   "m-0 rounded-[10px] border border-white/25 bg-white/15 px-2.5 py-2 text-center text-[0.78rem] font-bold leading-snug text-[var(--slide-fg)]";
 
+/** Inbox slide (hero / dark bg) — label, stat, body only */
+export const INBOX_LABEL =
+  "m-0 text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.08em] text-[var(--slide-fg-subtle)]";
+
+export const INBOX_STAT =
+  "m-0 font-display text-[clamp(2.2rem,10.5vw,2.95rem)] font-extrabold leading-[0.92] tracking-tight text-[var(--slide-fg)]";
+
+export const INBOX_COPY =
+  "m-0 text-[0.88rem] font-medium leading-[1.4] text-[var(--slide-fg-muted)]";
+
+export const INBOX_COPY_EMPHASIS =
+  "m-0 text-[0.88rem] font-semibold leading-[1.4] text-[var(--slide-fg)]";
+
 export const SLIDE_PERSONALITY_TITLE =
   "m-0 font-display text-[clamp(1.35rem,6vw,1.75rem)] font-extrabold leading-tight tracking-tight text-ink";
 

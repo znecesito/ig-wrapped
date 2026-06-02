@@ -16,6 +16,7 @@ import {
   createSlideBeatTimeline,
   killSlideTimeline
 } from "../utils/wrappedSlideTimeline.js";
+import WrappedSlideErrorBoundary from "./WrappedSlideErrorBoundary.jsx";
 
 const TAP_MAX_MS = 280;
 const PRIVACY_ANIM_MS = 3200;
@@ -96,16 +97,21 @@ export default function WrappedStoryPlayer({
       timelineRef.current = null;
 
       const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
-      tl = createSlideBeatTimeline(root, {
-        slideIndex: cardIndex,
-        durationMs: animDurationMs,
-        template: slideTemplate,
-        onComplete: () => {
-          if (autoAdvance) {
-            goNext();
+      try {
+        tl = createSlideBeatTimeline(root, {
+          slideIndex: cardIndex,
+          durationMs: animDurationMs,
+          template: slideTemplate,
+          onComplete: () => {
+            if (autoAdvance) {
+              goNext();
+            }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error("[wrapped] Slide timeline failed:", err);
+        tl = null;
+      }
 
       timelineRef.current = tl;
 
@@ -314,7 +320,9 @@ export default function WrappedStoryPlayer({
           cardIndex={cardIndex}
           template={slideTemplate}
         >
-          {renderSlide(cardIndex)}
+          <WrappedSlideErrorBoundary resetKey={cardIndex}>
+            {renderSlide(cardIndex)}
+          </WrappedSlideErrorBoundary>
         </WrappedPlayerSlide>
 
         <p

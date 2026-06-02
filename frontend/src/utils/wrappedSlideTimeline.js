@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { peopleLabelOpacity, yForRank } from "./peopleRankChartLayout.js";
 
 const PEOPLE_SLIDE_INDEX = 3;
 const INBOX_SLIDE_INDEX = 4;
@@ -102,6 +103,45 @@ function collectBeats(rootEl) {
 function animateFadeBeat(tl, el, cursor, { duration = BEAT_DURATION, ease = "power2.out", fromY = 16 } = {}) {
   gsap.set(el, { opacity: 0, y: fromY });
   tl.to(el, { opacity: 1, y: 0, duration, ease }, cursor);
+  return cursor + BEAT_GAP;
+}
+
+function setInboxPercentValues(rootEl) {
+  rootEl.querySelectorAll("[data-inbox-pct]").forEach((el) => {
+    const target = parseInt(el.dataset.inboxPctValue ?? "0", 10);
+    el.textContent = String(Number.isFinite(target) ? target : 0);
+  });
+}
+
+/** Fade in a percent stat and count 0 → target in sync (smooth deceleration). */
+function animateInboxPercentBeat(
+  tl,
+  el,
+  cursor,
+  { fadeDuration = 0.42, countDuration = 1.15, fromY = 10 } = {}
+) {
+  gsap.set(el, { opacity: 0, y: fromY });
+  tl.to(el, { opacity: 1, y: 0, duration: fadeDuration, ease: "power2.out" }, cursor);
+
+  const pctEl = el.querySelector("[data-inbox-pct]");
+  const target = parseInt(pctEl?.dataset.inboxPctValue ?? "0", 10);
+  if (pctEl && target > 0) {
+    pctEl.textContent = "0";
+    const counter = { v: 0 };
+    tl.to(
+      counter,
+      {
+        v: target,
+        duration: countDuration,
+        ease: "power3.out",
+        onUpdate: () => {
+          pctEl.textContent = String(Math.round(counter.v));
+        }
+      },
+      cursor
+    );
+  }
+
   return cursor + BEAT_GAP;
 }
 
@@ -697,14 +737,32 @@ function buildActivitySlideTimeline(rootEl, { durationMs, onComplete, reduced })
   return padTimeline(tl, totalSec);
 }
 
-function peopleLabelOpacity(rank, topN) {
-  if (rank <= topN) {
+function safePathLength(pathEl) {
+  if (!pathEl?.getTotalLength) {
     return 1;
   }
-  if (rank >= topN + 1) {
-    return 0;
+  try {
+    const len = pathEl.getTotalLength();
+    return Number.isFinite(len) && len > 0 ? len : 1;
+  } catch {
+    return 1;
   }
-  return 1 - (rank - topN);
+}
+
+function parsePeopleLabelCoords(labelEl, topN) {
+  const ranks = String(labelEl?.dataset.peopleRanks ?? "")
+    .split(",")
+    .filter(Boolean)
+    .map((value) => parseInt(value, 10));
+  const monthCount = parseInt(labelEl?.dataset.peopleMonths ?? "0", 10);
+  if (!ranks.length || monthCount < 2) {
+    return [];
+  }
+  return ranks.map((rank, monthIndex) => ({
+    y: yForRank(rank, topN),
+    rank,
+    monthIndex
+  }));
 }
 
 function setPeopleLabelAtProgress(labelEl, coords, progress, topN) {
@@ -722,7 +780,7 @@ function setPeopleLabelAtProgress(labelEl, coords, progress, topN) {
   gsap.set(labelEl, { attr: { y }, opacity: peopleLabelOpacity(rank, topN) });
 }
 
-/** People slide — fluid rank lines with labels traveling on the right. */
+/** People slide — line draw + traveling labels; quip waits until chart finishes. */
 function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const totalSec = Math.max(0.5, durationMs / 1000);
   const tl = makeTimeline({ durationMs, onComplete });
@@ -745,20 +803,15 @@ function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     });
   }
 
-  const seriesMeta = seriesGroups.map((groupEl) => {
-    const pathEl = groupEl.querySelector("[data-people-path]");
-    const labelEl = groupEl.querySelector("[data-people-label]");
-    let coords = [];
-    if (labelEl?.dataset.peopleCoords) {
-      try {
-        coords = JSON.parse(labelEl.dataset.peopleCoords);
-      } catch {
-        coords = [];
-      }
-    }
-    const len = pathEl?.getTotalLength?.() || 1;
-    return { pathEl, labelEl, coords, len };
-  }).filter((row) => row.pathEl);
+  const seriesMeta = seriesGroups
+    .map((groupEl) => {
+      const pathEl = groupEl.querySelector("[data-people-path]");
+      const labelEl = groupEl.querySelector("[data-people-label]");
+      const coords = labelEl ? parsePeopleLabelCoords(labelEl, topN) : [];
+      const len = safePathLength(pathEl);
+      return { pathEl, labelEl, coords, len };
+    })
+    .filter((row) => row.pathEl);
 
   if (reduced) {
     seriesMeta.forEach(({ pathEl, labelEl, coords }) => {
@@ -773,14 +826,14 @@ function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     });
     resetMotionTargets([quipEl, footerEl, bodyEl].filter(Boolean));
     if (chartEl) {
-      gsap.set(chartEl, { opacity: 1 });
+      gsap.set(chartEl, { opacity: 1, y: 0 });
     }
     tl.to({}, { duration: totalSec });
     return tl;
   }
 
   if (chartEl) {
-    gsap.set(chartEl, { opacity: 1 });
+    gsap.set(chartEl, { opacity: 1, y: 0 });
   }
 
   seriesMeta.forEach(({ pathEl, labelEl, coords, len }) => {
@@ -800,7 +853,7 @@ function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     gsap.set(bodyEl, { opacity: 0, y: 14 });
   }
 
-  const drawStart = 0.25;
+  const drawStart = 0.35;
   const drawDuration = Math.min(5.2, totalSec * 0.58);
   const seriesStagger = 0.06;
 
@@ -829,7 +882,7 @@ function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
     }
   });
 
-  const revealAt = drawStart + drawDuration + seriesStagger * seriesMeta.length + 0.2;
+  const revealAt = drawStart + drawDuration + seriesStagger * seriesMeta.length + 0.25;
   const revealTargets = [quipEl, footerEl].filter(Boolean);
   if (revealTargets.length) {
     tl.to(
@@ -930,21 +983,14 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   const stackEl = rootEl.querySelector("[data-inbox-stack]");
   const descEl = rootEl.querySelector('[data-wrapped-beat="inbox-desc"]');
   const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
-  const statLabelEl = rootEl.querySelector('[data-wrapped-beat="stat-label"]');
   const balanceEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance"]');
-  const balanceLabelEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance-label"]');
   const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
   const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
   const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
 
-  const copyBeats = [
-    descEl,
-    statEl,
-    statLabelEl,
-    balanceEl,
-    balanceLabelEl,
-    quipEl
-  ].filter(Boolean);
+  const fadeBeats = [descEl, quipEl].filter(Boolean);
+  const percentBeats = [statEl, balanceEl].filter(Boolean);
+  const copyBeats = [...fadeBeats, ...percentBeats];
 
   if (!stackEl) {
     return buildGenericTimeline(rootEl, {
@@ -970,6 +1016,7 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   if (reduced) {
     layoutInboxStack(stackEl, { expanded: true, revealed: true });
     gsap.set(stackEl, { opacity: 1, y: 0, scale: 1 });
+    setInboxPercentValues(rootEl);
     resetMotionTargets([...copyBeats, footerEl, bodyEl].filter(Boolean));
     tl.to({}, { duration: totalSec });
     return tl;
@@ -978,6 +1025,9 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   layoutInboxStack(stackEl, { expanded: false, revealed: false });
   gsap.set(stackEl, { opacity: 1, y: 0, scale: 1 });
   gsap.set(copyBeats, { opacity: 0, y: 14 });
+  rootEl.querySelectorAll("[data-inbox-pct]").forEach((el) => {
+    el.textContent = "0";
+  });
   if (footerEl) {
     gsap.set(footerEl, { opacity: 0, y: 10 });
   }
@@ -1059,9 +1109,26 @@ function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   );
   cursor += 0.2;
 
-  copyBeats.forEach((el) => {
-    cursor = animateFadeBeat(tl, el, cursor, { duration: 0.42, fromY: 10 });
-  });
+  if (descEl) {
+    cursor = animateFadeBeat(tl, descEl, cursor, { duration: 0.42, fromY: 10 });
+  }
+  if (statEl) {
+    cursor = animateInboxPercentBeat(tl, statEl, cursor, {
+      fadeDuration: 0.42,
+      countDuration: 1.2,
+      fromY: 10
+    });
+  }
+  if (balanceEl) {
+    cursor = animateInboxPercentBeat(tl, balanceEl, cursor, {
+      fadeDuration: 0.42,
+      countDuration: 1.2,
+      fromY: 10
+    });
+  }
+  if (quipEl) {
+    cursor = animateFadeBeat(tl, quipEl, cursor, { duration: 0.42, fromY: 10 });
+  }
 
   if (footerEl) {
     tl.to(footerEl, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, cursor);

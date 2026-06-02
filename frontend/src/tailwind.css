@@ -563,6 +563,38 @@
   .inbox-notif-stack--expanded .inbox-notif-card--stack {
     background: rgb(255 255 255 / 0.9);
   }
+
+  [data-inbox-pct] {
+    display: inline-block;
+    min-width: 1.5ch;
+    font-variant-numeric: tabular-nums;
+    will-change: contents;
+  }
+
+  /* Inbox slide copy — tighten vertical rhythm on dark hero */
+  .wrapped-slide-stage--hero .inbox-notif-stack {
+    margin-bottom: 0.5rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-desc"] {
+    margin-top: 0.15rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="stat"],
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-balance"] {
+    margin-top: 0.2rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="stat-label"],
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-balance-label"] {
+    margin-top: 0.05rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="quip"] {
+    margin-top: 0.35rem;
+    max-width: 18rem;
+  }
+
 }
 
 @utility bg-deck-viewport {

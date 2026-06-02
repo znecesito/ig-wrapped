@@ -24,6 +24,9 @@ import {
   SLIDE_HERO_DISPLAY,
   SLIDE_INSIGHT_PUNCH,
   SLIDE_INSIGHT_PUNCH_ON_DARK,
+  INBOX_COPY,
+  INBOX_COPY_EMPHASIS,
+  INBOX_LABEL,
   SLIDE_MEGA_LABEL,
   SLIDE_MEGA_STAT_DOMINANT,
   slideTitleClass
@@ -265,10 +268,10 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
   if (!spotlight || spotlight.empty || !spotlight.messageCount) {
     return (
       <WrappedSlideLayout template="hero" hideHeader>
-        <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+        <p className={INBOX_LABEL} data-wrapped-beat-static>
           Inbox
         </p>
-        <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+        <p className={INBOX_COPY} data-wrapped-beat="body">
           {emptyMessage}
         </p>
       </WrappedSlideLayout>
@@ -287,7 +290,7 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
         ) : null
       }
     >
-      <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+      <p className={INBOX_LABEL} data-wrapped-beat-static>
         Inbox
       </p>
       <InboxNotificationStack
@@ -295,32 +298,34 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
         stackCount={spotlight.notificationStackCount ?? 3}
       />
       {spotlight.busiestLine ? (
-        <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="inbox-desc">
+        <p className={INBOX_COPY} data-wrapped-beat="inbox-desc">
           {spotlight.busiestLine}
         </p>
       ) : null}
       {spotlight.exportSharePct > 0 ? (
-        <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
-            {spotlight.exportSharePct}%
-          </p>
-          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-            of your messages in this export
-          </p>
-        </>
+        <p className={INBOX_COPY} data-wrapped-beat="stat">
+          <span className="font-extrabold text-[var(--slide-fg)]">
+            <span data-inbox-pct data-inbox-pct-value={spotlight.exportSharePct}>
+              0
+            </span>
+            %
+          </span>{" "}
+          of all the messages in your inbox belong to this thread
+        </p>
       ) : null}
       {hasBalance ? (
-        <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="inbox-balance">
-            {spotlight.selfPct}%
-          </p>
-          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="inbox-balance-label">
-            {spotlight.balanceLabel}
-          </p>
-        </>
+        <p className={INBOX_COPY} data-wrapped-beat="inbox-balance">
+          <span className="font-extrabold text-[var(--slide-fg)]">
+            <span data-inbox-pct data-inbox-pct-value={spotlight.selfPct}>
+              0
+            </span>
+            %
+          </span>{" "}
+          of the messages in this thread are sent by you
+        </p>
       ) : null}
       {spotlight.quip ? (
-        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+        <p className={INBOX_COPY_EMPHASIS} data-wrapped-beat="quip">
           {spotlight.quip}
         </p>
       ) : null}

@@ -1,44 +1,17 @@
 import React, { useMemo } from "react";
 import { cn } from "../lib/utils.js";
 import { PEOPLE_RANK_TOP_N } from "../utils/peopleRankHistory.js";
+import {
+  CHART_H,
+  CHART_PAD,
+  CHART_W,
+  peopleLabelOpacity,
+  xForMonth,
+  yForRank
+} from "../utils/peopleRankChartLayout.js";
 
 /** Distinct line colors (not accent-tinted). */
 const LINE_COLORS = ["#e11d48", "#4f46e5", "#0ea5e4", "#d97706", "#9333ea", "#059669", "#db2777", "#64748b"];
-
-export const CHART_W = 420;
-export const CHART_H = 320;
-export const CHART_PAD = { top: 38, right: 100, bottom: 20, left: 42 };
-
-function plotWidth() {
-  return CHART_W - CHART_PAD.left - CHART_PAD.right;
-}
-
-function plotHeight() {
-  return CHART_H - CHART_PAD.top - CHART_PAD.bottom;
-}
-
-function plotTop() {
-  return CHART_PAD.top + 10;
-}
-
-function plotBottom() {
-  return CHART_H - CHART_PAD.bottom;
-}
-
-export function xForMonth(index, monthCount) {
-  if (monthCount <= 1) {
-    return CHART_PAD.left + plotWidth() / 2;
-  }
-  return CHART_PAD.left + (index / (monthCount - 1)) * plotWidth();
-}
-
-export function yForRank(rank, topN = PEOPLE_RANK_TOP_N) {
-  const top = plotTop();
-  const bottom = plotBottom();
-  const h = bottom - top;
-  const clamped = Math.max(1, Math.min(topN + 1, rank));
-  return top + ((clamped - 1) / topN) * h;
-}
 
 function formatHandle(username) {
   const bare = String(username ?? "").replace(/^@/, "");
@@ -66,15 +39,16 @@ export default function PeopleRankChart({ history, className = "" }) {
       const coords = row.points.map((pt) => ({
         x: xForMonth(pt.monthIndex, monthCount),
         y: yForRank(pt.rank, topN),
-        rank: pt.rank,
-        monthIndex: pt.monthIndex,
-        inTop: pt.inTop
+        rank: pt.rank
       }));
+      const first = coords[0];
       return {
         username: row.username,
         color,
         pathD: pointsToPath(coords),
-        coords
+        ranks: row.points.map((pt) => pt.rank),
+        labelY: first?.y ?? yForRank(topN + 1, topN),
+        labelOpacity: peopleLabelOpacity(first?.rank ?? topN + 1, topN)
       };
     });
   }, [history, monthCount, topN]);
@@ -87,10 +61,7 @@ export default function PeopleRankChart({ history, className = "" }) {
 
   return (
     <div
-      className={cn(
-        "people-rank-chart mx-auto w-full max-w-[min(100%,26rem)]",
-        className
-      )}
+      className={cn("people-rank-chart mx-auto w-full max-w-[min(100%,26rem)]", className)}
       data-wrapped-beat="chart"
       data-people-chart
       data-people-top-n={topN}
@@ -151,12 +122,14 @@ export default function PeopleRankChart({ history, className = "" }) {
             />
             <text
               data-people-label
-              data-people-coords={JSON.stringify(row.coords)}
+              data-people-ranks={row.ranks.join(",")}
+              data-people-months={monthCount}
               x={CHART_W - 6}
-              y={row.coords[0]?.y ?? plotTop()}
+              y={row.labelY}
               textAnchor="end"
               dominantBaseline="middle"
               fill={row.color}
+              opacity={row.labelOpacity}
               className="text-[0.64rem] font-extrabold"
             >
               {formatHandle(row.username)}
