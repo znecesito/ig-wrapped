@@ -311,7 +311,7 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
             %
           </p>
           <p className={INBOX_LABEL} data-wrapped-beat="stat-label">
-            of all the messages in your inbox belong to this thread
+            of your inbox
           </p>
         </>
       ) : null}
@@ -324,7 +324,7 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
             %
           </p>
           <p className={INBOX_LABEL} data-wrapped-beat="inbox-balance-label">
-            of the messages in this thread are sent by you
+            are sent by you
           </p>
         </>
       ) : null}

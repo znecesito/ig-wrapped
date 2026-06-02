@@ -36,7 +36,7 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 | 1 | **Activity** | data | 8s | Family stack grows → total stat → quip in insight box |
 | 2 | **Your rhythm** | hero | 7s | [`RhythmDayFlip.jsx`](../frontend/src/components/RhythmDayFlip.jsx) weekday flip → persona title → quip box |
 | 3 | **People** | data | 12s | [`PeopleRankChart.jsx`](../frontend/src/components/PeopleRankChart.jsx) — 12-month rank lines; GSAP line draw + labels travel/fade when accounts drop out of top 5; [`buildPeopleQuip`](../frontend/src/utils/wrappedInsights.js) |
-| 4 | **Inbox** | hero | 12s | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — 3-card stack, iOS-style expand/reveal thread name; hero % stats count up; labels: “of all the messages in your inbox belong to this thread” / “of the messages in this thread are sent by you”; basketball quips via [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
+| 4 | **Inbox** | hero | 12s | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — 3-card stack, iOS-style expand/reveal thread name; hero % stats count up; labels: “of your inbox” / “are sent by you”; basketball quips via [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
 | 5 | **Privacy** | trust | manual | Local-only outro (last slide, no auto-advance) |
 
 **Deck simplifications (2026-05):** Consolidated from earlier 10-slide prototype. Removed without product sign-off: feed personality slide, streak, busiest day, separate social spotlight + podium ranking, old standalone DM slide. Social + DM story now lives in **People** (rank chart) and **Inbox** (busiest thread).
