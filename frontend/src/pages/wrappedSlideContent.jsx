@@ -1,5 +1,6 @@
 import React from "react";
 import DropDownText from "../components/DropDownText.jsx";
+import InboxNotificationStack from "../components/InboxNotificationStack.jsx";
 import PeopleRankChart from "../components/PeopleRankChart.jsx";
 import RhythmDayFlip from "../components/RhythmDayFlip.jsx";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
@@ -259,65 +260,65 @@ function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emp
   );
 }
 
-/** You vs them balance in the busiest DM thread. */
-function renderDmBalanceSpotlight({ spotlight, emptyMessage }) {
+/** Inbox slide — IG notification stack, then busiest thread stats. */
+function renderInboxSlide({ spotlight, emptyMessage }) {
   if (!spotlight || spotlight.empty || !spotlight.messageCount) {
     return (
-      <WrappedSlideLayout
-        template="hero"
-        eyebrow="Inbox"
-        title="You vs them"
-        deck={emptyMessage}
-      >
-        <p className={SLIDE_BODY_ON_DARK}>{emptyMessage}</p>
+      <WrappedSlideLayout template="hero" hideHeader>
+        <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+          Inbox
+        </p>
+        <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+          {emptyMessage}
+        </p>
       </WrappedSlideLayout>
     );
   }
 
-  const balanceLabel = spotlight.isGroup ? "you in this group" : "you sent";
+  const hasBalance = (spotlight.selfPct ?? 0) > 0 || (spotlight.otherPct ?? 0) > 0;
 
   return (
     <WrappedSlideLayout
       template="hero"
-      eyebrow="Inbox"
-      title={spotlight.isGroup ? "Your group chat energy" : "You vs them"}
-      deck={`Busiest thread · ${spotlight.name}`}
-      bodyClassName="hero"
+      hideHeader
       footerStat={
         spotlight.fanLine ? (
           <span className="text-[var(--slide-fg-muted)]">{spotlight.fanLine}</span>
         ) : null
       }
     >
-      <WrappedSpotlightHero
-        name={spotlight.name}
-        row={spotlight.topRow}
-        threadLabels
+      <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+        Inbox
+      </p>
+      <InboxNotificationStack
+        threadName={spotlight.name}
+        stackCount={spotlight.notificationStackCount ?? 4}
       />
-      {spotlight.selfPct > 0 || spotlight.otherPct > 0 ? (
+      {spotlight.busiestLine ? (
+        <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="inbox-desc">
+          {spotlight.busiestLine}
+        </p>
+      ) : null}
+      {spotlight.exportSharePct > 0 ? (
         <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+            {spotlight.exportSharePct}%
+          </p>
+          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+            of your messages in this export
+          </p>
+        </>
+      ) : null}
+      {hasBalance ? (
+        <>
+          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="inbox-balance">
             {spotlight.selfPct}%
           </p>
-          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-            {balanceLabel}
-          </p>
-          {!spotlight.isGroup ? (
-            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="stat-secondary">
-              {spotlight.otherPct}% from {spotlight.name}
-            </p>
-          ) : null}
-        </>
-      ) : (
-        <>
-          <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
-            {formatCount(spotlight.messageCount)}
-          </p>
-          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
-            messages in this export
+          <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="inbox-balance-label">
+            {spotlight.balanceLabel}
           </p>
         </>
-      )}
+      ) : null}
       {spotlight.quip ? (
         <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
           {spotlight.quip}
@@ -465,7 +466,7 @@ export function renderWrappedSlide(index, ctx) {
       );
 
     case 4:
-      return renderDmBalanceSpotlight({
+      return renderInboxSlide({
         spotlight: insights?.dmBalanceSpotlight,
         emptyMessage: "No threads in this export."
       });

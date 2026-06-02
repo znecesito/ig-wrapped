@@ -490,8 +490,9 @@ export function buildSocialSpotlight(rows) {
 /**
  * You vs them balance in the top DM thread (export-scoped).
  * @param {{ label?: string, messageCount?: number, selfMessageCount?: number, otherMessageCount?: number, isGroup?: boolean } | null | undefined} topThread
+ * @param {{ messageCount?: number }[]} [allThreads]
  */
-export function buildDmBalanceSpotlight(topThread) {
+export function buildDmBalanceSpotlight(topThread, allThreads = []) {
   if (!topThread?.messageCount) {
     return {
       empty: true,
@@ -499,7 +500,12 @@ export function buildDmBalanceSpotlight(topThread) {
       selfPct: 0,
       otherPct: 0,
       messageCount: 0,
+      exportSharePct: 0,
       isGroup: false,
+      busiestLine: null,
+      balanceLabel: null,
+      notificationMoreLabel: null,
+      notificationStackCount: 0,
       quip: null,
       fanLine: null,
       topRow: null
@@ -514,30 +520,38 @@ export function buildDmBalanceSpotlight(topThread) {
   const selfPct = tracked > 0 ? Math.round((selfCount / tracked) * 100) : 0;
   const otherPct = tracked > 0 ? 100 - selfPct : 0;
   const isGroup = Boolean(topThread.isGroup);
+  const totalMessages = (allThreads ?? []).reduce((s, r) => s + (r.messageCount ?? 0), 0);
+  const exportSharePct =
+    totalMessages > 0 ? Math.round((messageCount / totalMessages) * 100) : 0;
+  const busiestLine = `${name} is your busiest thread.`;
+  const balanceLabel = isGroup ? "you in this group" : "you sent";
+  const notificationStackCount =
+    messageCount >= 150 ? 5 : messageCount >= 60 ? 4 : 4;
+  const notificationMoreLabel = `${notificationStackCount - 1} more notifications`;
 
   let quip;
   if (tracked === 0) {
     quip = isGroup
-      ? `${name} is your busiest thread — sender breakdown wasn't available.`
-      : `${name} is your busiest thread in this export.`;
+      ? `${name} ran your inbox — lineup card didn't list minutes, but the thread knows.`
+      : `${name} was your top matchup this export. Game tape's still loading.`;
   } else if (isGroup) {
     if (selfPct >= 60) {
-      quip = `You carry ${name}. The group chat feels it.`;
+      quip = `You carry ${name} — full-time point guard energy.`;
     } else if (selfPct <= 30) {
-      quip = `Mostly listening in ${name}. Rare double-text energy.`;
+      quip = `Mostly listening in ${name}. Sixth man on the bench.`;
     } else {
-      quip = `Balanced contributor in ${name}. You show up, then step back.`;
+      quip = `Balanced contributor in ${name}. You share the rock.`;
     }
   } else if (selfPct >= 70) {
-    quip = `You set the pace with ${name}. They'll catch up.`;
+    quip = `You set the pace with ${name}. You're running the offense.`;
   } else if (selfPct <= 30) {
-    quip = `${name} runs this thread. You're on read-receipt island.`;
+    quip = `${name} runs this thread. You're playing defense, they got the ball.`;
   } else if (selfPct >= 45 && selfPct <= 55) {
-    quip = `Even split with ${name}. True conversation energy.`;
+    quip = `Even split with ${name}. True pick-up game energy.`;
   } else if (selfPct > 55) {
-    quip = `You lead the back-and-forth with ${name}. Initiator club.`;
+    quip = `You lead the back-and-forth with ${name}. Shot caller vibes.`;
   } else {
-    quip = `${name} texts more — you're the thoughtful replier.`;
+    quip = `${name} texts more — you're the assist-first teammate.`;
   }
 
   const fanLine =
@@ -553,7 +567,12 @@ export function buildDmBalanceSpotlight(topThread) {
     selfMessageCount: selfCount,
     otherMessageCount: otherCount,
     messageCount,
+    exportSharePct,
     isGroup,
+    busiestLine,
+    balanceLabel,
+    notificationMoreLabel,
+    notificationStackCount,
     quip,
     fanLine,
     topRow: topThread
@@ -693,6 +712,9 @@ export function buildWrappedInsights(baseline) {
     busiestDayLabel,
     busiestDayCount: busiestDay?.count ?? 0,
     socialSpotlight: buildSocialSpotlight(baseline.mostSocialCreators),
-    dmBalanceSpotlight: buildDmBalanceSpotlight(baseline.topThreads?.[0] ?? null)
+    dmBalanceSpotlight: buildDmBalanceSpotlight(
+      baseline.topThreads?.[0] ?? null,
+      baseline.topThreads ?? []
+    )
   };
 }

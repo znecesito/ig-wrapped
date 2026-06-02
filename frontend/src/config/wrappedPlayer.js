@@ -10,7 +10,7 @@ export const WRAPPED_SLIDE_DURATIONS_MS = [
   8000, // activity
   7000, // rhythm
   12000, // people rank chart
-  4500, // DM you vs them
+  10000, // inbox — notification stack + thread reveal
   0 // privacy — last slide, no auto-advance
 ];
 

@@ -15,8 +15,8 @@ export function explainParseWarning(message) {
   ) {
     return {
       summary: text,
-      impact: "The You vs them slide may be missing or incomplete.",
-      slides: ["You vs them"]
+      impact: "The Inbox slide may be missing or incomplete.",
+      slides: ["Inbox"]
     };
   }
 

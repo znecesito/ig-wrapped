@@ -1,8 +1,7 @@
 import gsap from "gsap";
 
-/** Slides with hero “drop from sky” beats. */
-const HERO_DROP_SLIDE_INDICES = new Set([4]);
 const PEOPLE_SLIDE_INDEX = 3;
+const INBOX_SLIDE_INDEX = 4;
 const ACTIVITY_SLIDE_INDEX = 1;
 const RHYTHM_SLIDE_INDEX = 2;
 const INTRO_DROP_SLIDE_INDEX = 0;
@@ -845,6 +844,231 @@ function buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
   return padTimeline(tl, totalSec);
 }
 
+const INBOX_STACK_PEEK = 12;
+const INBOX_EXPAND_GAP = 10;
+
+function measureInboxStack(stackEl) {
+  const stage = stackEl.querySelector("[data-inbox-stage]");
+  const items = [...stackEl.querySelectorAll("[data-inbox-item]")];
+  const leadCard = items[0]?.querySelector(".inbox-notif-card");
+  const cardH = leadCard?.offsetHeight ?? 86;
+  const threadWrap = stackEl.querySelector("[data-inbox-thread-wrap]");
+  const threadEl = stackEl.querySelector("[data-inbox-thread-reveal]");
+  let threadH = 28;
+  if (threadEl) {
+    const prev = {
+      opacity: threadEl.style.opacity,
+      visibility: threadEl.style.visibility,
+      position: threadEl.style.position
+    };
+    threadEl.style.opacity = "1";
+    threadEl.style.visibility = "hidden";
+    threadEl.style.position = "absolute";
+    threadH = Math.ceil(threadEl.scrollHeight || threadEl.offsetHeight) + 8;
+    threadEl.style.opacity = prev.opacity;
+    threadEl.style.visibility = prev.visibility;
+    threadEl.style.position = prev.position;
+  }
+  return { stage, items, cardH, threadWrap, threadEl, threadH };
+}
+
+function inboxStackHeight(cardH, count, peek = INBOX_STACK_PEEK) {
+  return cardH + Math.max(0, count - 1) * peek;
+}
+
+function inboxExpandedHeight(cardH, count, gap = INBOX_EXPAND_GAP) {
+  return count * cardH + Math.max(0, count - 1) * gap;
+}
+
+function layoutInboxStack(stackEl, { expanded = false, revealed = false } = {}) {
+  const { stage, items, cardH, threadWrap, threadEl, threadH } = measureInboxStack(stackEl);
+  const count = items.length;
+
+  if (expanded) {
+    stackEl.classList.add("inbox-notif-stack--expanded");
+    gsap.set(stage, { height: inboxExpandedHeight(cardH, count) });
+    items.forEach((item, index) => {
+      gsap.set(item, {
+        y: index * (cardH + INBOX_EXPAND_GAP),
+        scale: 1,
+        opacity: 1,
+        zIndex: count - index
+      });
+    });
+  } else {
+    stackEl.classList.remove("inbox-notif-stack--expanded");
+    gsap.set(stage, { height: inboxStackHeight(cardH, count) });
+    items.forEach((item, index) => {
+      gsap.set(item, {
+        y: index * INBOX_STACK_PEEK,
+        scale: 1 - index * 0.012,
+        opacity: index === 0 ? 1 : 0,
+        zIndex: count - index
+      });
+    });
+  }
+
+  const privacy = stackEl.querySelector("[data-inbox-privacy]");
+  if (revealed && threadWrap && threadEl) {
+    gsap.set(privacy, { opacity: 0 });
+    gsap.set(threadWrap, { height: threadH });
+    gsap.set(threadEl, { opacity: 1 });
+  } else if (threadWrap && threadEl) {
+    gsap.set(privacy, { opacity: 1 });
+    gsap.set(threadWrap, { height: 0 });
+    gsap.set(threadEl, { opacity: 0 });
+  }
+}
+
+/** Inbox slide — 1→N stack growth, iOS expand, sender reveal, then copy. */
+function buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced }) {
+  const totalSec = Math.max(0.5, durationMs / 1000);
+  const tl = makeTimeline({ durationMs, onComplete });
+
+  setStaticBeatsVisible(rootEl);
+
+  const stackEl = rootEl.querySelector("[data-inbox-stack]");
+  const descEl = rootEl.querySelector('[data-wrapped-beat="inbox-desc"]');
+  const statEl = rootEl.querySelector('[data-wrapped-beat="stat"]');
+  const statLabelEl = rootEl.querySelector('[data-wrapped-beat="stat-label"]');
+  const balanceEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance"]');
+  const balanceLabelEl = rootEl.querySelector('[data-wrapped-beat="inbox-balance-label"]');
+  const quipEl = rootEl.querySelector('[data-wrapped-beat="quip"]');
+  const footerEl = rootEl.querySelector('[data-wrapped-beat="footer"]');
+  const bodyEl = rootEl.querySelector('[data-wrapped-beat="body"]');
+
+  const copyBeats = [
+    descEl,
+    statEl,
+    statLabelEl,
+    balanceEl,
+    balanceLabelEl,
+    quipEl
+  ].filter(Boolean);
+
+  if (!stackEl) {
+    return buildGenericTimeline(rootEl, {
+      durationMs,
+      template: "hero",
+      onComplete,
+      reduced
+    });
+  }
+
+  let { stage, items, cardH, threadWrap, threadEl, threadH } = measureInboxStack(stackEl);
+  const privacyEl = stackEl.querySelector("[data-inbox-privacy]");
+
+  if (!items.length || !stage) {
+    return buildGenericTimeline(rootEl, {
+      durationMs,
+      template: "hero",
+      onComplete,
+      reduced
+    });
+  }
+
+  if (reduced) {
+    layoutInboxStack(stackEl, { expanded: true, revealed: true });
+    gsap.set(stackEl, { opacity: 1, y: 0, scale: 1 });
+    resetMotionTargets([...copyBeats, footerEl, bodyEl].filter(Boolean));
+    tl.to({}, { duration: totalSec });
+    return tl;
+  }
+
+  layoutInboxStack(stackEl, { expanded: false, revealed: false });
+  gsap.set(stackEl, { opacity: 1, y: 0, scale: 1 });
+  gsap.set(copyBeats, { opacity: 0, y: 14 });
+  if (footerEl) {
+    gsap.set(footerEl, { opacity: 0, y: 10 });
+  }
+
+  let cursor = 0.12;
+  const addStep = 0.34;
+
+  for (let index = 1; index < items.length; index += 1) {
+    const item = items[index];
+    const stackY = index * INBOX_STACK_PEEK;
+    const targetOpacity = Math.max(0.72, 1 - index * 0.06);
+
+    tl.fromTo(
+      item,
+      { opacity: 0, y: stackY + 18, scale: 0.97 },
+      {
+        opacity: targetOpacity,
+        y: stackY,
+        scale: 1 - index * 0.012,
+        duration: 0.36,
+        ease: "power2.out"
+      },
+      cursor
+    );
+    tl.to(
+      stage,
+      { height: inboxStackHeight(cardH, index + 1), duration: 0.36, ease: "power2.out" },
+      cursor
+    );
+    cursor += addStep;
+  }
+
+  cursor += 0.22;
+
+  const expandDur = 0.62;
+
+  tl.add(() => {
+    const measured = measureInboxStack(stackEl);
+    cardH = measured.cardH;
+    threadH = measured.threadH;
+    threadWrap = measured.threadWrap;
+    threadEl = measured.threadEl;
+  }, cursor);
+
+  const expandedH = () => inboxExpandedHeight(cardH, items.length);
+
+  tl.add(() => stackEl.classList.add("inbox-notif-stack--expanded"), cursor);
+  tl.to(stage, { height: expandedH(), duration: expandDur, ease: "power3.inOut" }, cursor);
+  items.forEach((item, index) => {
+    tl.to(
+      item,
+      {
+        y: index * (cardH + INBOX_EXPAND_GAP),
+        scale: 1,
+        opacity: 1,
+        duration: expandDur,
+        ease: "power3.inOut"
+      },
+      cursor
+    );
+  });
+
+  const revealAt = cursor + expandDur * 0.52;
+  tl.to(privacyEl, { opacity: 0, duration: 0.22, ease: "power2.in" }, revealAt);
+  tl.to(
+    threadWrap,
+    { height: threadH, duration: 0.38, ease: "power3.out" },
+    revealAt + 0.06
+  );
+  tl.to(threadEl, { opacity: 1, duration: 0.28, ease: "power2.out" }, revealAt + 0.14);
+
+  cursor += expandDur + 0.35;
+
+  tl.to(
+    stackEl,
+    { opacity: 0.32, scale: 0.96, y: -6, duration: 0.38, ease: "power2.inOut" },
+    cursor
+  );
+  cursor += 0.15;
+
+  copyBeats.forEach((el) => {
+    cursor = animateFadeBeat(tl, el, cursor, { duration: 0.38, fromY: 10 });
+  });
+
+  if (footerEl) {
+    tl.to(footerEl, { opacity: 1, y: 0, duration: 0.36, ease: "power2.out" }, cursor);
+  }
+
+  return padTimeline(tl, totalSec);
+}
+
 /**
  * Build a GSAP timeline for one slide's scene beats, padded to durationMs.
  */
@@ -874,8 +1098,8 @@ export function createSlideBeatTimeline(
     return buildPeopleSlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
-  if (HERO_DROP_SLIDE_INDICES.has(slideIndex)) {
-    return buildHeroDropTimeline(rootEl, { durationMs, onComplete, reduced });
+  if (slideIndex === INBOX_SLIDE_INDEX) {
+    return buildInboxSlideTimeline(rootEl, { durationMs, onComplete, reduced });
   }
 
   return buildGenericTimeline(rootEl, { durationMs, template, onComplete, reduced });

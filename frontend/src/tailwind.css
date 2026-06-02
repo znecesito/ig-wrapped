@@ -415,6 +415,154 @@
       animation: wrapped-reveal-fade 0.25s ease forwards;
     }
   }
+
+  /* Inbox slide — progressive stack → iOS expand */
+  .inbox-notif-stack {
+    position: relative;
+    margin-bottom: 0.35rem;
+  }
+
+  .inbox-notif-stack__stage {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .inbox-notif-stack__list {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .inbox-notif-stack__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0 0.2rem;
+    will-change: transform, opacity;
+  }
+
+  .inbox-notif-card {
+    position: relative;
+    overflow: hidden;
+    padding: 0.8rem 0.85rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(255 255 255 / 0.85);
+    background: rgb(255 255 255 / 0.92);
+    color: #0f172a;
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.8) inset,
+      0 10px 24px -12px rgb(15 23 42 / 0.28);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .inbox-notif-card--stack {
+    background: rgb(255 255 255 / 0.82);
+  }
+
+  .inbox-notif-card__row {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+  }
+
+  .inbox-notif-card__icon {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.55rem;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      #f58529 0%,
+      #dd2a7b 38%,
+      #8134af 68%,
+      #515bd4 100%
+    );
+    box-shadow: 0 2px 8px rgb(221 42 123 / 0.35);
+  }
+
+  .inbox-notif-card__icon-inner {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 0.45rem;
+    background:
+      radial-gradient(circle at 30% 108%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  }
+
+  .inbox-notif-card__main {
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+  }
+
+  .inbox-notif-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.18rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(15 23 42 / 0.55);
+  }
+
+  .inbox-notif-card__app {
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .inbox-notif-card__time {
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0;
+  }
+
+  .inbox-notif-card__content p {
+    margin: 0;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .inbox-notif-card__privacy {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .inbox-notif-card__thread-wrap {
+    height: 0;
+    overflow: hidden;
+  }
+
+  .inbox-notif-card__thread {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1rem, 4.5vw, 1.12rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: #0f172a;
+    opacity: 0;
+  }
+
+  .inbox-notif-card__message {
+    margin-top: 0.12rem;
+    overflow: hidden;
+    font-size: 0.76rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(51 65 85 / 0.88);
+  }
+
+  .inbox-notif-stack--expanded .inbox-notif-card--stack {
+    background: rgb(255 255 255 / 0.9);
+  }
 }
 
 @utility bg-deck-viewport {
