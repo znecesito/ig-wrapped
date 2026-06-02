@@ -25,7 +25,6 @@ import {
   SLIDE_INSIGHT_PUNCH,
   SLIDE_INSIGHT_PUNCH_ON_DARK,
   INBOX_COPY,
-  INBOX_COPY_EMPHASIS,
   INBOX_LABEL,
   INBOX_STAT,
   SLIDE_MEGA_LABEL,
@@ -330,7 +329,7 @@ function renderInboxSlide({ spotlight, emptyMessage }) {
         </>
       ) : null}
       {spotlight.quip ? (
-        <p className={INBOX_COPY_EMPHASIS} data-wrapped-beat="quip">
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
           {spotlight.quip}
         </p>
       ) : null}
