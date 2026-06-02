@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-29 — **deck frozen at 10 slides**; **start Phase H in a fresh session** (read this file + research doc first).
+**Last updated:** 2026-05-31 — **6-slide deck**; **Phase H (GSAP motion) shipped** on `feat/tailwind-foundation`. **Next: Phase I (music) or Phase K (merge to `main`).**
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc). Spotify metrics research: [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 
@@ -8,9 +8,9 @@ Short "where we left off" for contributors and AI assistants. For invariant stac
 
 ## Branch and deploy
 
-- **Active branch:** `feat/tailwind-foundation` (ahead of `main`; Tailwind + Wrapped player + deck restructure).
+- **Active branch:** `feat/tailwind-foundation` (ahead of `main`; Tailwind + Wrapped player + **6-slide** deck + GSAP timelines).
 - **Vercel:** `main` → production; this branch → **preview URL** per push. Test `/wrapped` on preview, not only localhost.
-- **Recent commits:** Phase E–F player/templates; consolidated social (merged likes/comments/stories); DM **you vs them** on busiest thread only; removed inbox-wide personality slide (redundant with slide 8).
+- **Recent work (May 2026):** People rank-over-time chart slide; Inbox slide (notification stack + thread stats); GSAP scene choreography per slide; People chart crash fix (`peopleRankChartLayout.js` + `WrappedSlideErrorBoundary`); inbox stat copy + quip box styling.
 
 ---
 
@@ -26,32 +26,36 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 ### Wrapped flow (after export loads)
 
 1. **Lobby** — [`WrappedLobby.jsx`](../frontend/src/components/WrappedLobby.jsx): lede, handle/year, parse warnings with **layman impact** ([`parseWarningImpact.js`](../frontend/src/utils/parseWarningImpact.js)). **Start Wrapped** disabled until warnings acknowledged (checkbox). No warnings → Start enabled immediately.
-2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause**; **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (privacy) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Share: screenshot hint in player.
+2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause** (freezes GSAP timeline + progress); **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (privacy) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Each slide wrapped in [`WrappedSlideErrorBoundary.jsx`](../frontend/src/components/WrappedSlideErrorBoundary.jsx). Share: screenshot hint in player.
 
-### Slides (index 0–9, **10 beats**)
+### Slides (index 0–5, **6 beats**)
 
-| # | Slide | Template | Notes |
-|---|--------|----------|--------|
-| 0 | Intro | hero | Year + `@handle` + activity count lede |
-| 1 | Feed personality | hero | Dominant activity family % + club-style persona |
-| 2 | Activity mix | data | Total activities + family stack; **365-day trim** when export span &gt; 1 year ([`wrappedExportWindow.js`](../frontend/src/utils/wrappedExportWindow.js)) |
-| 3 | Your rhythm | hero | Peak weekday + hour persona + quip (`formatHour12`, full weekday names) |
-| 4 | Longest streak | hero | Consecutive active days |
-| 5 | Busiest day | hero | Max activities in one calendar day |
-| 6 | **#1 person** | hero | Merged likes + comments + story taps; quip by **dominant type** per account ([`buildSocialSpotlight`](../frontend/src/utils/wrappedInsights.js)); [`WrappedSpotlightHero`](../frontend/src/components/WrappedSpotlightHero.jsx) |
-| 7 | Top accounts | data | Merged social ranking ([`buildTopSocialCreatorsWithBreakdown`](../frontend/src/utils/socialInteractionGraph.js)); [`WrappedAvatarPodium`](../frontend/src/components/WrappedAvatarPodium.jsx) |
-| 8 | **You vs them** | hero | **Busiest DM thread only** — % you sent vs others ([`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js)); sender from `sender_name` in message JSON |
-| 9 | Privacy | trust | Local-only outro (last slide) |
+| # | Slide | Template | Duration | Notes |
+|---|--------|----------|----------|--------|
+| 0 | **Intro** | hero | 5s | Drop-down title + `@handle` + activity lede ([`DropDownText.jsx`](../frontend/src/components/DropDownText.jsx)) |
+| 1 | **Activity** | data | 8s | Family stack grows → total stat → quip in insight box |
+| 2 | **Your rhythm** | hero | 7s | [`RhythmDayFlip.jsx`](../frontend/src/components/RhythmDayFlip.jsx) weekday flip → persona title → quip box |
+| 3 | **People** | data | 12s | [`PeopleRankChart.jsx`](../frontend/src/components/PeopleRankChart.jsx) — 12-month rank lines; GSAP line draw + labels travel/fade when accounts drop out of top 5; [`buildPeopleQuip`](../frontend/src/utils/wrappedInsights.js) |
+| 4 | **Inbox** | hero | 12s | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — 3-card stack, iOS-style expand/reveal thread name; hero % stats count up; labels: “of all the messages in your inbox belong to this thread” / “of the messages in this thread are sent by you”; basketball quips via [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
+| 5 | **Privacy** | trust | manual | Local-only outro (last slide, no auto-advance) |
 
-**Removed from deck (do not re-add without product sign-off):** separate likes/comments/stories spotlight pairs; DM thread ranking slide; profile search slide; parasocial slide; **inbox-wide personality** slide (overlapped slide 8).
+**Deck simplifications (2026-05):** Consolidated from earlier 10-slide prototype. Removed without product sign-off: feed personality slide, streak, busiest day, separate social spotlight + podium ranking, old standalone DM slide. Social + DM story now lives in **People** (rank chart) and **Inbox** (busiest thread).
 
-Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
+Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). People rank data: [`peopleRankHistory.js`](../frontend/src/utils/peopleRankHistory.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
+
+### Motion (Phase H — shipped)
+
+- **Library:** GSAP (`frontend/package.json`).
+- **Timelines:** [`wrappedSlideTimeline.js`](../frontend/src/utils/wrappedSlideTimeline.js) — `createSlideBeatTimeline()` per slide index; padded to `WRAPPED_SLIDE_DURATIONS_MS`.
+- **Hooks:** `data-wrapped-beat`, `data-wrapped-beat-static`, `data-wrapped-beat-segment` on slide DOM.
+- **People slide caveat:** Chart layout math lives in [`peopleRankChartLayout.js`](../frontend/src/utils/peopleRankChartLayout.js) (plain JS). **Do not** import React components into the timeline module — caused a blank-slide crash when imports were broken.
+- **Reduced motion:** `prefers-reduced-motion: reduce` → static final states, no draw animation.
 
 ### Locked UX decisions (do not regress)
 
 - **Start Wrapped** before player (not auto-enter on load).
 - Warnings only in **lobby**; block Start until dismissed with layman “affects which slides”.
-- **Auto-advance always on**; hold pauses (Spotify-style).
+- **Auto-advance always on**; hold pauses GSAP + progress bar.
 - **Tap only** for nav (no swipe left/right v1).
 - **Tap left** = previous.
 - **Last slide** = no auto-advance.
@@ -59,7 +63,8 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - **Visual direction:** **IG-native** (rose/purple gradients, bold type) — **not** Spotify 2025 B/W/lime clone.
 - **No fake global percentiles**; export-scoped copy only.
 - **No** `html-to-image` / scroller Save unless dedicated export layout returns.
-- **One DM beat:** busiest-thread you vs them only (no aggregate inbox personality card).
+- **Inbox quip** uses `SLIDE_INSIGHT_PUNCH_ON_DARK` (same bordered box as other hero slides).
+- **Inbox stats:** large hero `%` with smaller descriptive label underneath (not one inline sentence).
 
 ---
 
@@ -71,35 +76,21 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | **A–D** | Done | Deck chrome, card shell, slide content, token sync |
 | **Hybrid v1** | Done | `wrappedInsights.js`, personality + share copy |
 | **E** | Done | Lobby + `WrappedStoryPlayer`, `WrappedPlayerContext`, `parseWarningImpact.js`, `wrappedPlayer.js` |
-| **F** | Done | Hero/data/trust templates, player backdrop + grain, `WrappedSpotlightHero` |
-| **G + deck restructure** | Done | Merged social slides; DM you vs them; 365-day activity window; rhythm/streak/busiest-day beats; spotlight quips; `data-wrapped-beat` hooks for motion |
+| **F** | Done | Hero/data/trust templates, player backdrop + grain |
+| **G + deck restructure** | Done | Merged social narrative; rhythm/activity beats; `data-wrapped-beat` hooks |
+| **H** | Done | GSAP timelines per slide; intro drop; activity stack; rhythm reveal; people line draw; inbox stack choreography; percent count-up; hold-to-pause sync |
+| **People + Inbox slides** | Done | Rank chart + notification stack slides replace older social/DM deck beats |
 
 ---
 
-## Roadmap — immediate and remaining
+## Roadmap — next sessions
 
-### **Phase H — Scene choreography (Spotify-style presentation)** ← **NEXT (new session)**
-
-**Goal:** Timed scene beats per slide, synced with `WRAPPED_SLIDE_DURATIONS_MS` in [`wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js) (10 entries).
-
-- Stagger: eyebrow → title → hero (`data-wrapped-beat`) → stat → quip → chart/footer.
-- **Hold-to-pause** must freeze GSAP timeline + progress bar (see [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx)).
-- **Tool:** Prefer **GSAP** (one animation dep). Approve in `package.json` before adding.
-- Hooks already on spotlight slides: `data-wrapped-beat="hero"`, `"stat"`, `"quip"`, `"footer"`, etc.
-- **Do not** change slide count or copy unless user asks — motion only.
-
-**Session start checklist:** Read this file → confirm `WRAPPED_CARD_COUNT === 10` → test one slide timeline → roll out to all indices.
-
----
-
-### **Phase I — Music layer**
+### **Phase I — Music layer** ← **NEXT (optional)**
 
 - Unlock audio on **Start Wrapped** (user gesture).
-- Short royalty-free loops per `FEED_PERSONALITIES` key (4–5 files in `public/audio/`).
+- Short royalty-free loops keyed to rhythm/activity mood (4–5 files in `public/audio/`).
 - Mute toggle in player; hold pauses music.
 - Cannot use user’s real Spotify/IG music taste.
-
----
 
 ### **Phase J — Extra slides (optional)**
 
@@ -107,13 +98,11 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - `past_instagram_insights` when file present.
 - **Avatars:** `WrappedAvatarPodium` supports `row.imageUrl`; export has **your** `profile_photos.json` only — third-party faces need opt-in server/proxy (see research doc). **No Playwright by default.**
 
----
-
 ### **Phase K — Merge & ship**
 
 - PR `feat/tailwind-foundation` → `main`.
 - iPhone Safari: lobby → full playthrough → hold → exit → screenshot test.
-- Remove dead [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) if unused.
+- Remove dead [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) if still unused.
 - Update production.
 
 ---
@@ -122,29 +111,35 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 | Area | Files |
 |------|--------|
-| Player | `WrappedStoryPlayer.jsx`, `WrappedLobby.jsx`, `WrappedPlayerContext.jsx`, `config/wrappedPlayer.js` |
-| Slides | `wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `wrappedSlideClasses.js`, `wrappedThemes.js`, `WrappedSpotlightHero.jsx` |
-| Data | `wrappedData.js`, `wrappedInsights.js`, `wrappedExportWindow.js`, `socialInteractionGraph.js`, `messageFrequency.js` |
+| Player | `WrappedStoryPlayer.jsx`, `WrappedLobby.jsx`, `WrappedPlayerContext.jsx`, `WrappedSlideErrorBoundary.jsx`, `config/wrappedPlayer.js` |
+| Motion | `utils/wrappedSlideTimeline.js` |
+| Slides | `pages/wrappedSlideContent.jsx`, `WrappedSlideChrome.jsx`, `components/wrappedSlideClasses.js`, `DropDownText.jsx` |
+| People | `PeopleRankChart.jsx`, `utils/peopleRankHistory.js`, `utils/peopleRankChartLayout.js` |
+| Inbox | `InboxNotificationStack.jsx`, `utils/messageFrequency.js` |
+| Rhythm | `RhythmDayFlip.jsx` |
+| Data | `wrappedData.js`, `wrappedInsights.js`, `wrappedExportWindow.js`, `socialInteractionGraph.js` |
 | Styling | `tailwind.css`, `styles.css` |
 | Docs | `spotify-wrapped-research.md`, this file |
 
-**Legacy / unused:** `WrappedStoryDeck.jsx` — pre–Phase E scroller; delete in Phase K.
+**Legacy / unused:** `WrappedStoryDeck.jsx` — pre–Phase E scroller; delete in Phase K. `WrappedSpotlightHero.jsx`, `WrappedAvatarPodium.jsx` — still in repo; not used in current 6-slide deck.
 
 ---
 
 ## Known gaps / troubleshooting
 
 - **Blank dev page:** `rm -rf frontend/node_modules/.vite` → restart `npm run dev`.
-- **DM you vs them:** Uses **busiest thread** (`topThreads[0]`). If `selfUsername` missing, sender split may be empty → fallback copy.
-- **Social leaderboards:** Not date-filtered (no per-event timestamps in social JSON); activity heatmap **is** trimmed to last 365 days when span &gt; 1 year.
+- **People slide blank (historical):** Caused by timeline importing layout helpers from React component file or missing `xForMonth`/`yForRank`. Fix: use `peopleRankChartLayout.js` only. Error boundary lets user tap past a broken slide.
+- **DM / Inbox:** Uses **busiest thread** (`topThreads[0]`). If `selfUsername` missing, sender split may be empty → fallback copy.
+- **Social rank chart:** Tracks accounts that ever hit top 5 in last 12 months of export; labels fade when rank drops below top 5 during the draw.
 - Large ZIP OOM on mobile Safari — future worker/stream unzip.
 
 ---
 
-## For the next session (Phase H)
+## For the next session
 
 1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Implement **Phase H** motion only unless user reprioritizes.
+3. Default next work: **Phase I** (music) or **Phase K** (merge + QA) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for player + screenshot legibility.
+6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

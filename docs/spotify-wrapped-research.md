@@ -2,7 +2,7 @@
 
 **Sources (May 2026):** [Spotify 2025 Wrapped UX announcement](https://newsroom.spotify.com/2025-12-03/2025-wrapped-user-experience/), [2024 Wrapped media kit](https://newsroom.spotify.com/media-kit/2024-wrapped/), [Music Ally 2024 breakdown](https://musically.com/2024/12/04/spotify-wrapped-2024-is-live-top-artists-albums-tracks-and-more/).
 
-**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Phase H = next session** (fresh context recommended).
+**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Phase I (music) or Phase K (merge) = next session.**
 
 Visual reference (Spotify marketing): high-contrast collage, oversized year, bold outlines, grain texture, one stat per beat, share cards per datapoint. **Product visual direction for ig-wrapped is IG-native** (gradients, rose/purple, bold type) — borrow Spotify’s **narrative structure and motion**, not their brand palette.
 
@@ -12,12 +12,12 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 
 | Mechanism | Spotify example | IG Wrapped analogue |
 |-----------|-----------------|---------------------|
-| **Identity** | “This is *my* year” | Handle + export year + personality |
-| **One big number** | Minutes listened | Total activities, top person’s share % |
-| **Status** | Top 1% of listeners for artist X | “#1 in *your* export” + gap vs #2 (honest, not global percentile) |
-| **Relationship** | Top artist / song | Top person (merged social) + busiest DM thread |
-| **Surprise** | Musical phases, Clubs | Rhythm persona, streak, busiest day, dominant family |
-| **Streak / dedication** | Longest listening streak | Longest consecutive active days |
+| **Identity** | “This is *my* year” | Handle + export year on intro |
+| **One big number** | Minutes listened | Total activities; inbox thread share % |
+| **Status** | Top 1% of listeners for artist X | Top accounts in rank chart; “#1 in *your* export” (honest, not global percentile) |
+| **Relationship** | Top artist / song | People rank chart + busiest DM thread (Inbox slide) |
+| **Surprise** | Musical phases, Clubs | Rhythm persona, activity family mix |
+| **Streak / dedication** | Longest listening streak | *(removed from current 6-slide deck; data still in insights)* |
 | **Share artifact** | Per-stat share cards | Screenshot-friendly 9:16 cards in story player |
 
 **Do not fake** global percentiles (no IG API). Use **self-relative** framing.
@@ -27,43 +27,40 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 ## Shipped UX (player + lobby)
 
 - **Lobby:** warnings + layman impact → **Start Wrapped**
-- **Player:** full-screen, progress segments, tap L/R, hold pause, auto-advance, last slide manual, exit to lobby
-- See `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `config/wrappedPlayer.js` — **`WRAPPED_CARD_COUNT = 10`**
+- **Player:** full-screen, progress segments, tap L/R, hold pause (GSAP frozen), auto-advance, last slide manual, exit to lobby
+- See `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `config/wrappedPlayer.js` — **`WRAPPED_CARD_COUNT = 6`**
 
 ---
 
-## Slide order (current, index 0–9)
+## Slide order (current, index 0–5)
 
-| # | Beat | Template | Archetype |
-|---|------|----------|-----------|
-| 0 | Intro | hero | Identity |
-| 1 | Feed personality | hero | Clubs / persona |
-| 2 | Activity mix | data | One big number + stack |
-| 3 | Your rhythm | hero | Surprise (when you show up) |
-| 4 | Longest streak | hero | Dedication |
-| 5 | Busiest day | hero | Memorable day |
-| 6 | **#1 person** | hero | Relationship (merged social) |
-| 7 | Top accounts | data | Ranking (podium + stack) |
-| 8 | **You vs them** | hero | Relationship (busiest DM thread) |
-| 9 | Privacy | trust | Outro |
+| # | Beat | Template | Duration | Archetype |
+|---|------|----------|----------|-----------|
+| 0 | Intro | hero | 5s | Identity |
+| 1 | Activity | data | 8s | One big number + family stack |
+| 2 | Your rhythm | hero | 7s | Surprise (when you show up) |
+| 3 | **People** | data | 12s | Relationship — rank-over-time chart |
+| 4 | **Inbox** | hero | 12s | Relationship — busiest DM thread |
+| 5 | Privacy | trust | manual | Outro |
 
 **Deck simplifications (2026-05):**
 
-- **One** social spotlight + **one** ranking (likes + comments + story taps merged).
-- **One** DM slide: you vs them on **busiest thread** only (no thread ranking, no inbox-wide personality).
-- Profile search, parasocial, and per-category spotlight pairs **removed**.
+- **Six slides** (down from earlier 10-slide prototype).
+- Social story = **People** rank chart (merged likes/comments/story taps over 12 months).
+- DM story = **Inbox** slide (notification stack + export-scoped % stats + basketball quips).
+- Removed from deck: feed personality, streak, busiest day, separate spotlight + podium, old standalone DM slide, profile search, parasocial.
 
-Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export-scoped only.
+Copy: `buildPeopleQuip()`, `buildDmBalanceSpotlight()`, rhythm/activity quips — export-scoped only.
 
 ---
 
 ## Card archetypes (Spotify structure → IG implementation)
 
-| Archetype | Spotify feel | IG Wrapped today | Phase H (motion) |
-|-----------|--------------|------------------|------------------|
-| **Hero** | Full-bleed type, one idea | Intro, personality, rhythm, streak, day, spotlights, DM | Stagger `data-wrapped-beat` |
-| **Data** | One dominant stat + chart | Activity mix, social ranking | Reveal stack segments |
-| **Trust** | Calm outro | Privacy (last slide) | Soft fade |
+| Archetype | Spotify feel | IG Wrapped today | Motion (Phase H — done) |
+|-----------|--------------|------------------|-------------------------|
+| **Hero** | Full-bleed type, one idea | Intro, rhythm, inbox | GSAP stagger / drop / stack |
+| **Data** | One dominant stat + chart | Activity, people rank chart | Bar grow, line draw, label travel |
+| **Trust** | Calm outro | Privacy (last slide) | Soft segment fade |
 
 ---
 
@@ -71,14 +68,14 @@ Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export
 
 | Mechanism | On a slide today? |
 |-----------|-------------------|
-| Identity | Yes · 0, 1 |
-| One big number | Yes · 2 |
-| Status (% in export) | Yes · 6 |
-| Relationship (people) | Yes · 6–7 |
-| Relationship (DM) | Yes · 8 (busiest thread) |
-| Surprise / rhythm | Yes · 3 |
-| Streak | Yes · 4 |
-| Memorable day | Yes · 5 |
+| Identity | Yes · 0 |
+| One big number | Yes · 1, 4 |
+| Status (% in export) | Yes · 3–4 |
+| Relationship (people) | Yes · 3 |
+| Relationship (DM) | Yes · 4 |
+| Surprise / rhythm | Yes · 2 |
+| Streak | No (removed from deck) |
+| Memorable day | No (removed from deck) |
 | Global percentile | **Never** |
 | Profile search | Parser exists; **not in deck** |
 
@@ -92,7 +89,7 @@ Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export
 - **Browser:** Instagram CDN images block cross-origin embed (`Cross-Origin-Resource-Policy: same-origin`).
 - **Playwright / scraping:** Does **not** require uploading the export ZIP, but a **hosted** scraper typically receives **usernames** (and may store IG session cookies). That changes the privacy story vs “100% local.”
 - **Official API:** Basic Display API deprecated Dec 2024; Graph API is Business/Creator + OAuth — not arbitrary @handles from export leaderboards.
-- **Pragmatic default:** Initials + colored rings (`WrappedAvatarPodium` already supports optional `row.imageUrl` with fallback).
+- **Pragmatic default:** Initials + colored rings (`WrappedAvatarPodium` still in repo; optional `row.imageUrl`).
 
 ---
 
@@ -102,11 +99,15 @@ Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export
 
 ### Phase G + deck restructure **Done**
 
-### Phase H — Scene choreography **← NEXT**
+### Phase H — Scene choreography **Done**
 
-- GSAP timelines per slide; sync `WRAPPED_SLIDE_DURATIONS_MS`; hold pauses timeline.
+- GSAP in `wrappedSlideTimeline.js`; sync `WRAPPED_SLIDE_DURATIONS_MS`; hold pauses timeline.
 
-### Phase I — Music
+### People + Inbox slides **Done**
+
+- `PeopleRankChart`, `InboxNotificationStack`, `peopleRankHistory.js`, `peopleRankChartLayout.js`.
+
+### Phase I — Music **← NEXT (optional)**
 
 ### Phase J — Extra slides / avatars (optional)
 
@@ -119,14 +120,14 @@ Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export
 | Spotify metric | Data today | Parser / field |
 |----------------|------------|----------------|
 | Minutes listened | Activity count | `heatmapData.totalActivities` (365d trim when needed) |
-| Top artist | Top person (merged) | `mostSocialCreators[0]` |
+| Top artist | Top people over time | `peopleRankHistory` / `mostSocialCreators` |
 | Top genres | Family mix | `heatmapData.totalsByFamily` |
-| Fan leaderboard | #1 + gap vs #2 | `buildSocialSpotlight()` |
-| Listening streak | Consecutive active days | `calendarDays` in insights |
-| Memorable day | Busiest day | `busiestCalendarDay()` |
-| Top podcasts | Busiest DM thread | `topThreads[0]` + sender split |
+| Fan leaderboard | Rank chart + quip | `buildPeopleQuip()` |
+| Listening streak | Consecutive active days | insights (not on current deck) |
+| Memorable day | Busiest day | insights (not on current deck) |
+| Top podcasts | Busiest DM thread | `topThreads[0]` + `buildDmBalanceSpotlight()` |
 | Search/discovery | — | `profileSearches` unused in player |
-| Clubs / personality | Feed personality | `FEED_PERSONALITIES` |
+| Clubs / personality | — | removed from deck |
 | Global top 1% | — | **omit** |
 
 ---
@@ -135,10 +136,15 @@ Spotlight copy: `buildSocialSpotlight()`, `buildDmBalanceSpotlight()` — export
 
 | File | Role |
 |------|------|
-| `config/wrappedPlayer.js` | **10** slides, durations |
+| `config/wrappedPlayer.js` | **6** slides, durations |
 | `pages/wrappedSlideContent.jsx` | Slide bodies |
-| `utils/wrappedInsights.js` | Social + DM spotlights, rhythm, streak |
-| `utils/socialInteractionGraph.js` | `buildTopSocialCreatorsWithBreakdown` |
-| `utils/messageFrequency.js` | Threads + `selfMessageCount` / `otherMessageCount` |
-| `components/WrappedSpotlightHero.jsx` | Spotlight avatar + @handle |
-| `components/WrappedAvatarPodium.jsx` | Ranking avatars (`imageUrl` optional) |
+| `utils/wrappedSlideTimeline.js` | GSAP timelines per slide |
+| `utils/wrappedInsights.js` | People quip, DM inbox spotlight, rhythm |
+| `utils/peopleRankHistory.js` | Monthly rank series for People slide |
+| `utils/peopleRankChartLayout.js` | Chart coordinates (used by chart + timeline) |
+| `utils/socialInteractionGraph.js` | Social aggregation |
+| `utils/messageFrequency.js` | Threads + sender split |
+| `components/PeopleRankChart.jsx` | Rank-over-time SVG |
+| `components/InboxNotificationStack.jsx` | IG-style notification stack |
+| `components/RhythmDayFlip.jsx` | Weekday flip on rhythm slide |
+| `components/WrappedSlideErrorBoundary.jsx` | Per-slide render fallback |

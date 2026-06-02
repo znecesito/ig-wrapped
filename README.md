@@ -1,12 +1,12 @@
 # ig-wrapped
 
-**Instagram Wrapped** in your browser: load your official export (ZIP or folder), tap **Start Wrapped**, and play through **ten** portrait story cards—activity, rhythm, top people, DMs, and your feed personality. Your export stays on your device; nothing is uploaded for Wrapped.
+**Instagram Wrapped** in your browser: load your official export (ZIP or folder), tap **Start Wrapped**, and play through **six** portrait story cards—activity, rhythm, top people, inbox, and privacy. Your export stays on your device; nothing is uploaded for Wrapped.
 
 ## What you can do today
 
 | Route | What it does |
 | --- | --- |
-| `/wrapped` | **Wrapped** — load export → lobby → full-screen story player (10 cards) |
+| `/wrapped` | **Wrapped** — load export → lobby → full-screen story player (6 cards) |
 | `/guide` | **How to export** — phone vs desktop steps for your Instagram JSON export |
 
 Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
@@ -24,6 +24,17 @@ Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
 4. **Share** — **Screenshot** the card you want for Instagram Stories (no in-app download button).
 
 On desktop, the background fills the browser; the card stays a centered phone-sized 9:16 frame so screenshots still look right.
+
+## The six slides
+
+| # | Slide | What you see |
+| --- | --- | --- |
+| 0 | Intro | Your year + @handle + activity summary |
+| 1 | Activity | Family mix stack, total count, quip |
+| 2 | Rhythm | Peak weekday flip, persona title, quip |
+| 3 | People | Rank-over-time chart for top accounts + quip |
+| 4 | Inbox | Notification stack → busiest thread stats + quip |
+| 5 | Privacy | Local-only reminder (tap to finish) |
 
 ## Load your export
 
@@ -60,15 +71,16 @@ Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge
 
 | Phase | Status | Summary |
 | --- | --- | --- |
-| Tailwind + slides A–D | Done | Design system, card shell, all slide content |
+| Tailwind + slides A–D | Done | Design system, card shell, slide content |
 | E Story player | Done | Lobby, Start Wrapped, full-screen tap/hold/auto-advance |
 | F Visual (IG-native) | Done | Hero/data/trust templates, player backdrop |
-| G Deck + copy | Done | Merged social, DM you vs them, rhythm/streak/day beats |
-| **H Motion** | **Next** | GSAP-style scene beats per slide |
-| I Music | Planned | Optional ambient loops by personality |
+| G Deck + copy | Done | Activity, rhythm, insights copy |
+| H Motion | Done | GSAP scene beats per slide (stack, chart draw, inbox stack) |
+| People + Inbox slides | Done | Rank chart + notification stack replace older social/DM beats |
+| I Music | Planned | Optional ambient loops |
 | K Ship | Planned | Merge to `main` after iPhone QA |
 
-See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for the **10-slide** deck, locked UX, and Phase H handoff.
+See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for the **6-slide** deck, locked UX, and next-session handoff.
 
 ## Run locally
 
@@ -130,7 +142,7 @@ Root **`backend`**, start **`npm start`**, health at `GET /health`.
 
 ## For contributors / AI assistants
 
-- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 10-slide deck, next = **Phase H**)
+- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 6-slide deck, Phase I / K next)
 - **Metrics / Spotify mapping:** [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md)
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
 

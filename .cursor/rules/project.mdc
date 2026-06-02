@@ -8,7 +8,7 @@ alwaysApply: true
 ## Stack
 
 - **Backend:** Node.js (ESM), Express 4, Multer, CORS (optional; not used by shipped UI).
-- **Frontend:** React 18, Vite 5, **Tailwind CSS v4** (`@tailwindcss/vite`), **fflate** (client-side ZIP unzip).
+- **Frontend:** React 18, Vite 5, **Tailwind CSS v4** (`@tailwindcss/vite`), **fflate** (client-side ZIP unzip), **GSAP** (slide timelines).
 - **Language:** JavaScript only (no TypeScript in this repo).
 - **Styling:** Tailwind-first for Wrapped (`tailwind.css`, `wrappedSlideClasses.js`); legacy nav/guide in `styles.css`. Tokens: `src/tailwind.css` (`@theme`), `src/lib/tokens.js`. Use `cn()` from `src/lib/utils.js`.
 
@@ -34,26 +34,28 @@ alwaysApply: true
 ### Wrapped flow (export loaded)
 
 1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — lede, parse warnings with layman slide impact ([`parseWarningImpact.js`](frontend/src/utils/parseWarningImpact.js)), **Start Wrapped** (blocked until warnings acknowledged).
-2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap left/right; hold-to-pause; auto-advance ([`config/wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); last slide waits for tap; exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
+2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap left/right; hold-to-pause (GSAP); auto-advance ([`config/wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); last slide waits for tap; exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
 
-### Ten slides (0–9)
+### Six slides (0–5)
 
-intro → personality → activity mix → rhythm → streak → busiest day → **#1 person** (merged social) → top accounts → **you vs them** (busiest DM) → privacy. `WRAPPED_CARD_COUNT = 10`. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js). **Phase H next** — see [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md).
+intro → activity → rhythm → **people** (rank chart) → **inbox** (notification stack + busiest thread) → privacy. `WRAPPED_CARD_COUNT = 6`. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Motion: [`wrappedSlideTimeline.js`](frontend/src/utils/wrappedSlideTimeline.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js). Handoff: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md).
 
 ### Product constraints
 
 - Client-only parsing; export not uploaded for Wrapped.
 - **IG-native** visuals (not Spotify brand clone). **No fake global percentiles.**
 - No `html-to-image` / scroller Save unless dedicated export layout.
+- People chart layout math in [`peopleRankChartLayout.js`](frontend/src/utils/peopleRankChartLayout.js) — timeline must not import React chart components.
 
 ## Roadmap (next sessions)
 
 | Phase | Focus |
 |-------|--------|
 | **F** | Done — IG-native templates (hero/data/trust), player backdrop, lobby CTA |
-| **G** | Done — merged social + DM you vs them; deck restructure; spotlight quips |
-| **H** ← next | GSAP scene choreography synced to slide durations (`data-wrapped-beat` hooks in place) |
-| **I** | Personality-mapped ambient audio + mute |
+| **G** | Done — activity + rhythm beats; deck restructure |
+| **H** | Done — GSAP scene choreography synced to slide durations |
+| **People + Inbox** | Done — rank chart slide + notification stack slide |
+| **I** ← next | Personality-mapped ambient audio + mute |
 | **J** | Optional extra slides (words, insights JSON) |
 | **K** | Merge `feat/tailwind-foundation` → `main`, cleanup |
 
@@ -65,9 +67,9 @@ Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrappe
   - **`App.jsx`** — nav + routes; wraps `WrappedPlayerProvider`
   - **`context/`** — `ExportDataContext.jsx`, `WrappedPlayerContext.jsx`
   - **`config/`** — `features.js`, `wrappedPlayer.js` (slide count, durations)
-  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedAvatarPodium.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused after Phase E)
+  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedSlideErrorBoundary.jsx`, `PeopleRankChart.jsx`, `InboxNotificationStack.jsx`, `RhythmDayFlip.jsx`, `DropDownText.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused)
   - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy analysis pages (not routed)
-  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
+  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `wrappedSlideTimeline.js`, `peopleRankHistory.js`, `peopleRankChartLayout.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
   - **`lib/`** — `utils.js` (`cn`), `tokens.js`
   - **`tailwind.css`**, **`styles.css`**, **`vite.config.js`**
 - **`docs/AGENT_CONTEXT.md`** — rolling handoff (read first for AI)
@@ -75,9 +77,9 @@ Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrappe
 ## Conventions
 
 - Focused diffs; no unrelated refactors.
-- **Leaderboard slides:** [`WrappedAvatarPodium.jsx`](frontend/src/components/WrappedAvatarPodium.jsx); `:has(.wrapped-leaderboard)` for overflow/padding on card shell.
 - Extend parsers via patterns in **`commentHeatmap.js`** / **`socialInteractionGraph.js`**.
-- No new heavy chart libs without approval. Phase H may add **GSAP** (or Framer Motion) for slide timelines — one animation library only.
+- **One animation library:** GSAP only (already in `package.json`).
+- Quips on hero/dark slides use `SLIDE_INSIGHT_PUNCH_ON_DARK` (bordered box).
 
 ## API (backend, optional)
 
