@@ -19,9 +19,14 @@ import {
 } from "../utils/wrappedSlideTimeline.js";
 import WrappedSlideErrorBoundary from "./WrappedSlideErrorBoundary.jsx";
 import WrappedMusicPlayer from "./WrappedMusicPlayer.jsx";
-import { pauseWrappedAudioForHold, resumeWrappedAudioFromHold } from "../utils/wrappedAudio.js";
+import {
+  pauseWrappedAudioForHold,
+  resumeWrappedAudioFromHold
+} from "../utils/wrappedAudio.js";
 
 const TAP_MAX_MS = 280;
+/** Delay before hold-to-pause kicks in — quick taps skip this and keep audio playing. */
+const HOLD_PAUSE_MS = 220;
 
 /**
  * Full-screen story player: progress segments, tap nav, hold-to-pause, tap-to-advance.
@@ -39,6 +44,7 @@ export default function WrappedStoryPlayer({
   const slideRef = useRef(null);
   const pointerRef = useRef(null);
   const swipeRef = useRef(null);
+  const holdTimerRef = useRef(null);
   const rafRef = useRef(null);
   const timelineRef = useRef(null);
 
@@ -52,6 +58,13 @@ export default function WrappedStoryPlayer({
   const { background: slideBackground, ...slideSurfaceVars } = surfaceStyle;
   const isHeroTemplate = slideTemplate === "hero";
 
+  const clearHoldTimer = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+  }, []);
+
   const goTo = useCallback(
     (nextIndex) => {
       const clamped = Math.max(0, Math.min(cardCount - 1, nextIndex));
@@ -59,6 +72,7 @@ export default function WrappedStoryPlayer({
         return;
       }
       onIndexChange(clamped);
+      resumeWrappedAudioFromHold();
     },
     [cardCount, cardIndex, onIndexChange]
   );
@@ -78,7 +92,9 @@ export default function WrappedStoryPlayer({
   useEffect(() => {
     setProgress(0);
     setPaused(false);
-  }, [cardIndex]);
+    clearHoldTimer();
+    resumeWrappedAudioFromHold();
+  }, [cardIndex, clearHoldTimer]);
 
   useLayoutEffect(() => {
     const root = slideRef.current;
@@ -147,10 +163,6 @@ export default function WrappedStoryPlayer({
   }, [paused]);
 
   useEffect(() => {
-    if (!autoAdvance) {
-      return undefined;
-    }
-
     const tick = () => {
       const tl = timelineRef.current;
       if (tl) {
@@ -166,7 +178,7 @@ export default function WrappedStoryPlayer({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [autoAdvance, cardIndex]);
+  }, [cardIndex]);
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -185,6 +197,8 @@ export default function WrappedStoryPlayer({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [goNext, goPrev, onExit]);
 
+  useEffect(() => () => clearHoldTimer(), [clearHoldTimer]);
+
   const handlePointerDown = (e) => {
     if (e.button !== 0) {
       return;
@@ -195,13 +209,22 @@ export default function WrappedStoryPlayer({
       t: Date.now()
     };
     swipeRef.current = { y0: e.clientY };
-    setPaused(true);
+    clearHoldTimer();
+    holdTimerRef.current = setTimeout(() => {
+      holdTimerRef.current = null;
+      setPaused(true);
+    }, HOLD_PAUSE_MS);
   };
 
   const handlePointerUp = (e) => {
     const down = pointerRef.current;
     pointerRef.current = null;
-    setPaused(false);
+    clearHoldTimer();
+
+    if (paused) {
+      setPaused(false);
+      resumeWrappedAudioFromHold();
+    }
 
     if (!down) {
       return;
@@ -223,7 +246,9 @@ export default function WrappedStoryPlayer({
 
   const handlePointerCancel = () => {
     pointerRef.current = null;
+    clearHoldTimer();
     setPaused(false);
+    resumeWrappedAudioFromHold();
   };
 
   const handleTouchEnd = (e) => {
@@ -266,54 +291,35 @@ export default function WrappedStoryPlayer({
 
       <div
         className={cn(
-          "relative z-10 flex shrink-0 gap-1 px-2",
-          "pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]"
+          "relative z-10 shrink-0 px-2",
+          "pt-[max(0.5rem,env(safe-area-inset-top))]"
         )}
       >
-        {Array.from({ length: cardCount }).map((_, i) => {
-          let fill = 0;
-          if (i < cardIndex) {
-            fill = 1;
-          } else if (i === cardIndex) {
-            fill = autoAdvance ? progress : 1;
-          }
-          return (
-            <div
-              key={i}
-              className="h-[3px] min-w-0 flex-1 overflow-hidden rounded-pill bg-white/35"
-              aria-hidden
-            >
+        <div className="flex gap-1 pb-1.5">
+          {Array.from({ length: cardCount }).map((_, i) => {
+            let fill = 0;
+            if (i < cardIndex) {
+              fill = 1;
+            } else if (i === cardIndex) {
+              fill = progress;
+            }
+            return (
               <div
-                className="h-full rounded-pill bg-white transition-[width] duration-75 ease-linear"
-                style={{ width: `${fill * 100}%` }}
-              />
-            </div>
-          );
-        })}
+                key={i}
+                className="h-[3px] min-w-0 flex-1 overflow-hidden rounded-pill bg-white/35"
+                aria-hidden
+              >
+                <div
+                  className="h-full rounded-pill bg-white transition-[width] duration-75 ease-linear"
+                  style={{ width: `${fill * 100}%` }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <WrappedMusicPlayer onExit={onExit} className="pb-1" />
       </div>
-
-      <button
-        type="button"
-        data-no-hold
-        className={cn(
-          "absolute right-3 top-[max(0.35rem,env(safe-area-inset-top))] z-[60]",
-          "flex size-9 items-center justify-center rounded-full",
-          "border-0 bg-black/25 text-lg leading-none text-white backdrop-blur-sm",
-          "transition-colors hover:bg-black/40"
-        )}
-        aria-label="Exit Wrapped"
-        onClick={onExit}
-      >
-        ×
-      </button>
-
-      <WrappedMusicPlayer
-        className={cn(
-          "absolute z-[55]",
-          "right-3 bottom-[max(3.5rem,calc(env(safe-area-inset-bottom)+2.75rem))]",
-          "w-[min(17.5rem,calc(100vw-1.5rem))]"
-        )}
-      />
 
       <div
         className="relative z-10 flex min-h-0 flex-1 flex-col"
@@ -345,7 +351,7 @@ export default function WrappedStoryPlayer({
             ? "Tap left to go back · screenshot to share · swipe down when you're done"
             : paused
               ? "Release to resume"
-              : "Tap right for next · hold to pause · mute bottom-right · swipe down to exit"}
+              : "Tap right for next · hold to pause · swipe down to exit"}
         </p>
       </div>
     </div>

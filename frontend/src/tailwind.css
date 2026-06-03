@@ -275,30 +275,36 @@
     z-index: 2;
   }
 
-  /* Now-playing chip — overrides global `button` styles from styles.css */
-  .wrapped-music-player__btn-mute {
+  /* Story chrome — IG-style icon buttons (no filled background) */
+  .wrapped-player-chrome__btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    min-width: 2rem;
+    min-height: 2rem;
     margin: 0;
     padding: 0;
     border: 0;
-    border-radius: 9999px;
-    background: rgb(255 255 255 / 0.14);
+    background: transparent;
     color: #fff;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1;
     cursor: pointer;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
     -webkit-tap-highlight-color: transparent;
   }
 
-  .wrapped-music-player__btn-mute:hover {
-    background: rgb(255 255 255 / 0.24);
+  .wrapped-player-chrome__btn--exit {
+    font-size: 1.65rem;
+    font-weight: 400;
+    line-height: 1;
   }
 
-  .wrapped-music-player__btn-mute svg {
+  .wrapped-player-chrome__btn--muted {
+    opacity: 0.45;
+  }
+
+  .wrapped-player-chrome__btn svg {
     display: block;
   }
 
@@ -645,6 +651,43 @@
     max-width: 18rem;
   }
 
+}
+
+/*
+ * Unlayered — must beat legacy styles.css global `button { background: #2563eb }`
+ * (unlayered CSS wins over @layer components above).
+ */
+.wrapped-player button.wrapped-player-chrome__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn--exit {
+  font-size: 1.65rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn--muted {
+  opacity: 0.45;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn svg {
+  display: block;
 }
 
 @utility bg-deck-viewport {

@@ -7,7 +7,7 @@ const DEFAULT_COVER = "/audio/covers/default.jpg";
 
 function IconVolumeOn() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
       <path
         fill="currentColor"
         d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
@@ -18,7 +18,7 @@ function IconVolumeOn() {
 
 function IconVolumeOff() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
       <path
         fill="currentColor"
         d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"
@@ -28,10 +28,10 @@ function IconVolumeOff() {
 }
 
 /**
- * Now-playing chip: spinning cover, title/artist, mute toggle. No transport controls.
+ * Story chrome under progress: spinning cover disc + mute (IG-style, no chrome box).
  */
-export default function WrappedMusicPlayer({ className }) {
-  const { active, meta, muted, holdPaused, isPlaying } = useWrappedAudioState();
+export default function WrappedMusicPlayer({ onExit, className }) {
+  const { active, meta, muted } = useWrappedAudioState();
   const [coverSrc, setCoverSrc] = useState(meta?.cover ?? DEFAULT_COVER);
 
   useEffect(() => {
@@ -50,25 +50,20 @@ export default function WrappedMusicPlayer({ className }) {
     return null;
   }
 
-  const spinCover = isPlaying || (!muted && !holdPaused);
-
   return (
     <div
       className={cn(
-        "wrapped-music-player pointer-events-auto",
-        "flex items-center gap-3 rounded-2xl border border-white/20",
-        "bg-white/12 py-2 pl-2.5 pr-2.5 shadow-lg backdrop-blur-md",
+        "wrapped-player-chrome pointer-events-auto flex items-center justify-end gap-3",
         className
       )}
       data-no-hold
-      role="region"
-      aria-label="Now playing"
     >
       <div
         className={cn(
-          "wrapped-music-player__art relative size-12 shrink-0 overflow-hidden shadow-md ring-1 ring-white/25",
-          spinCover && "wrapped-music-player__art--playing"
+          "wrapped-music-player__art size-8 shrink-0 overflow-hidden ring-2 ring-white/80",
+          !muted && "wrapped-music-player__art--playing"
         )}
+        aria-hidden
       >
         <img
           src={coverSrc}
@@ -78,24 +73,29 @@ export default function WrappedMusicPlayer({ className }) {
         />
       </div>
 
-      <div className="wrapped-music-player__body min-w-0 flex-1">
-        <p className="m-0 truncate text-[0.78rem] font-semibold leading-tight text-white">
-          {meta?.title ?? "Now playing"}
-        </p>
-        <p className="m-0 truncate text-[0.65rem] leading-tight text-white/65">
-          {meta?.artist ?? ""}
-        </p>
-      </div>
-
       <button
         type="button"
-        className="wrapped-music-player__btn-mute shrink-0"
+        className={cn(
+          "wrapped-player-chrome__btn",
+          muted && "wrapped-player-chrome__btn--muted"
+        )}
         aria-label={muted ? "Unmute soundtrack" : "Mute soundtrack"}
         aria-pressed={muted}
         onClick={handleToggleMute}
       >
         {muted ? <IconVolumeOff /> : <IconVolumeOn />}
       </button>
+
+      {onExit ? (
+        <button
+          type="button"
+          className="wrapped-player-chrome__btn wrapped-player-chrome__btn--exit"
+          aria-label="Exit Wrapped"
+          onClick={onExit}
+        >
+          ×
+        </button>
+      ) : null}
     </div>
   );
 }
