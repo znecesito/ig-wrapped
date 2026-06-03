@@ -34,7 +34,7 @@ alwaysApply: true
 ### Wrapped flow (export loaded)
 
 1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — lede, parse warnings with layman slide impact ([`parseWarningImpact.js`](frontend/src/utils/parseWarningImpact.js)), **Start Wrapped** (blocked until warnings acknowledged).
-2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap right/next left/back; hold-to-pause (GSAP + audio); **tap-to-advance** (`WRAPPED_AUTO_ADVANCE` in [`wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
+2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; GSAP-synced progress segments (`scaleX`); tap right/next left/back; hold-to-pause (GSAP + audio, ~220ms hold delay); **tap-to-advance** (`WRAPPED_AUTO_ADVANCE` in [`wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); top chrome: spinning cover disc + mute + × ([`WrappedMusicPlayer.jsx`](frontend/src/components/WrappedMusicPlayer.jsx)); exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
 
 ### Six slides (0–5)
 
@@ -55,9 +55,9 @@ intro → activity → rhythm → **people** (rank chart) → **inbox** (notific
 | **G** | Done — activity + rhythm beats; deck restructure |
 | **H** | Done — GSAP scene choreography synced to slide durations |
 | **People + Inbox** | Done — rank chart slide + notification stack slide |
-| **I** ← next | Personality-mapped ambient audio + mute |
+| **I** | Done — 7-track shuffle, mute, spinning disc chrome (`wrappedAudio.js`, `public/audio/`) |
 | **J** | Optional extra slides (words, insights JSON) |
-| **K** | Merge `feat/tailwind-foundation` → `main`, cleanup |
+| **K** ← next | Merge `feat/tailwind-foundation` → `main`, cleanup |
 
 Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md).
 
@@ -66,10 +66,11 @@ Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrappe
 - **`frontend/src/`**
   - **`App.jsx`** — nav + routes; wraps `WrappedPlayerProvider`
   - **`context/`** — `ExportDataContext.jsx`, `WrappedPlayerContext.jsx`
-  - **`config/`** — `features.js`, `wrappedPlayer.js` (slide count, durations)
-  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedSlideErrorBoundary.jsx`, `PeopleRankChart.jsx`, `InboxNotificationStack.jsx`, `RhythmDayFlip.jsx`, `DropDownText.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused)
+  - **`config/`** — `features.js`, `wrappedPlayer.js`, `wrappedAudioTracks.js`
+  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedMusicPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedSlideErrorBoundary.jsx`, `PeopleRankChart.jsx`, `InboxNotificationStack.jsx`, `RhythmDayFlip.jsx`, `DropDownText.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused)
+  - **`hooks/`** — `useWrappedAudioState.js`
   - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy analysis pages (not routed)
-  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `wrappedSlideTimeline.js`, `peopleRankHistory.js`, `peopleRankChartLayout.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
+  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `wrappedSlideTimeline.js`, `wrappedAudio.js`, `peopleRankHistory.js`, `peopleRankChartLayout.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
   - **`lib/`** — `utils.js` (`cn`), `tokens.js`
   - **`tailwind.css`**, **`styles.css`**, **`vite.config.js`**
 - **`docs/AGENT_CONTEXT.md`** — rolling handoff (read first for AI)

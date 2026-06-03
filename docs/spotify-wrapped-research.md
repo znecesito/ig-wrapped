@@ -2,7 +2,7 @@
 
 **Sources (May 2026):** [Spotify 2025 Wrapped UX announcement](https://newsroom.spotify.com/2025-12-03/2025-wrapped-user-experience/), [2024 Wrapped media kit](https://newsroom.spotify.com/media-kit/2024-wrapped/), [Music Ally 2024 breakdown](https://musically.com/2024/12/04/spotify-wrapped-2024-is-live-top-artists-albums-tracks-and-more/).
 
-**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Phase I (music) or Phase K (merge) = next session.**
+**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Phase K (merge) = next session.**
 
 Visual reference (Spotify marketing): high-contrast collage, oversized year, bold outlines, grain texture, one stat per beat, share cards per datapoint. **Product visual direction for ig-wrapped is IG-native** (gradients, rose/purple, bold type) — borrow Spotify’s **narrative structure and motion**, not their brand palette.
 
@@ -26,22 +26,22 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 
 ## Shipped UX (player + lobby)
 
-- **Lobby:** warnings + layman impact → **Start Wrapped**
-- **Player:** full-screen, progress segments, tap L/R, hold pause (GSAP + audio), tap-to-advance (no timer), exit to lobby
-- See `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `config/wrappedPlayer.js` — **`WRAPPED_CARD_COUNT = 6`**
+- **Lobby:** warnings + layman impact → **Start Wrapped** (soundtrack note in lede)
+- **Player:** full-screen; GSAP-synced progress segments; tap L/R; hold pause (GSAP + audio, delayed hold); tap-to-advance (no timer); top chrome: spinning cover disc + mute + ×; exit to lobby
+- See `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedMusicPlayer.jsx`, `config/wrappedPlayer.js`, `utils/wrappedAudio.js` — **`WRAPPED_CARD_COUNT = 6`**
 
 ---
 
 ## Slide order (current, index 0–5)
 
-| # | Beat | Template | Duration | Archetype |
-|---|------|----------|----------|-----------|
-| 0 | Intro | hero | 5s | Identity |
-| 1 | Activity | data | 8s | One big number + family stack |
-| 2 | Your rhythm | hero | 7s | Surprise (when you show up) |
-| 3 | **People** | data | 12s | Relationship — rank-over-time chart |
-| 4 | **Inbox** | hero | 12s | Relationship — busiest DM thread |
-| 5 | Privacy | trust | manual | Outro |
+| # | Beat | Template | Advance | Archetype |
+|---|------|----------|---------|-----------|
+| 0 | Intro | hero | tap | Identity |
+| 1 | Activity | data | tap | One big number + family stack |
+| 2 | Your rhythm | hero | tap | Surprise (when you show up) |
+| 3 | **People** | data | tap | Relationship — rank-over-time chart |
+| 4 | **Inbox** | hero | tap | Relationship — busiest DM thread |
+| 5 | Privacy | trust | tap | Outro |
 
 **Deck simplifications (2026-05):**
 
@@ -107,11 +107,13 @@ Copy: `buildPeopleQuip()`, `buildDmBalanceSpotlight()`, rhythm/activity quips �
 
 - `PeopleRankChart`, `InboxNotificationStack`, `peopleRankHistory.js`, `peopleRankChartLayout.js`.
 
-### Phase I — Music **← NEXT (optional)**
+### Phase I — Music **Done**
+
+- 7-track shuffled playlist on Start Wrapped; mute toggle; spinning cover disc under progress; hold pauses audio; assets in `frontend/public/audio/`.
 
 ### Phase J — Extra slides / avatars (optional)
 
-### Phase K — Merge to `main`
+### Phase K — Merge to `main` **← NEXT**
 
 ---
 

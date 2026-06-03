@@ -15,12 +15,12 @@ Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
 
 1. **Load export** — Choose ZIP or folder (see [Load your export](#load-your-export)).
 2. **Lobby** — Short intro; if parsing hit snags, read what each warning affects and acknowledge before continuing.
-3. **Start Wrapped** — Full-screen story player (like Stories / Spotify Wrapped):
-   - Progress bar across the top
-   - **Tap** right side for next, left for previous
-   - **Hold** to pause; release to resume
-   - **Tap right** when you’re ready for the next slide (animations play; no auto-advance)
-   - **Exit:** × button, swipe down, or Escape → back to lobby
+3. **Start Wrapped** — Full-screen story player (like Stories):
+   - Progress segments across the top (fill tracks slide animations; you tap when ready for the next beat)
+   - **Tap** right for next, left for previous (no auto-advance)
+   - **Hold** to pause story + soundtrack; release to resume
+   - **Soundtrack:** shuffled playlist starts on Start Wrapped; **spinning disc + mute + ×** under the progress bar (top-right)
+   - **Exit:** ×, swipe down, or Escape → back to lobby
 4. **Share** — **Screenshot** the card you want for Instagram Stories (no in-app download button).
 
 On desktop, the background fills the browser; the card stays a centered phone-sized 9:16 frame so screenshots still look right.
@@ -77,7 +77,7 @@ Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge
 | G Deck + copy | Done | Activity, rhythm, insights copy |
 | H Motion | Done | GSAP scene beats per slide (stack, chart draw, inbox stack) |
 | People + Inbox slides | Done | Rank chart + notification stack replace older social/DM beats |
-| I Music | Planned | Optional ambient loops |
+| I Music | Done | 7-track shuffle, mute, spinning cover disc in player chrome |
 | K Ship | Planned | Merge to `main` after iPhone QA |
 
 See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for the **6-slide** deck, locked UX, and next-session handoff.
@@ -142,7 +142,7 @@ Root **`backend`**, start **`npm start`**, health at `GET /health`.
 
 ## For contributors / AI assistants
 
-- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 6-slide deck, Phase I / K next)
+- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 6-slide deck, Phase K next)
 - **Metrics / Spotify mapping:** [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md)
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
 
