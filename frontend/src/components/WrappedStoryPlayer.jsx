@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import { cn } from "../lib/utils.js";
 import { WrappedPlayerSlide } from "./WrappedSlideChrome.jsx";
 import {
@@ -40,13 +41,13 @@ export default function WrappedStoryPlayer({
   getTheme = getSlideTheme
 }) {
   const [paused, setPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
   const slideRef = useRef(null);
   const pointerRef = useRef(null);
   const swipeRef = useRef(null);
   const holdTimerRef = useRef(null);
-  const rafRef = useRef(null);
   const timelineRef = useRef(null);
+  const progressFillRefs = useRef([]);
+  const progressSetterRef = useRef(null);
 
   const isLastSlide = cardIndex >= WRAPPED_LAST_SLIDE_INDEX;
   const autoAdvance = WRAPPED_AUTO_ADVANCE && !isLastSlide;
@@ -64,6 +65,21 @@ export default function WrappedStoryPlayer({
       holdTimerRef.current = null;
     }
   }, []);
+
+  const setSegmentFill = useCallback((index, fraction) => {
+    const el = progressFillRefs.current[index];
+    if (!el) {
+      return;
+    }
+    const clamped = Math.max(0, Math.min(1, fraction));
+    el.style.transform = `scaleX(${clamped})`;
+  }, []);
+
+  const syncProgressSegments = useCallback(() => {
+    for (let i = 0; i < cardCount; i += 1) {
+      setSegmentFill(i, i < cardIndex ? 1 : 0);
+    }
+  }, [cardCount, cardIndex, setSegmentFill]);
 
   const goTo = useCallback(
     (nextIndex) => {
@@ -90,11 +106,14 @@ export default function WrappedStoryPlayer({
   }, [cardIndex, goTo]);
 
   useEffect(() => {
-    setProgress(0);
     setPaused(false);
     clearHoldTimer();
     resumeWrappedAudioFromHold();
   }, [cardIndex, clearHoldTimer]);
+
+  useLayoutEffect(() => {
+    syncProgressSegments();
+  }, [syncProgressSegments]);
 
   useLayoutEffect(() => {
     const root = slideRef.current;
@@ -112,6 +131,7 @@ export default function WrappedStoryPlayer({
 
       killSlideTimeline(timelineRef.current);
       timelineRef.current = null;
+      progressSetterRef.current = null;
 
       try {
         tl = createSlideBeatTimeline(root, {
@@ -119,6 +139,11 @@ export default function WrappedStoryPlayer({
           durationMs: animDurationMs,
           template: slideTemplate,
           onComplete: () => {
+            if (progressSetterRef.current) {
+              progressSetterRef.current(1);
+            } else {
+              setSegmentFill(cardIndex, 1);
+            }
             if (autoAdvance) {
               goNext();
             }
@@ -132,6 +157,14 @@ export default function WrappedStoryPlayer({
       timelineRef.current = tl;
 
       if (tl) {
+        const fillEl = progressFillRefs.current[cardIndex];
+        if (fillEl) {
+          progressSetterRef.current = gsap.quickSetter(fillEl, "scaleX");
+          progressSetterRef.current(0);
+          tl.eventCallback("onUpdate", () => {
+            progressSetterRef.current?.(tl.progress());
+          });
+        }
         tl.play(0);
       }
     };
@@ -145,8 +178,9 @@ export default function WrappedStoryPlayer({
       if (timelineRef.current === tl) {
         timelineRef.current = null;
       }
+      progressSetterRef.current = null;
     };
-  }, [cardIndex, autoAdvance, animDurationMs, goNext, slideTemplate]);
+  }, [cardIndex, autoAdvance, animDurationMs, goNext, setSegmentFill, slideTemplate]);
 
   useEffect(() => {
     const tl = timelineRef.current;
@@ -161,24 +195,6 @@ export default function WrappedStoryPlayer({
       resumeWrappedAudioFromHold();
     }
   }, [paused]);
-
-  useEffect(() => {
-    const tick = () => {
-      const tl = timelineRef.current;
-      if (tl) {
-        setProgress(tl.progress());
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [cardIndex]);
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -295,27 +311,20 @@ export default function WrappedStoryPlayer({
           "pt-[max(0.5rem,env(safe-area-inset-top))]"
         )}
       >
-        <div className="flex gap-1 pb-1.5">
-          {Array.from({ length: cardCount }).map((_, i) => {
-            let fill = 0;
-            if (i < cardIndex) {
-              fill = 1;
-            } else if (i === cardIndex) {
-              fill = progress;
-            }
-            return (
+        <div className="flex gap-1 pb-1.5" aria-hidden>
+          {Array.from({ length: cardCount }).map((_, i) => (
+            <div
+              key={i}
+              className="wrapped-player__progress-track h-[3px] min-w-0 flex-1 overflow-hidden rounded-pill bg-white/35"
+            >
               <div
-                key={i}
-                className="h-[3px] min-w-0 flex-1 overflow-hidden rounded-pill bg-white/35"
-                aria-hidden
-              >
-                <div
-                  className="h-full rounded-pill bg-white transition-[width] duration-75 ease-linear"
-                  style={{ width: `${fill * 100}%` }}
-                />
-              </div>
-            );
-          })}
+                ref={(el) => {
+                  progressFillRefs.current[i] = el;
+                }}
+                className="wrapped-player__progress-fill h-full w-full rounded-pill bg-white"
+              />
+            </div>
+          ))}
         </div>
 
         <WrappedMusicPlayer onExit={onExit} className="pb-1" />

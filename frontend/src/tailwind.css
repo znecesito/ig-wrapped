@@ -275,6 +275,12 @@
     z-index: 2;
   }
 
+  .wrapped-player__progress-fill {
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
   /* Story chrome — IG-style icon buttons (no filled background) */
   .wrapped-player-chrome__btn {
     display: flex;
