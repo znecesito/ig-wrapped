@@ -34,7 +34,7 @@ alwaysApply: true
 ### Wrapped flow (export loaded)
 
 1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — lede, parse warnings with layman slide impact ([`parseWarningImpact.js`](frontend/src/utils/parseWarningImpact.js)), **Start Wrapped** (blocked until warnings acknowledged).
-2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap left/right; hold-to-pause (GSAP); auto-advance ([`config/wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); last slide waits for tap; exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
+2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; progress segments; tap right/next left/back; hold-to-pause (GSAP + audio); **tap-to-advance** (`WRAPPED_AUTO_ADVANCE` in [`wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
 
 ### Six slides (0–5)
 

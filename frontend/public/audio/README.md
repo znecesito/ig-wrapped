@@ -12,7 +12,9 @@ Use these exact names (add more by editing `frontend/src/config/wrappedAudioTrac
 | `track-02.mp3` | Boom-bap or lo-fi beats |
 | `track-03.mp3` | Electronic / jersey-club energy |
 | `track-04.mp3` | Soul / R&B instrumental (warm) |
-| `track-05.mp3` | Cinematic sports highlight pad |
+| `track-05.mp3` | Soul / R&B instrumental (warm) |
+| `track-06.mp3` | Mainstream hip-hop instrumental |
+| `track-07.mp3` | R&B / mood instrumental |
 
 Each run of Wrapped **shuffles** this list on **Start Wrapped** and advances to the next track when one ends.
 
@@ -30,11 +32,13 @@ Also fine: [YouTube Audio Library](https://studio.youtube.com/) (filter Instrume
 
 | File | Title | Artist | Source URL | License |
 |------|-------|--------|------------|---------|
-| track-01.mp3 | | | | |
-| track-02.mp3 | | | | |
-| track-03.mp3 | | | | |
-| track-04.mp3 | | | | |
-| track-05.mp3 | | | | |
+| track-01.mp3 | Viral Energy | FASSounds | https://pixabay.com/music/future-bass-viral-energy-pop-fashion-sports-dubstep-promo-reels-312770/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-02.mp3 | Sun Beneath a Song | Suryanatta | https://pixabay.com/music/acoustic-group-sun-beneath-a-song-410790/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-03.mp3 | QUE LA GASOLINA | Watermelon_Beats | https://pixabay.com/music/reggaeton-que-la-gasolina-469940/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-04.mp3 | Rap Song - Back in 95 | OpenMindAudio | https://pixabay.com/music/alternative-hip-hop-rap-song-back-in-95-503823/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-05.mp3 | Love Blues Soul Song - Shine | OpenMindAudio | https://pixabay.com/music/modern-blues-love-blues-soul-song-shine-503831/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-06.mp3 | Counting On Me | jan2fourth | https://pixabay.com/music/mainstream-hip-hop-april2sixer-counting-on-me-prodby-jan2fourth-115684/ | Pixabay Content License — free for commercial use; no attribution required |
+| track-07.mp3 | Heartbeats in the Rain | hasenchat | https://pixabay.com/music/rnb-heartbeats-in-the-rain-430688/ | Pixabay Content License — free for commercial use; no attribution required |
 
 ## Export tips
 

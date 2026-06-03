@@ -8,7 +8,8 @@ import {
   getSlideTemplate
 } from "../utils/wrappedThemes.js";
 import {
-  getSlideDurationMs,
+  getSlideAnimDurationMs,
+  WRAPPED_AUTO_ADVANCE,
   WRAPPED_CARD_COUNT,
   WRAPPED_LAST_SLIDE_INDEX
 } from "../config/wrappedPlayer.js";
@@ -25,10 +26,9 @@ import {
 } from "../utils/wrappedAudio.js";
 
 const TAP_MAX_MS = 280;
-const PRIVACY_ANIM_MS = 3200;
 
 /**
- * Full-screen story player: progress segments, tap nav, hold-to-pause, auto-advance.
+ * Full-screen story player: progress segments, tap nav, hold-to-pause, tap-to-advance.
  */
 export default function WrappedStoryPlayer({
   cardIndex,
@@ -48,9 +48,9 @@ export default function WrappedStoryPlayer({
   const rafRef = useRef(null);
   const timelineRef = useRef(null);
 
-  const durationMs = getSlideDurationMs(cardIndex);
   const isLastSlide = cardIndex >= WRAPPED_LAST_SLIDE_INDEX;
-  const autoAdvance = durationMs > 0 && !isLastSlide;
+  const autoAdvance = WRAPPED_AUTO_ADVANCE && !isLastSlide;
+  const animDurationMs = getSlideAnimDurationMs(cardIndex);
   const slideTheme = getTheme(cardIndex);
   const slideThemeStyle = getSlideThemeStyle(slideTheme);
   const slideTemplate = getSlideTemplate(cardIndex);
@@ -103,7 +103,6 @@ export default function WrappedStoryPlayer({
       killSlideTimeline(timelineRef.current);
       timelineRef.current = null;
 
-      const animDurationMs = autoAdvance ? durationMs : PRIVACY_ANIM_MS;
       try {
         tl = createSlideBeatTimeline(root, {
           slideIndex: cardIndex,
@@ -137,7 +136,7 @@ export default function WrappedStoryPlayer({
         timelineRef.current = null;
       }
     };
-  }, [cardIndex, autoAdvance, durationMs, goNext, slideTemplate]);
+  }, [cardIndex, autoAdvance, animDurationMs, goNext, slideTemplate]);
 
   useEffect(() => {
     const tl = timelineRef.current;
@@ -287,7 +286,7 @@ export default function WrappedStoryPlayer({
           if (i < cardIndex) {
             fill = 1;
           } else if (i === cardIndex) {
-            fill = isLastSlide ? 1 : progress;
+            fill = autoAdvance ? progress : 1;
           }
           return (
             <div
@@ -374,10 +373,10 @@ export default function WrappedStoryPlayer({
           )}
         >
           {isLastSlide
-            ? "Tap to go back · screenshot to share · swipe down when you're done"
+            ? "Tap left to go back · screenshot to share · swipe down when you're done"
             : paused
               ? "Release to resume"
-              : "Tap sides to skip · hold to pause · mute above · swipe down to exit"}
+              : "Tap right for next · tap left to go back · hold to pause · swipe down to exit"}
         </p>
       </div>
     </div>

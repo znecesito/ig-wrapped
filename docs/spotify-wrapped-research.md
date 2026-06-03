@@ -27,7 +27,7 @@ Visual reference (Spotify marketing): high-contrast collage, oversized year, bol
 ## Shipped UX (player + lobby)
 
 - **Lobby:** warnings + layman impact → **Start Wrapped**
-- **Player:** full-screen, progress segments, tap L/R, hold pause (GSAP frozen), auto-advance, last slide manual, exit to lobby
+- **Player:** full-screen, progress segments, tap L/R, hold pause (GSAP + audio), tap-to-advance (no timer), exit to lobby
 - See `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `config/wrappedPlayer.js` — **`WRAPPED_CARD_COUNT = 6`**
 
 ---

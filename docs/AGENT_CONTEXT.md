@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-06-02 — **6-slide deck**; **Phase H shipped**; **Phase I (audio playlist) in progress** on `feat/tailwind-foundation`. **Next: drop MP3s in `frontend/public/audio/`, then Phase K (merge).**
+**Last updated:** 2026-06-02 — **6-slide deck**; **Phase H shipped**; **Phase I (audio + tap-to-advance)** on `feat/tailwind-foundation`. **Next: Phase K (merge).**
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc). Spotify metrics research: [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 
@@ -26,18 +26,18 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 ### Wrapped flow (after export loads)
 
 1. **Lobby** — [`WrappedLobby.jsx`](../frontend/src/components/WrappedLobby.jsx): lede, handle/year, parse warnings with **layman impact** ([`parseWarningImpact.js`](../frontend/src/utils/parseWarningImpact.js)). **Start Wrapped** disabled until warnings acknowledged (checkbox). No warnings → Start enabled immediately.
-2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap left/right**; **hold to pause** (freezes GSAP timeline + progress); **auto-advance** ([`config/wrappedPlayer.js`](../frontend/src/config/wrappedPlayer.js)); **last slide (privacy) waits for tap**. Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Each slide wrapped in [`WrappedSlideErrorBoundary.jsx`](../frontend/src/components/WrappedSlideErrorBoundary.jsx). Share: screenshot hint in player.
+2. **Story player** — [`WrappedStoryPlayer.jsx`](../frontend/src/components/WrappedStoryPlayer.jsx): full-screen; nav hidden via [`WrappedPlayerContext.jsx`](../frontend/src/context/WrappedPlayerContext.jsx). IG-style progress segments; **tap right for next / left for back** (no auto-advance — [`WRAPPED_AUTO_ADVANCE`](../frontend/src/config/wrappedPlayer.js)); **hold to pause** (GSAP + soundtrack). Exit: **×**, **Escape**, **swipe down** → lobby. Desktop: full-width backdrop (`bg-deck-viewport`), centered 9:16 card. Each slide wrapped in [`WrappedSlideErrorBoundary.jsx`](../frontend/src/components/WrappedSlideErrorBoundary.jsx). Share: screenshot hint in player.
 
 ### Slides (index 0–5, **6 beats**)
 
-| # | Slide | Template | Duration | Notes |
-|---|--------|----------|----------|--------|
-| 0 | **Intro** | hero | 5s | Drop-down title + `@handle` + activity lede ([`DropDownText.jsx`](../frontend/src/components/DropDownText.jsx)) |
-| 1 | **Activity** | data | 8s | Family stack grows → total stat → quip in insight box |
-| 2 | **Your rhythm** | hero | 7s | [`RhythmDayFlip.jsx`](../frontend/src/components/RhythmDayFlip.jsx) weekday flip → persona title → quip box |
-| 3 | **People** | data | 12s | [`PeopleRankChart.jsx`](../frontend/src/components/PeopleRankChart.jsx) — 12-month rank lines; GSAP line draw + labels travel/fade when accounts drop out of top 5; [`buildPeopleQuip`](../frontend/src/utils/wrappedInsights.js) |
-| 4 | **Inbox** | hero | 12s | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — 3-card stack, iOS-style expand/reveal thread name; hero % stats count up; labels: “of your inbox” / “are sent by you”; basketball quips via [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
-| 5 | **Privacy** | trust | manual | Local-only outro (last slide, no auto-advance) |
+| # | Slide | Template | Advance | Notes |
+|---|--------|----------|---------|--------|
+| 0 | **Intro** | hero | tap | Drop-down title + `@handle` + activity lede ([`DropDownText.jsx`](../frontend/src/components/DropDownText.jsx)) |
+| 1 | **Activity** | data | tap | Family stack grows → total stat → quip in insight box |
+| 2 | **Your rhythm** | hero | tap | [`RhythmDayFlip.jsx`](../frontend/src/components/RhythmDayFlip.jsx) weekday flip → persona title → quip box |
+| 3 | **People** | data | tap | [`PeopleRankChart.jsx`](../frontend/src/components/PeopleRankChart.jsx) — rank lines + labels; [`buildPeopleQuip`](../frontend/src/utils/wrappedInsights.js) |
+| 4 | **Inbox** | hero | tap | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — stack + thread stats; [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
+| 5 | **Privacy** | trust | tap | Local-only outro |
 
 **Deck simplifications (2026-05):** Consolidated from earlier 10-slide prototype. Removed without product sign-off: feed personality slide, streak, busiest day, separate social spotlight + podium ranking, old standalone DM slide. Social + DM story now lives in **People** (rank chart) and **Inbox** (busiest thread).
 
@@ -46,7 +46,7 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 ### Motion (Phase H — shipped)
 
 - **Library:** GSAP (`frontend/package.json`).
-- **Timelines:** [`wrappedSlideTimeline.js`](../frontend/src/utils/wrappedSlideTimeline.js) — `createSlideBeatTimeline()` per slide index; padded to `WRAPPED_SLIDE_DURATIONS_MS`.
+- **Timelines:** [`wrappedSlideTimeline.js`](../frontend/src/utils/wrappedSlideTimeline.js) — `createSlideBeatTimeline()` per slide index; padded to `WRAPPED_SLIDE_ANIM_DURATIONS_MS` (choreography only; advance is manual).
 - **Hooks:** `data-wrapped-beat`, `data-wrapped-beat-static`, `data-wrapped-beat-segment` on slide DOM.
 - **People slide caveat:** Chart layout math lives in [`peopleRankChartLayout.js`](../frontend/src/utils/peopleRankChartLayout.js) (plain JS). **Do not** import React components into the timeline module — caused a blank-slide crash when imports were broken.
 - **Reduced motion:** `prefers-reduced-motion: reduce` → static final states, no draw animation.
@@ -55,10 +55,10 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 - **Start Wrapped** before player (not auto-enter on load).
 - Warnings only in **lobby**; block Start until dismissed with layman “affects which slides”.
-- **Auto-advance always on**; hold pauses GSAP + progress bar.
+- **Tap to advance** — no auto-advance (`WRAPPED_AUTO_ADVANCE = false`); user controls pace.
+- **Hold** pauses GSAP + soundtrack.
 - **Tap only** for nav (no swipe left/right v1).
-- **Tap left** = previous.
-- **Last slide** = no auto-advance.
+- **Tap left** = previous; **tap right** = next.
 - **Nav hidden only in player**; `/guide` keeps nav.
 - **Visual direction:** **IG-native** (rose/purple gradients, bold type) — **not** Spotify 2025 B/W/lime clone.
 - **No fake global percentiles**; export-scoped copy only.
@@ -85,10 +85,10 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 ## Roadmap — next sessions
 
-### **Phase I — Music layer** ← **IN PROGRESS**
+### **Phase I — Music layer** ← **DONE**
 
-- **Shipped in code:** shuffled playlist on **Start Wrapped** (`wrappedAudio.js`), mute toggle in player, hold pauses music, `localStorage` mute preference, reshuffle when playlist ends.
-- **You add assets:** drop `track-01.mp3` … `track-05.mp3` into `frontend/public/audio/` (see `public/audio/README.md` for sources + license log).
+- Shuffled **7-track** playlist on **Start Wrapped** (`wrappedAudio.js`, `wrappedAudioTracks.js`); mute toggle; hold pauses music; `localStorage` mute preference.
+- Assets: `track-01.mp3` … `track-07.mp3` in `frontend/public/audio/` (license log in `public/audio/README.md`).
 - Cannot use user’s real Spotify/IG music taste.
 
 ### **Phase J — Extra slides (optional)**
@@ -138,7 +138,7 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Default next work: add **audio MP3s**, then **Phase K** (merge + QA) unless user reprioritizes.
+3. Default next work: **Phase K** (merge + QA) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for player + screenshot legibility.
 6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

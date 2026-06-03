@@ -19,7 +19,7 @@ Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
    - Progress bar across the top
    - **Tap** right side for next, left for previous
    - **Hold** to pause; release to resume
-   - Slides auto-advance unless you hold (last slide waits for you)
+   - **Tap right** when you’re ready for the next slide (animations play; no auto-advance)
    - **Exit:** × button, swipe down, or Escape → back to lobby
 4. **Share** — **Screenshot** the card you want for Instagram Stories (no in-app download button).
 
@@ -72,7 +72,7 @@ Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge
 | Phase | Status | Summary |
 | --- | --- | --- |
 | Tailwind + slides A–D | Done | Design system, card shell, slide content |
-| E Story player | Done | Lobby, Start Wrapped, full-screen tap/hold/auto-advance |
+| E Story player | Done | Lobby, Start Wrapped, full-screen tap-to-advance + hold pause |
 | F Visual (IG-native) | Done | Hero/data/trust templates, player backdrop |
 | G Deck + copy | Done | Activity, rhythm, insights copy |
 | H Motion | Done | GSAP scene beats per slide (stack, chart draw, inbox stack) |

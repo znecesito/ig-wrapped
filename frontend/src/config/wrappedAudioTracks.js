@@ -8,7 +8,9 @@ export const WRAPPED_AUDIO_FILENAMES = [
   "track-02.mp3",
   "track-03.mp3",
   "track-04.mp3",
-  "track-05.mp3"
+  "track-05.mp3",
+  "track-06.mp3",
+  "track-07.mp3",
 ];
 
 export const WRAPPED_AUDIO_TRACKS = WRAPPED_AUDIO_FILENAMES.map(
