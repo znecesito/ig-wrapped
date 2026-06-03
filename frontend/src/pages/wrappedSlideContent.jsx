@@ -1,8 +1,38 @@
 import React from "react";
+import DropDownText from "../components/DropDownText.jsx";
+import InboxNotificationStack from "../components/InboxNotificationStack.jsx";
+import PeopleRankChart from "../components/PeopleRankChart.jsx";
+import RhythmDayFlip from "../components/RhythmDayFlip.jsx";
 import WrappedAvatarPodium from "../components/WrappedAvatarPodium.jsx";
+import WrappedSpotlightHero from "../components/WrappedSpotlightHero.jsx";
 import { WrappedSlideLayout } from "../components/WrappedSlideChrome.jsx";
-import { getSlideAccent, stackColorFromAccent } from "../utils/wrappedPalette.js";
-import { WRAPPED_THREAD_CARD_LIMIT } from "../utils/wrappedData.js";
+import { cn } from "../lib/utils.js";
+import {
+  ACTIVITY_STACK,
+  ACTIVITY_STACK_TALL,
+  ACTIVITY_STACK_COMPACT,
+  ACTIVITY_STACK_LABEL,
+  ACTIVITY_STACK_LINK,
+  ACTIVITY_STACK_SEGMENT,
+  ACTIVITY_STACK_SEGMENT_GROW,
+  ACTIVITY_STACK_BAR_FILL,
+  ACTIVITY_STACK_VAL,
+  LEADERBOARD,
+  SLIDE_BODY,
+  SLIDE_BODY_ON_DARK,
+  SLIDE_BULLET_LIST,
+  SLIDE_HERO_DISPLAY,
+  SLIDE_INSIGHT_PUNCH,
+  SLIDE_INSIGHT_PUNCH_ON_DARK,
+  INBOX_COPY,
+  INBOX_LABEL,
+  INBOX_STAT,
+  SLIDE_MEGA_LABEL,
+  SLIDE_MEGA_STAT_DOMINANT,
+  slideTitleClass
+} from "../components/wrappedSlideClasses.js";
+import { getSlideAccentForTheme, stackColorFromAccent } from "../utils/wrappedPalette.js";
+import { getSlideTemplate } from "../utils/wrappedThemes.js";
 
 const IG_PROFILE_BASE_URL = "https://www.instagram.com/";
 
@@ -28,6 +58,18 @@ function formatCount(n) {
   return typeof n === "number" ? n.toLocaleString() : n;
 }
 
+/** Visual flex weight — small real counts still get a readable slice of the stack. */
+function activityStackFlexGrow(total, maxFamilyTotal, { growMode = false } = {}) {
+  if (!growMode) {
+    return maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+  }
+  const floor = Math.max(maxFamilyTotal * 0.14, 3);
+  if (total <= 0) {
+    return floor * 0.5;
+  }
+  return Math.max(total, floor);
+}
+
 function truncateLabel(text, max = 16) {
   if (!text || text.length <= max) {
     return text;
@@ -35,74 +77,8 @@ function truncateLabel(text, max = 16) {
   return `${text.slice(0, max - 1)}…`;
 }
 
-function mergedFooterStat(username, count, unit, { thread = false } = {}) {
-  if (thread) {
-    return (
-      <>
-        <strong>{formatPrimaryDmThreadName(username)}</strong> · {formatCount(count)} {unit}
-      </>
-    );
-  }
-  const handle = `@${String(username).replace(/^@/, "")}`;
-  return (
-    <>
-      <strong>{handle}</strong> · {formatCount(count)} {unit}
-    </>
-  );
-}
-
 function profileLink(username) {
   return `${IG_PROFILE_BASE_URL}${encodeURIComponent(username)}/`;
-}
-
-function likesFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      Rent&apos;s due on your attention span —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      earned <strong>{formatCount(top.count)}</strong> of your likes here. The algorithm simply watches.
-    </p>
-  );
-}
-
-function commentsFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      The comment box remembers —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      collected <strong>{formatCount(top.count)}</strong> of your replies here. Caps lock optional;
-      sincerity wasn&apos;t.
-    </p>
-  );
-}
-
-function storiesFooterQuip(top) {
-  const handle = `@${String(top.username).replace(/^@/, "")}`;
-  return (
-    <p>
-      Your story lane had a main character —{" "}
-      <a className="wrapped-card__footer-link" href={profileLink(top.username)} target="_blank" rel="noreferrer">
-        {handle}
-      </a>{" "}
-      shows up <strong>{formatCount(top.count)}</strong> times across polls, taps, and views here. The
-      ring doesn&apos;t lie.
-    </p>
-  );
-}
-
-function dmsFooterQuip(top) {
-  return (
-    <p>
-      You traded the most messages with <strong>{formatPrimaryDmThreadName(top.label)}</strong> —{" "}
-      <strong>{formatCount(top.messageCount)}</strong> messages. Say hi from us!
-    </p>
-  );
 }
 
 function threadStackHref(label) {
@@ -125,17 +101,30 @@ function stackLinkLabel(row, { threadLabels }) {
 }
 
 /** Activity families use heatmap legend colors; leaderboards use accent-tinted stacks. */
-function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}) {
+function renderActivityStack(
+  families,
+  maxFamilyTotal,
+  { linkable = false, compact = false, raceMode = false, growMode = false } = {}
+) {
+  const items = families;
+
   return (
-    <div className="wrapped-activity-stack" aria-label="Breakdown">
-      {families.map((fam, index) => {
+    <div
+      className={
+        growMode ? ACTIVITY_STACK_TALL : compact ? ACTIVITY_STACK_COMPACT : ACTIVITY_STACK
+      }
+      aria-label="Breakdown"
+      {...(raceMode ? { "data-wrapped-race-stack": true } : {})}
+      {...(growMode ? { "data-activity-stack": true } : {})}
+    >
+      {items.map((fam, index) => {
         const total = fam.total ?? fam.count ?? fam.messageCount ?? 0;
-        const flexGrow = maxFamilyTotal > 0 ? Math.max(total, 1) : 1;
+        const flexGrow = activityStackFlexGrow(total, maxFamilyTotal, { growMode });
         const text = fam.linkLabel ?? fam.label ?? fam.displayLabel;
         const labelNode =
           linkable && fam.href ? (
             <a
-              className="wrapped-activity-stack__link"
+              className={ACTIVITY_STACK_LINK}
               href={fam.href}
               target="_blank"
               rel="noreferrer"
@@ -144,20 +133,60 @@ function renderActivityStack(families, maxFamilyTotal, { linkable = false } = {}
               {text}
             </a>
           ) : (
-            <span className="wrapped-activity-stack__label-text">{text}</span>
+            <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{text}</span>
           );
+
+        const segmentProps = raceMode
+          ? {
+              "data-wrapped-race-segment": true,
+              "data-race-rank": String(index),
+              "data-race-flex": String(flexGrow),
+              "data-race-count": String(total)
+            }
+          : growMode
+            ? {
+                "data-activity-segment": true,
+                "data-activity-flex": String(flexGrow)
+              }
+            : { "data-wrapped-beat-segment": true };
 
         return (
           <div
             key={fam.family ?? fam.username ?? fam.threadKey ?? index}
-            className="wrapped-activity-stack__segment"
+            className={growMode ? ACTIVITY_STACK_SEGMENT_GROW : ACTIVITY_STACK_SEGMENT}
+            {...segmentProps}
             style={{
-              flexGrow,
-              backgroundColor: fam.color
+              flexGrow: raceMode ? 0.01 : flexGrow,
+              ...(growMode ? null : { backgroundColor: fam.color })
             }}
           >
-            <span className="wrapped-activity-stack__label">{labelNode}</span>
-            <span className="wrapped-activity-stack__val">{formatCount(total)}</span>
+            {growMode ? (
+              <div
+                className={ACTIVITY_STACK_BAR_FILL}
+                data-activity-bar-fill
+                style={{
+                  backgroundColor: fam.color,
+                  ...(total <= 0 ? { opacity: 0.45 } : null)
+                }}
+              >
+                <span className={ACTIVITY_STACK_LABEL} data-activity-bar-label>
+                  {labelNode}
+                </span>
+                <span className={ACTIVITY_STACK_VAL} data-activity-bar-value>
+                  {formatCount(total)}
+                </span>
+              </div>
+            ) : (
+              <>
+                <span className={ACTIVITY_STACK_LABEL}>{labelNode}</span>
+                <span
+                  className={ACTIVITY_STACK_VAL}
+                  {...(raceMode ? { "data-race-count": String(total) } : {})}
+                >
+                  {raceMode ? "0" : formatCount(total)}
+                </span>
+              </>
+            )}
           </div>
         );
       })}
@@ -185,244 +214,285 @@ function renderLeaderboardBlock(rows, { threadLabels = false, accent }) {
   });
 
   return (
-    <div className="wrapped-leaderboard">
-      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} />
-      {renderActivityStack(stackFamilies, maxCount, { linkable: true })}
+    <div className={LEADERBOARD}>
+      <WrappedAvatarPodium rows={rows} threadLabels={threadLabels} raceMode />
+      {renderActivityStack(stackFamilies, maxCount, { linkable: true, compact: true, raceMode: true })}
     </div>
   );
 }
 
+/** Spotify-style winner / spotlight beat before a ranking slide. */
+function renderRankSpotlight({ eyebrow, categoryLabel, spotlight, unitLabel, emptyMessage }) {
+  if (!spotlight || spotlight.empty || !spotlight.topCount) {
+    return (
+      <WrappedSlideLayout template="hero" eyebrow={eyebrow} title={categoryLabel} deck={emptyMessage}>
+        <p className={SLIDE_BODY_ON_DARK}>{emptyMessage}</p>
+      </WrappedSlideLayout>
+    );
+  }
+
+  return (
+    <WrappedSlideLayout
+      template="hero"
+      eyebrow={eyebrow}
+      title={categoryLabel}
+      bodyClassName="hero"
+      footerStat={
+        spotlight.fanLine ? (
+          <span className="text-[var(--slide-fg-muted)]">{spotlight.fanLine}</span>
+        ) : null
+      }
+    >
+      <WrappedSpotlightHero
+        name={spotlight.name}
+        row={spotlight.topRow}
+        threadLabels={spotlight.thread}
+      />
+      <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat" data-wrapped-drop>
+        {formatCount(spotlight.topCount)}
+      </p>
+      <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+        {unitLabel}
+      </p>
+      {spotlight.quip ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+          {spotlight.quip}
+        </p>
+      ) : null}
+    </WrappedSlideLayout>
+  );
+}
+
+/** Inbox slide — IG notification stack, then busiest thread stats. */
+function renderInboxSlide({ spotlight, emptyMessage }) {
+  if (!spotlight || spotlight.empty || !spotlight.messageCount) {
+    return (
+      <WrappedSlideLayout template="hero" hideHeader>
+        <p className={INBOX_LABEL} data-wrapped-beat-static>
+          Inbox
+        </p>
+        <p className={INBOX_COPY} data-wrapped-beat="body">
+          {emptyMessage}
+        </p>
+      </WrappedSlideLayout>
+    );
+  }
+
+  const hasBalance = (spotlight.selfPct ?? 0) > 0 || (spotlight.otherPct ?? 0) > 0;
+
+  return (
+    <WrappedSlideLayout
+      template="hero"
+      hideHeader
+      footerStat={
+        spotlight.fanLine ? (
+          <span className="text-[var(--slide-fg-muted)]">{spotlight.fanLine}</span>
+        ) : null
+      }
+    >
+      <p className={INBOX_LABEL} data-wrapped-beat-static>
+        Inbox
+      </p>
+      <InboxNotificationStack
+        threadName={spotlight.name}
+        stackCount={spotlight.notificationStackCount ?? 3}
+      />
+      {spotlight.busiestLine ? (
+        <p className={INBOX_COPY} data-wrapped-beat="inbox-desc">
+          {spotlight.busiestLine}
+        </p>
+      ) : null}
+      {spotlight.exportSharePct > 0 ? (
+        <>
+          <p className={INBOX_STAT} data-wrapped-beat="stat">
+            <span data-inbox-pct data-inbox-pct-value={spotlight.exportSharePct}>
+              0
+            </span>
+            %
+          </p>
+          <p className={INBOX_LABEL} data-wrapped-beat="stat-label">
+            of your inbox
+          </p>
+        </>
+      ) : null}
+      {hasBalance ? (
+        <>
+          <p className={INBOX_STAT} data-wrapped-beat="inbox-balance">
+            <span data-inbox-pct data-inbox-pct-value={spotlight.selfPct}>
+              0
+            </span>
+            %
+          </p>
+          <p className={INBOX_LABEL} data-wrapped-beat="inbox-balance-label">
+            are sent by you
+          </p>
+        </>
+      ) : null}
+      {spotlight.quip ? (
+        <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+          {spotlight.quip}
+        </p>
+      ) : null}
+    </WrappedSlideLayout>
+  );
+}
+
+/** Podium + stack ranking (follows spotlight). */
+function renderRankLeaderboard({
+  template,
+  eyebrow,
+  title,
+  deck,
+  rows,
+  accentTheme,
+  threadLabels = false,
+  emptyMessage
+}) {
+  const accent = getSlideAccentForTheme(accentTheme);
+
+  return (
+    <WrappedSlideLayout template={template} eyebrow={eyebrow} title={title} deck={deck}>
+      {rows.length > 0 ? (
+        renderLeaderboardBlock(rows, { threadLabels, accent })
+      ) : (
+        <p className={SLIDE_BODY}>{emptyMessage}</p>
+      )}
+    </WrappedSlideLayout>
+  );
+}
+
 export function renderWrappedSlide(index, ctx) {
-  const { baseline, handle, activityBreakdown } = ctx;
+  const { baseline, handle, activityBreakdown, insights } = ctx;
+  const template = getSlideTemplate(index);
+  const year = insights?.exportYear;
 
   switch (index) {
-    case 0:
+    case 0: {
+      const introTitle = year ? `Your ${year} feed, wrapped` : "Your feed, wrapped";
+      const activityLine =
+        insights?.totalActivities > 0
+          ? `${formatCount(insights.totalActivities)} activities · people · DMs`
+          : "Load activity to see your recap";
+
       return (
-        <WrappedSlideLayout
-          eyebrow="ig-wrapped"
-          title="Your year in the feed"
-          deck="Screenshot any card for Stories · all local"
-          bodyClassName="wrapped-card__body-zone--hero"
-        >
-          <p className="wrapped-card__hero">{handle}</p>
-          <p className="wrapped-card__body muted">Activity · people · DMs · searches</p>
+        <WrappedSlideLayout template={template} bodyClassName="hero">
+          <DropDownText
+            beat="title"
+            text={introTitle}
+            className={cn(slideTitleClass(template), "mb-4")}
+          />
+          <DropDownText beat="hero" text={handle} className={cn(SLIDE_HERO_DISPLAY, "mb-3")} />
+          <DropDownText beat="body" text={activityLine} className={SLIDE_BODY_ON_DARK} />
         </WrappedSlideLayout>
       );
+    }
 
-    case 1:
+    case 1: {
+      const total = baseline.heatmapData?.totalActivities ?? 0;
+      const hasData = baseline.heatmapData && total > 0;
+
       return (
-        <WrappedSlideLayout
-          eyebrow="In this export"
-          title="Your activity span"
-          deck="Timestamps in this folder — not full IG history"
-          bodyClassName="wrapped-card__body-zone--hero"
-        >
-          {baseline.heatmapData ? (
+        <WrappedSlideLayout template={template} hideHeader>
+          {hasData ? (
             <>
-              <p className="wrapped-card__hero wrapped-card__hero--compact">
-                {baseline.heatmapData.dateRangeLabel}
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+                Activity
               </p>
-              <p className="wrapped-card__body muted">Comments · likes · media · stories</p>
+              <div className="w-full max-w-[18rem]" data-wrapped-beat="chart">
+                {renderActivityStack(
+                  activityBreakdown.families,
+                  activityBreakdown.maxFamilyTotal,
+                  { growMode: true }
+                )}
+              </div>
+              <p className={SLIDE_MEGA_STAT_DOMINANT} data-wrapped-beat="stat">
+                {formatCount(total)}
+              </p>
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat="stat-label">
+                total activity all year
+              </p>
+              {insights?.activityQuip ? (
+                <p className={SLIDE_INSIGHT_PUNCH} data-wrapped-beat="quip">
+                  {insights.activityQuip}
+                </p>
+              ) : null}
             </>
           ) : (
-            <p className="wrapped-card__body muted">No activity timestamps in this folder.</p>
+            <p className={SLIDE_BODY} data-wrapped-beat="body">
+              No activity data in this export.
+            </p>
           )}
         </WrappedSlideLayout>
       );
+    }
 
     case 2:
       return (
-        <WrappedSlideLayout
-          eyebrow="Rhythm"
-          title="Activity"
-          deck="Four main categories in this export"
-          footerStat={
-            baseline.heatmapData?.totalActivities > 0 ? (
-              <>
-                {formatCount(baseline.heatmapData.totalActivities)} total · peak{" "}
-                {baseline.heatmapData.activeWeekdayLabel}
-              </>
-            ) : null
-          }
-        >
-          {baseline.heatmapData && baseline.heatmapData.totalActivities > 0 ? (
+        <WrappedSlideLayout template={template} hideHeader bodyClassName="hero">
+          {insights?.rhythmPersona ? (
             <>
-              <p className="wrapped-card__mega-stat">
-                {formatCount(baseline.heatmapData.totalActivities)}
+              <p className={cn(SLIDE_MEGA_LABEL, "text-white/85")} data-wrapped-beat-static>
+                Your rhythm
               </p>
-              <p className="wrapped-card__mega-label">activities</p>
-              {renderActivityStack(activityBreakdown.families, activityBreakdown.maxFamilyTotal)}
-              <ul className="wrapped-card__stats wrapped-card__stats--inline">
-                <li>
-                  <span className="wrapped-card__label">Busiest weekday</span>
-                  <span className="wrapped-card__value">{baseline.heatmapData.activeWeekdayLabel}</span>
-                </li>
-                <li>
-                  <span className="wrapped-card__label">Busiest hour</span>
-                  <span className="wrapped-card__value">{baseline.heatmapData.activeHourLabel}</span>
-                </li>
-              </ul>
+              <RhythmDayFlip
+                activeWeekday={insights.rhythmPersona.activeWeekday}
+                displayWeekday={insights.rhythmPersona.displayWeekday}
+              />
+              <p className={SLIDE_HERO_DISPLAY} data-wrapped-beat="rhythm-title">
+                {insights.rhythmPersona.title}
+              </p>
+              <p className={SLIDE_INSIGHT_PUNCH_ON_DARK} data-wrapped-beat="quip">
+                {insights.rhythmPersona.quip}
+              </p>
             </>
           ) : (
-            <p className="wrapped-card__body muted">No activity data in this export.</p>
+            <p className={SLIDE_BODY_ON_DARK} data-wrapped-beat="body">
+              No rhythm pattern in this export yet.
+            </p>
           )}
         </WrappedSlideLayout>
       );
 
-    case 3: {
-      const rows = baseline.mostLikedCreators;
-      const top = rows[0];
+    case 3:
       return (
-        <WrappedSlideLayout
-          eyebrow="Hearts"
-          title="Most liked creators"
-          deck="Liked posts & comments · by creator"
-          footerStat={top ? mergedFooterStat(top.username, top.count, "likes") : null}
-          bodyQuip={top ? likesFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(3) })
-          ) : (
-            <p className="wrapped-card__body muted">No likes counted in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
-
-    case 4: {
-      const rows = baseline.mostCommentedCreators;
-      const top = rows[0];
-      return (
-        <WrappedSlideLayout
-          eyebrow="Comments"
-          title="Most commented creators"
-          deck="Posts, reels & stories"
-          footerStat={top ? mergedFooterStat(top.username, top.count, "comments") : null}
-          bodyQuip={top ? commentsFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(4) })
-          ) : (
-            <p className="wrapped-card__body muted">No comments counted in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
-
-    case 5: {
-      const rows = baseline.mostStoryCreators;
-      const top = rows[0];
-      return (
-        <WrappedSlideLayout
-          eyebrow="Stories"
-          title="Top story interactions"
-          deck="Polls · views · reactions"
-          footerStat={top ? mergedFooterStat(top.username, top.count, "interactions") : null}
-          bodyQuip={top ? storiesFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { accent: getSlideAccent(5) })
-          ) : (
-            <p className="wrapped-card__body muted">No story interactions in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
-
-    case 6: {
-      const rows = baseline.topThreads;
-      const top = rows[0];
-      return (
-        <WrappedSlideLayout
-          eyebrow="Inbox"
-          title="Top DM threads"
-          deck={`Top ${WRAPPED_THREAD_CARD_LIMIT} by message count`}
-          footerStat={
-            top
-              ? mergedFooterStat(top.label, top.messageCount, "messages", { thread: true })
-              : null
-          }
-          bodyQuip={top ? dmsFooterQuip(top) : null}
-        >
-          {rows.length > 0 ? (
-            renderLeaderboardBlock(rows, { threadLabels: true, accent: getSlideAccent(6) })
-          ) : (
-            <p className="wrapped-card__body muted">No threads in this export.</p>
-          )}
-        </WrappedSlideLayout>
-      );
-    }
-
-    case 7: {
-      const topSearch = baseline.profileSearches?.rows?.[0];
-      return (
-        <WrappedSlideLayout
-          eyebrow="Search history"
-          title="Profile searches"
-          deck="From profile_searches.json"
-          footerStat={
-            topSearch ? (
-              <>
-                @{topSearch.username} · {formatCount(topSearch.count)} searches
-              </>
-            ) : null
-          }
-        >
-          {!baseline.profileSearches?.fileFound ? (
-            <p className="wrapped-card__body muted">No profile_searches.json in this folder.</p>
-          ) : baseline.profileSearches.totalSearchEvents === 0 ||
-            baseline.profileSearches.rows.length === 0 ? (
-            <p className="wrapped-card__body muted">No profile searches in this snapshot.</p>
-          ) : (
+        <WrappedSlideLayout template={template} hideHeader>
+          {baseline.peopleRankHistory && insights?.peopleQuip ? (
             <>
-              <p className="wrapped-card__hero">@{baseline.profileSearches.rows[0].username}</p>
-              <p className="wrapped-card__mega-stat wrapped-card__mega-stat--sm">
-                {formatCount(baseline.profileSearches.rows[0].count)}
+              <p className={SLIDE_MEGA_LABEL} data-wrapped-beat-static>
+                People
               </p>
-              <p className="wrapped-card__mega-label">searches</p>
-              {baseline.profileSearches.rows.length > 1 ? (
-                <ul className="wrapped-rank__rest wrapped-rank__rest--plain" aria-label="Other searches">
-                  {baseline.profileSearches.rows.slice(1, 4).map((r, i) => (
-                    <li key={r.username} className="wrapped-rank__row">
-                      <span className="wrapped-rank__num">{i + 2}</span>
-                      <span className="wrapped-rank__name">@{r.username}</span>
-                      <span className="wrapped-rank__count">{r.count}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              <PeopleRankChart history={baseline.peopleRankHistory} />
+              <p className={SLIDE_INSIGHT_PUNCH} data-wrapped-beat="quip">
+                {insights.peopleQuip}
+              </p>
             </>
+          ) : (
+            <p className={SLIDE_BODY} data-wrapped-beat="body">
+              No social interactions in this export.
+            </p>
           )}
         </WrappedSlideLayout>
       );
-    }
 
-    case 8:
+    case 4:
+      return renderInboxSlide({
+        spotlight: insights?.dmBalanceSpotlight,
+        emptyMessage: "No threads in this export."
+      });
+
+    case 5:
       return (
         <WrappedSlideLayout
+          template={template}
           eyebrow="Privacy"
           title="Local only"
           deck="Your export is not uploaded for Wrapped"
           footerStat="Non-Followers is the only server upload"
         >
-          <ul className="wrapped-card__bullet-list">
-            <li>Runs entirely in your browser</li>
-            <li>Clear data from the nav on shared devices</li>
+          <ul className={SLIDE_BULLET_LIST} data-wrapped-beat="body">
+            <li data-wrapped-beat-segment>Runs entirely in your browser</li>
+            <li data-wrapped-beat-segment>Clear data from the nav on shared devices</li>
           </ul>
-        </WrappedSlideLayout>
-      );
-
-    case 9:
-      return (
-        <WrappedSlideLayout
-          eyebrow="Coming later"
-          title="Creator insights"
-          deck="When insights JSON is in your export"
-        >
-          <p className="wrapped-card__body muted">
-            <code className="wrapped-page__code">past_instagram_insights</code> could power a future
-            slide here.
-          </p>
         </WrappedSlideLayout>
       );
 

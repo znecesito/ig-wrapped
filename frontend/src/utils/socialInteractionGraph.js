@@ -1,3 +1,5 @@
+import { extractTimestampMs } from "./commentHeatmap.js";
+
 const ACTIVITY_ROOT_SEGMENT = "your_instagram_activity";
 
 /** Standard export path suffix (case-insensitive match on webkitRelativePath). */
@@ -595,6 +597,84 @@ export async function parseSocialInteractionCounts(discovery, options = {}) {
 }
 
 /**
+ * Timestamped social events for monthly rank charts.
+ * @param {{ sourceMatches?: { id: string, files: File[] }[] }} discovery
+ * @param {{ selfUsername?: string | null }} [options]
+ * @returns {Promise<{ events: { username: string, timestampMs: number, categoryId: string }[], errors: string[], stats: object }>}
+ */
+export async function parseSocialInteractionEvents(discovery, options = {}) {
+  const selfRaw = options.selfUsername;
+  const selfNorm =
+    selfRaw != null && String(selfRaw).trim()
+      ? normalizeInstagramUsername(String(selfRaw))
+      : null;
+
+  /** @type {{ username: string, timestampMs: number, categoryId: string }[]} */
+  const events = [];
+  const errors = [];
+  let filesParsed = 0;
+  let itemsSeen = 0;
+  let validTimestamps = 0;
+  let skippedMissingOwner = 0;
+  let skippedSelfAccount = 0;
+  let skippedNoTimestamp = 0;
+
+  for (const source of discovery.sourceMatches || []) {
+    const descriptor = SOCIAL_INTERACTION_DESCRIPTORS.find((d) => d.id === source.id);
+    if (!descriptor) {
+      continue;
+    }
+    for (const file of source.files) {
+      try {
+        const payload = await parseJsonFile(file);
+        const rawItems = descriptor.parsePayload(payload);
+        const items = Array.isArray(rawItems) ? rawItems : [];
+        filesParsed += 1;
+        itemsSeen += items.length;
+
+        for (const item of items) {
+          const username = descriptor.extractTargetUsername(item);
+          if (!username) {
+            skippedMissingOwner += 1;
+            continue;
+          }
+          if (selfNorm && normalizeInstagramUsername(username) === selfNorm) {
+            skippedSelfAccount += 1;
+            continue;
+          }
+          const timestampMs = extractTimestampMs(item);
+          if (timestampMs == null) {
+            skippedNoTimestamp += 1;
+            continue;
+          }
+          events.push({
+            username,
+            timestampMs,
+            categoryId: descriptor.categoryId
+          });
+          validTimestamps += 1;
+        }
+      } catch (err) {
+        errors.push(err instanceof Error ? err.message : String(err));
+      }
+    }
+  }
+
+  return {
+    events,
+    errors,
+    stats: {
+      filesParsed,
+      itemsSeen,
+      validTimestamps,
+      skippedMissingOwner,
+      skippedSelfAccount,
+      skippedNoTimestamp
+    }
+  };
+}
+
+/**
  * @param {Record<string, Record<string, number>>} countsBySource
  * @param {string[]} enabledSourceIds
  * @param {number} [limit]
@@ -621,6 +701,94 @@ export function buildTopInteractions(countsBySource, enabledSourceIds, limit = 5
   });
 
   return entries.slice(0, limit).map(([username, count]) => ({ username, count }));
+}
+
+/** @typedef {"likes" | "comments" | "stories"} SocialDominantType */
+
+/**
+ * Pick dominant interaction family for one account (ties: stories → comments → likes).
+ * @param {{ likes: number, comments: number, stories: number }} breakdown
+ * @returns {SocialDominantType}
+ */
+function pickSocialDominantType(breakdown) {
+  const order = /** @type {const} */ (["stories", "comments", "likes"]);
+  let best = /** @type {SocialDominantType} */ ("likes");
+  let bestVal = -1;
+  for (const key of order) {
+    const val = breakdown[key] ?? 0;
+    if (val > bestVal) {
+      bestVal = val;
+      best = key;
+    }
+  }
+  return best;
+}
+
+/**
+ * Merged likes + comments + story interactions per account, with per-family breakdown.
+ *
+ * @param {Record<string, Record<string, number>>} countsBySource
+ * @param {number} [limit]
+ * @returns {{
+ *   username: string,
+ *   count: number,
+ *   breakdown: { likes: number, comments: number, stories: number },
+ *   dominantType: SocialDominantType
+ * }[]}
+ */
+export function buildTopSocialCreatorsWithBreakdown(countsBySource, limit = 5) {
+  if (!countsBySource) {
+    return [];
+  }
+
+  const categories = getSocialCategories();
+  const fieldByCategory = {
+    likes: "likes",
+    comments: "comments",
+    storyInteractions: "stories"
+  };
+
+  /** @type {Map<string, { likes: number, comments: number, stories: number, count: number }>} */
+  const merged = new Map();
+
+  for (const cat of categories) {
+    const field = fieldByCategory[cat.id];
+    if (!field) {
+      continue;
+    }
+    for (const sourceId of cat.sourceIds) {
+      const bucket = countsBySource[sourceId];
+      if (!bucket) {
+        continue;
+      }
+      for (const [username, count] of Object.entries(bucket)) {
+        const row = merged.get(username) ?? {
+          likes: 0,
+          comments: 0,
+          stories: 0,
+          count: 0
+        };
+        row[field] += count;
+        row.count += count;
+        merged.set(username, row);
+      }
+    }
+  }
+
+  const lim = Number(limit) > 0 ? Number(limit) : 5;
+  return [...merged.entries()]
+    .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+    .slice(0, lim)
+    .map(([username, row]) => ({
+      username,
+      count: row.count,
+      breakdown: {
+        likes: row.likes,
+        comments: row.comments,
+        stories: row.stories
+      },
+      dominantType: pickSocialDominantType(row)
+    }));
 }
 
 /**

@@ -1,0 +1,723 @@
+/**
+ * Tailwind v4 entry + design tokens (phase 1).
+ * Legacy UI still uses styles.css; new work should prefer these utilities/tokens.
+ * @see frontend/src/lib/tokens.js — slide accent hex (sync --color-slide-* here)
+ */
+@import "tailwindcss";
+
+@theme {
+  /* --- Typography --- */
+  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+
+  --text-xs: 0.72rem;
+  --text-xs--line-height: 1.25;
+  --text-sm: 0.82rem;
+  --text-sm--line-height: 1.35;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.4;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.15;
+  --text-hero: 2.75rem;
+  --text-hero--line-height: 1.05;
+
+  /* --- Brand & surfaces (align with nav) --- */
+  --color-brand: #e11d48;
+  --color-brand-mid: #ec4899;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #f5f7fb;
+  --color-surface-elevated: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  --color-nav: #0f172a;
+  --color-nav-link: #334155;
+  --color-nav-link-border: #475569;
+  --color-nav-muted: #94a3b8;
+  --color-nav-link-text: #e2e8f0;
+
+  --color-danger: #ef4444;
+  --color-danger-soft: #fca5a5;
+
+  /* Slide accent palette (sync with SLIDE_ACCENTS in lib/tokens.js) */
+  --color-slide-intro: #e11d48;
+  --color-slide-span: #6366f1;
+  --color-slide-activity: #ea580c;
+  --color-slide-likes: #db2777;
+  --color-slide-comments: #7c3aed;
+  --color-slide-stories: #d97706;
+  --color-slide-dms: #4f46e5;
+  --color-slide-search: #0d9488;
+  --color-slide-privacy: #475569;
+  --color-slide-teaser: #94a3b8;
+
+  /* Glass / story deck */
+  --color-glass: rgb(255 255 255 / 0.72);
+  --color-glass-border: rgb(255 255 255 / 0.92);
+  --color-deck-gradient-start: #e7ecf6;
+  --color-deck-gradient-mid: #fce7f3;
+  --color-deck-gradient-end: #f8fafc;
+
+  /* --- Spacing (app-specific; default Tailwind scale still available) --- */
+  --spacing-nav-y: 0.8rem;
+  --spacing-card-pad: 1rem;
+  --spacing-deck-gap: 0.85rem;
+
+  /* --- Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-card: 0.875rem;
+  --radius-deck: 1rem;
+  --radius-pill: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-nav: 0 4px 12px rgb(0 0 0 / 0.25);
+  --shadow-deck:
+    0 2px 4px rgb(15 23 42 / 0.04), 0 16px 40px -12px rgb(15 23 42 / 0.14);
+  --shadow-card:
+    0 4px 6px -1px rgb(15 23 42 / 0.06), 0 14px 26px -10px rgb(15 23 42 / 0.12),
+    0 0 0 1px rgb(255 255 255 / 0.55) inset;
+  --shadow-card-hover: 0 6px 16px rgb(225 29 72 / 0.2), 0 4px 12px rgb(15 23 42 / 0.18);
+  --shadow-dot-active:
+    0 0 0 3px rgb(225 29 72 / 0.22), 0 3px 10px rgb(236 72 153 / 0.42);
+
+  /* --- Layout --- */
+  --aspect-story: 9 / 16;
+  --max-width-frame: 420px;
+}
+
+/* Wrapped card reveal (class toggled from WrappedPage) */
+@keyframes wrapped-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-nudge-down {
+  from {
+    opacity: 0.35;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-nudge-up {
+  from {
+    opacity: 0.35;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wrapped-reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  /* Story deck frame width + card safe zones (used by WrappedStoryDeck / WrappedSlideChrome) */
+  .wrapped-page {
+    --wrapped-chrome: 200px;
+    --wrapped-safe-top: 6%;
+    --wrapped-safe-bottom: 7%;
+    --wrapped-frame-width: min(
+      calc(100vw - 1.5rem),
+      calc((100dvh - var(--wrapped-chrome)) * 9 / 16),
+      420px
+    );
+  }
+
+  @media (max-width: 480px) {
+    .wrapped-page {
+      --wrapped-chrome: 220px;
+      --wrapped-frame-width: min(
+        calc(100vw - 1.25rem),
+        calc((100dvh - var(--wrapped-chrome)) * 9 / 16)
+      );
+    }
+  }
+
+  /* Full-screen story player (Phase E) */
+  .wrapped-player {
+    --wrapped-player-card-width: min(
+      calc(100vw - 1.25rem),
+      calc((100dvh - 5.5rem) * 9 / 16),
+      420px
+    );
+    --wrapped-player-card-max-height: calc(100dvh - 5.5rem);
+    --wrapped-safe-top: 5%;
+    --wrapped-safe-bottom: 6%;
+  }
+
+  .wrapped-player .wrapped-card--player {
+    max-height: var(--wrapped-player-card-max-height);
+    width: var(--wrapped-player-card-width);
+    backdrop-filter: none;
+  }
+
+  .wrapped-player .wrapped-card--hero {
+    border-color: rgb(255 255 255 / 0.2);
+    color: var(--slide-fg, #fff);
+  }
+
+  .wrapped-player .wrapped-card--data {
+    border-color: color-mix(in srgb, var(--slide-accent) 22%, #e2e8f0);
+  }
+
+  .wrapped-player .wrapped-card--trust {
+    border-color: #e2e8f0;
+  }
+
+  /* Immersive player — slide gradient is the full viewport background, no card shell */
+  .wrapped-player--immersive .wrapped-player__stage {
+    transition: background 0.45s ease;
+  }
+
+  .wrapped-player--immersive .wrapped-player__tint {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .wrapped-player--immersive .wrapped-player__tint--hero {
+    background: radial-gradient(
+      90% 70% at 0% 100%,
+      rgb(255 255 255 / 0.14) 0%,
+      transparent 55%
+    );
+  }
+
+  .wrapped-player--immersive .wrapped-player__tint--data {
+    background: radial-gradient(
+      85% 55% at 100% 0%,
+      var(--slide-tint) 0%,
+      transparent 58%
+    );
+  }
+
+  .wrapped-player--immersive .wrapped-slide-stage {
+    transition: color 0.35s ease;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .wrapped-player--immersive .wrapped-slide-layout {
+    flex: 0 1 auto;
+    max-height: 100%;
+  }
+
+  .wrapped-player--immersive .wrapped-slide-stage--hero {
+    color: var(--slide-fg, #fff);
+  }
+
+  .wrapped-player--immersive .wrapped-leaderboard {
+    width: 100%;
+    align-items: center;
+  }
+
+  .wrapped-player__stage {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(95% 75% at 100% 0%, color-mix(in srgb, var(--slide-accent) 38%, transparent) 0%, transparent 58%),
+      radial-gradient(80% 65% at 0% 100%, color-mix(in srgb, var(--slide-accent) 22%, transparent) 0%, transparent 52%),
+      linear-gradient(
+        165deg,
+        var(--color-deck-gradient-start) 0%,
+        color-mix(in srgb, var(--slide-accent) 12%, var(--color-deck-gradient-mid)) 42%,
+        #fff1f2 78%,
+        var(--color-deck-gradient-end) 100%
+      );
+    transition: background 0.45s ease;
+  }
+
+  .wrapped-player__grain {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  .wrapped-player > :not(.wrapped-player__stage):not(.wrapped-player__grain):not(.wrapped-player__tint) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .wrapped-player__progress-fill {
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  /* Story chrome — IG-style icon buttons (no filled background) */
+  .wrapped-player-chrome__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrapped-player-chrome__btn--exit {
+    font-size: 1.65rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .wrapped-player-chrome__btn--muted {
+    opacity: 0.45;
+  }
+
+  .wrapped-player-chrome__btn svg {
+    display: block;
+  }
+
+  .wrapped-music-player__art {
+    border-radius: 9999px;
+  }
+
+  .wrapped-music-player__art--playing img {
+    animation: wrapped-music-cover-spin 8s linear infinite;
+  }
+
+  @keyframes wrapped-music-cover-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-music-player__art--playing img {
+      animation: none;
+    }
+  }
+
+  /* Rhythm slide — calendar-style weekday flip (CodePen calendar inspiration) */
+  .rhythm-day-flip {
+    width: min(100%, 16.5rem);
+    margin: 0.15rem auto 0.35rem;
+  }
+
+  .rhythm-day-flip__viewport {
+    position: relative;
+    height: clamp(4.5rem, 18vw, 5.75rem);
+    perspective: 520px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+      0 10px 28px -12px rgb(15 23 42 / 0.35),
+      inset 0 1px 0 rgb(255 255 255 / 0.35);
+  }
+
+  .rhythm-day-flip__half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--slide-accent) 88%, white) 0%,
+      color-mix(in srgb, var(--slide-accent) 72%, #312e81) 100%
+    );
+  }
+
+  .rhythm-day-flip__half--top {
+    top: 0;
+    transform-origin: center bottom;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom: 1px solid rgb(0 0 0 / 0.12);
+  }
+
+  .rhythm-day-flip__half--bottom {
+    bottom: 0;
+    transform-origin: center top;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .rhythm-day-flip__label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: clamp(1.35rem, 6.5vw, 1.85rem) !important;
+    line-height: 1.05 !important;
+    color: var(--slide-fg, #fff);
+    text-shadow: 0 2px 8px rgb(15 23 42 / 0.22);
+  }
+
+  .rhythm-day-flip__half--top .rhythm-day-flip__label {
+    position: absolute;
+    inset: 0 0 -100% 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rhythm-day-flip__half--bottom .rhythm-day-flip__label {
+    position: absolute;
+    inset: -100% 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Static beats — visible immediately (no GSAP hide) */
+  .wrapped-player [data-wrapped-beat-static] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Phase H — scene beats start hidden until GSAP reveals them */
+  .wrapped-player [data-wrapped-beat],
+  .wrapped-player [data-wrapped-beat-segment],
+  .wrapped-player [data-wrapped-drop],
+  .wrapped-player [data-podium-rank],
+  .wrapped-player .wrapped-drop-text__char {
+    will-change: opacity, transform;
+  }
+
+  .wrapped-drop-text {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0;
+    padding-bottom: 0.12em;
+    line-height: 1.05;
+  }
+
+  .wrapped-drop-text__char {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    /* initial hide — GSAP owns transform via yPercent (don't set transform here) */
+    visibility: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-player [data-wrapped-beat],
+    .wrapped-player [data-wrapped-beat-segment],
+    .wrapped-player [data-wrapped-drop],
+    .wrapped-player [data-podium-rank],
+    .wrapped-player .wrapped-drop-text__char {
+      opacity: 1 !important;
+      transform: none !important;
+      visibility: visible !important;
+    }
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--visible {
+    animation: wrapped-reveal-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--from-next.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--from-next.wrapped-card--visible {
+    animation: wrapped-nudge-down 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .wrapped-story .wrapped-card.wrapped-card--from-prev.wrapped-card--visible,
+  .wrapped-player .wrapped-card.wrapped-card--from-prev.wrapped-card--visible {
+    animation: wrapped-nudge-up 0.44s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-story .wrapped-card.wrapped-card--visible,
+    .wrapped-player .wrapped-card.wrapped-card--visible {
+      animation: wrapped-reveal-fade 0.25s ease forwards;
+    }
+  }
+
+  /* Inbox slide — progressive stack → iOS expand */
+  .inbox-notif-stack {
+    position: relative;
+    margin-bottom: 0.35rem;
+  }
+
+  .inbox-notif-stack__stage {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .inbox-notif-stack__list {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .inbox-notif-stack__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0 0.2rem;
+    will-change: transform, opacity;
+  }
+
+  .inbox-notif-card {
+    position: relative;
+    overflow: hidden;
+    padding: 0.8rem 0.85rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(255 255 255 / 0.85);
+    background: rgb(255 255 255 / 0.92);
+    color: #0f172a;
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.8) inset,
+      0 10px 24px -12px rgb(15 23 42 / 0.28);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .inbox-notif-card--stack {
+    background: rgb(255 255 255 / 0.82);
+  }
+
+  .inbox-notif-card__row {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+  }
+
+  .inbox-notif-card__icon {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.55rem;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      #f58529 0%,
+      #dd2a7b 38%,
+      #8134af 68%,
+      #515bd4 100%
+    );
+    box-shadow: 0 2px 8px rgb(221 42 123 / 0.35);
+  }
+
+  .inbox-notif-card__icon-inner {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 0.45rem;
+    background:
+      radial-gradient(circle at 30% 108%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  }
+
+  .inbox-notif-card__main {
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+  }
+
+  .inbox-notif-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.18rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(15 23 42 / 0.55);
+  }
+
+  .inbox-notif-card__app {
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .inbox-notif-card__time {
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0;
+  }
+
+  .inbox-notif-card__content p {
+    margin: 0;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .inbox-notif-card__privacy {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .inbox-notif-card__thread-wrap {
+    height: 0;
+    overflow: hidden;
+  }
+
+  .inbox-notif-card__thread {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1rem, 4.5vw, 1.12rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: #0f172a;
+    opacity: 0;
+  }
+
+  .inbox-notif-card__message {
+    margin-top: 0.12rem;
+    overflow: hidden;
+    font-size: 0.76rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(51 65 85 / 0.88);
+  }
+
+  .inbox-notif-stack--expanded .inbox-notif-card--stack {
+    background: rgb(255 255 255 / 0.9);
+  }
+
+  [data-inbox-pct] {
+    display: inline-block;
+    min-width: 1.5ch;
+    font-variant-numeric: tabular-nums;
+    will-change: contents;
+  }
+
+  /* Inbox slide copy — tighten vertical rhythm on dark hero */
+  .wrapped-slide-stage--hero .inbox-notif-stack {
+    margin-bottom: 0.5rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-desc"] {
+    margin-top: 0.15rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="stat"],
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-balance"] {
+    margin-top: 0.2rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="stat-label"],
+  .wrapped-slide-stage--hero [data-wrapped-beat="inbox-balance-label"] {
+    margin-top: 0.05rem;
+  }
+
+  .wrapped-slide-stage--hero [data-wrapped-beat="quip"] {
+    margin-top: 0.35rem;
+    max-width: 18rem;
+  }
+
+}
+
+/*
+ * Unlayered — must beat legacy styles.css global `button { background: #2563eb }`
+ * (unlayered CSS wins over @layer components above).
+ */
+.wrapped-player button.wrapped-player-chrome__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn--exit {
+  font-size: 1.65rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn--muted {
+  opacity: 0.45;
+}
+
+.wrapped-player button.wrapped-player-chrome__btn svg {
+  display: block;
+}
+
+@utility bg-deck-viewport {
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgb(251 113 133 / 0.22) 0%, transparent 55%),
+    radial-gradient(90% 70% at 0% 100%, rgb(139 92 246 / 0.14) 0%, transparent 50%),
+    linear-gradient(
+      165deg,
+      var(--color-deck-gradient-start) 0%,
+      var(--color-deck-gradient-mid) 38%,
+      #fff1f2 72%,
+      var(--color-deck-gradient-end) 100%
+    );
+}
+
+/* Bridge tokens for legacy CSS (styles.css can migrate to var(--iw-*) gradually) */
+:root {
+  --iw-brand: var(--color-brand);
+  --iw-brand-mid: var(--color-brand-mid);
+  --iw-ink: var(--color-ink);
+  --iw-muted: var(--color-muted);
+  --iw-surface: var(--color-surface);
+  --iw-font-sans: var(--font-sans);
+  --iw-radius-card: var(--radius-card);
+  --iw-shadow-card: var(--shadow-card);
+  --iw-aspect-story: var(--aspect-story);
+}

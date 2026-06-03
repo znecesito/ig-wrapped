@@ -1,4 +1,21 @@
 import React from "react";
+import { cn } from "../lib/utils.js";
+import {
+  PODIUM,
+  PODIUM_AVATAR,
+  PODIUM_AVATAR_LEAD,
+  PODIUM_AVATAR_LINK,
+  PODIUM_BADGE,
+  PODIUM_COUNT,
+  PODIUM_COUNT_LEAD,
+  PODIUM_FACE,
+  PODIUM_FACE_LEAD,
+  PODIUM_IMG,
+  PODIUM_INITIALS,
+  PODIUM_INITIALS_LEAD,
+  PODIUM_ITEM,
+  PODIUM_ITEM_LEAD
+} from "./wrappedSlideClasses.js";
 import {
   avatarColorForKey,
   avatarKeyForWrappedRow,
@@ -29,7 +46,7 @@ function threadProfileHref(label) {
   return profileHref(bare);
 }
 
-function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
+function PodiumAvatar({ row, rank, threadLabels, imageUrl, raceMode }) {
   const key = avatarKeyForWrappedRow(row, { threadLabels });
   const initials = initialsForWrappedRow(row, { threadLabels });
   const bg = avatarColorForKey(key);
@@ -38,14 +55,11 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
   const isLead = rank === 1;
 
   const circle = (
-    <span
-      className={`wrapped-podium__avatar${isLead ? " wrapped-podium__avatar--lead" : ""}`}
-      aria-hidden={Boolean(imageUrl)}
-    >
-      <span className="wrapped-podium__face" style={{ backgroundColor: bg }}>
+    <span className={cn(PODIUM_AVATAR, isLead && PODIUM_AVATAR_LEAD)} aria-hidden={Boolean(imageUrl)}>
+      <span className={cn(PODIUM_FACE, isLead && PODIUM_FACE_LEAD)} style={{ backgroundColor: bg }}>
         {imageUrl ? (
           <img
-            className="wrapped-podium__img"
+            className={PODIUM_IMG}
             src={imageUrl}
             alt=""
             onError={(e) => {
@@ -53,17 +67,22 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
             }}
           />
         ) : null}
-        <span className="wrapped-podium__initials">{initials}</span>
+        <span className={cn(PODIUM_INITIALS, isLead && PODIUM_INITIALS_LEAD)}>{initials}</span>
       </span>
-      <span className="wrapped-podium__badge">{rank}</span>
+      <span className={PODIUM_BADGE}>{rank}</span>
     </span>
   );
 
   return (
-    <li className={`wrapped-podium__item${isLead ? " wrapped-podium__item--lead" : ""}`}>
+    <li
+      className={cn(PODIUM_ITEM, isLead && PODIUM_ITEM_LEAD)}
+      {...(raceMode
+        ? { "data-podium-rank": String(rank - 1) }
+        : { "data-wrapped-beat-segment": true })}
+    >
       {href ? (
         <a
-          className="wrapped-podium__avatar-link"
+          className={PODIUM_AVATAR_LINK}
           href={href}
           target="_blank"
           rel="noreferrer"
@@ -72,22 +91,22 @@ function PodiumAvatar({ row, rank, threadLabels, imageUrl }) {
           {circle}
         </a>
       ) : (
-        <span className="wrapped-podium__avatar-link" title={row.label}>
+        <span className={PODIUM_AVATAR_LINK} title={row.label}>
           {circle}
         </span>
       )}
-      <span className="wrapped-podium__count">{formatCount(count)}</span>
+      <span className={cn(PODIUM_COUNT, isLead && PODIUM_COUNT_LEAD)}>{formatCount(count)}</span>
     </li>
   );
 }
 
-export default function WrappedAvatarPodium({ rows, threadLabels = false }) {
+export default function WrappedAvatarPodium({ rows, threadLabels = false, raceMode = false }) {
   if (!rows?.length) {
     return null;
   }
 
   return (
-    <ol className="wrapped-podium" aria-label="Top accounts">
+    <ol className={PODIUM} aria-label="Top accounts">
       {rows.map((row, index) => (
         <PodiumAvatar
           key={row.username ?? row.threadKey ?? row.label ?? index}
@@ -95,6 +114,7 @@ export default function WrappedAvatarPodium({ rows, threadLabels = false }) {
           rank={index + 1}
           threadLabels={threadLabels}
           imageUrl={row.imageUrl}
+          raceMode={raceMode}
         />
       ))}
     </ol>

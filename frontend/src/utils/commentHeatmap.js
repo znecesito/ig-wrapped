@@ -331,7 +331,7 @@ function extractTimestampFromValue(input) {
   return null;
 }
 
-function extractTimestampMs(activityItem) {
+export function extractTimestampMs(activityItem) {
   if (!activityItem || typeof activityItem !== "object") {
     return null;
   }

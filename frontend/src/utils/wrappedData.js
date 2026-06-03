@@ -8,11 +8,13 @@ import {
 } from "./commentHeatmap.js";
 import {
   buildTopInteractions,
+  buildTopSocialCreatorsWithBreakdown,
   discoverSocialInteractionFiles,
   getEffectiveSelfUsername,
   getSocialCategories,
   getSocialSources,
-  parseSocialInteractionCounts
+  parseSocialInteractionCounts,
+  parseSocialInteractionEvents
 } from "./socialInteractionGraph.js";
 import { parseProfileSearchStats } from "./profileSearches.js";
 import {
@@ -20,9 +22,11 @@ import {
   MESSAGE_FREQUENCY_TOP_N,
   parseAndAggregateThreads
 } from "./messageFrequency.js";
+import { filterActivityEventsForWrapped } from "./wrappedExportWindow.js";
+import { buildPeopleRankHistory } from "./peopleRankHistory.js";
 
 /** Shared cap for likes / comments / story-interaction leaderboards on Wrapped. */
-export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 4;
+export const WRAPPED_SOCIAL_LEADERBOARD_LIMIT = 5;
 export const WRAPPED_THREAD_CARD_LIMIT = 5;
 
 const ACTIVITY_FAMILY_ORDER = ["comments", "likes", "media", "storyInteractions"];
@@ -104,14 +108,26 @@ export async function loadWrappedBaseline({
   const selfUsername = getEffectiveSelfUsername(detectedUsername, "");
 
   let heatmapData = null;
+  let activityWindowTrimmed = false;
   let topThreads = [];
   /** @type {Record<string, Record<string, number>> | null} */
   let socialCountsBySource = null;
+  /** @type {{ username: string, timestampMs: number, categoryId: string }[]} */
+  let socialEvents = [];
 
-  if (heatmapCache?.rawEvents?.length) {
-    heatmapData = buildHeatmapData(heatmapCache.rawEvents, timezone, {
+  function buildWrappedHeatmap(rawEvents) {
+    const { events, trimmed } = filterActivityEventsForWrapped(rawEvents);
+    activityWindowTrimmed = trimmed;
+    if (!events.length) {
+      return null;
+    }
+    return buildHeatmapData(events, timezone, {
       enabledSourceIds: defaultActivitySourceIds
     });
+  }
+
+  if (heatmapCache?.rawEvents?.length) {
+    heatmapData = buildWrappedHeatmap(heatmapCache.rawEvents);
     if (heatmapCache.parseWarnings?.length) {
       warnings.push(...heatmapCache.parseWarnings);
     }
@@ -130,12 +146,12 @@ export async function loadWrappedBaseline({
         warnings.push(...parseResult.errors);
       }
       if (parseResult.events.length > 0) {
-        heatmapData = buildHeatmapData(parseResult.events, timezone, {
-          enabledSourceIds: defaultActivitySourceIds
-        });
+        heatmapData = buildWrappedHeatmap(parseResult.events);
         setHeatmapCache({
           rawEvents: parseResult.events,
-          heatmapData,
+          heatmapData: buildHeatmapData(parseResult.events, timezone, {
+            enabledSourceIds: defaultActivitySourceIds
+          }),
           enabledSourceIds: defaultActivitySourceIds,
           parseWarnings: parseResult.errors
         });
@@ -148,21 +164,40 @@ export async function loadWrappedBaseline({
       warnings.push(...socialGraphCache.parseErrors);
     }
     socialCountsBySource = socialGraphCache.countsBySource;
+    socialEvents = socialGraphCache.events ?? [];
+    if (!socialEvents.length && files?.length) {
+      const discovery = discoverSocialInteractionFiles(files);
+      if (discovery.parseTargetFiles.length > 0) {
+        const eventResult = await parseSocialInteractionEvents(discovery, { selfUsername });
+        if (eventResult.errors?.length) {
+          warnings.push(...eventResult.errors);
+        }
+        socialEvents = eventResult.events;
+      }
+    }
   } else {
     const discovery = discoverSocialInteractionFiles(files);
     if (discovery.activityFiles.length === 0 || discovery.parseTargetFiles.length === 0) {
       // skip
     } else {
-      const result = await parseSocialInteractionCounts(discovery, { selfUsername });
+      const [result, eventResult] = await Promise.all([
+        parseSocialInteractionCounts(discovery, { selfUsername }),
+        parseSocialInteractionEvents(discovery, { selfUsername })
+      ]);
       if (result.errors?.length) {
         warnings.push(...result.errors);
       }
+      if (eventResult.errors?.length) {
+        warnings.push(...eventResult.errors);
+      }
+      socialEvents = eventResult.events;
       if (
         result.stats.itemsSeen > 0 &&
         result.stats.skippedMissingOwner < result.stats.itemsSeen
       ) {
         setSocialGraphCache({
           countsBySource: result.countsBySource,
+          events: eventResult.events,
           parseStats: result.stats,
           parseErrors: result.errors,
           enabledSourceIds: defaultSocialSourceIds
@@ -237,10 +272,24 @@ export async function loadWrappedBaseline({
   const mostLikedCreators = buildSocialLeaderboard(likesSourceIds);
   const mostCommentedCreators = buildSocialLeaderboard(commentsCategorySourceIds);
   const mostStoryCreators = buildSocialLeaderboard(storyInteractionsCategorySourceIds);
+  const mostSocialCreators =
+    socialCountsBySource != null
+      ? buildTopSocialCreatorsWithBreakdown(
+          socialCountsBySource,
+          WRAPPED_SOCIAL_LEADERBOARD_LIMIT
+        )
+      : [];
+
+  const peopleRankHistory = buildPeopleRankHistory(socialEvents, mostSocialCreators, {
+    timeZone: timezone
+  });
 
   return {
     heatmapData,
+    activityWindowTrimmed,
     topThreads,
+    mostSocialCreators,
+    peopleRankHistory,
     mostLikedCreators,
     mostCommentedCreators,
     mostStoryCreators,
