@@ -18,12 +18,8 @@ import {
   killSlideTimeline
 } from "../utils/wrappedSlideTimeline.js";
 import WrappedSlideErrorBoundary from "./WrappedSlideErrorBoundary.jsx";
-import {
-  isWrappedAudioMuted,
-  pauseWrappedAudioForHold,
-  resumeWrappedAudioFromHold,
-  toggleWrappedAudioMuted
-} from "../utils/wrappedAudio.js";
+import WrappedMusicPlayer from "./WrappedMusicPlayer.jsx";
+import { pauseWrappedAudioForHold, resumeWrappedAudioFromHold } from "../utils/wrappedAudio.js";
 
 const TAP_MAX_MS = 280;
 
@@ -40,8 +36,6 @@ export default function WrappedStoryPlayer({
 }) {
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [audioMuted, setAudioMuted] = useState(() => isWrappedAudioMuted());
-
   const slideRef = useRef(null);
   const pointerRef = useRef(null);
   const swipeRef = useRef(null);
@@ -232,11 +226,6 @@ export default function WrappedStoryPlayer({
     setPaused(false);
   };
 
-  const handleToggleMute = () => {
-    const next = toggleWrappedAudioMuted();
-    setAudioMuted(next);
-  };
-
   const handleTouchEnd = (e) => {
     const start = swipeRef.current;
     swipeRef.current = null;
@@ -303,48 +292,28 @@ export default function WrappedStoryPlayer({
         })}
       </div>
 
-      <div
+      <button
+        type="button"
+        data-no-hold
         className={cn(
           "absolute right-3 top-[max(0.35rem,env(safe-area-inset-top))] z-[60]",
-          "flex items-center gap-2"
+          "flex size-9 items-center justify-center rounded-full",
+          "border-0 bg-black/25 text-lg leading-none text-white backdrop-blur-sm",
+          "transition-colors hover:bg-black/40"
         )}
+        aria-label="Exit Wrapped"
+        onClick={onExit}
       >
-        <button
-          type="button"
-          data-no-hold
-          className={cn(
-            "flex size-9 items-center justify-center rounded-full",
-            "border-0 bg-black/25 text-sm text-white backdrop-blur-sm",
-            "transition-colors hover:bg-black/40"
-          )}
-          aria-label={audioMuted ? "Unmute Wrapped soundtrack" : "Mute Wrapped soundtrack"}
-          aria-pressed={audioMuted}
-          onClick={handleToggleMute}
-        >
-          {audioMuted ? (
-            <span aria-hidden className="text-base leading-none">
-              🔇
-            </span>
-          ) : (
-            <span aria-hidden className="text-base leading-none">
-              🔊
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
-          data-no-hold
-          className={cn(
-            "flex size-9 items-center justify-center rounded-full",
-            "border-0 bg-black/25 text-lg leading-none text-white backdrop-blur-sm",
-            "transition-colors hover:bg-black/40"
-          )}
-          aria-label="Exit Wrapped"
-          onClick={onExit}
-        >
-          ×
-        </button>
-      </div>
+        ×
+      </button>
+
+      <WrappedMusicPlayer
+        className={cn(
+          "absolute z-[55]",
+          "right-3 bottom-[max(3.5rem,calc(env(safe-area-inset-bottom)+2.75rem))]",
+          "w-[min(17.5rem,calc(100vw-1.5rem))]"
+        )}
+      />
 
       <div
         className="relative z-10 flex min-h-0 flex-1 flex-col"
@@ -376,7 +345,7 @@ export default function WrappedStoryPlayer({
             ? "Tap left to go back · screenshot to share · swipe down when you're done"
             : paused
               ? "Release to resume"
-              : "Tap right for next · tap left to go back · hold to pause · swipe down to exit"}
+              : "Tap right for next · hold to pause · mute bottom-right · swipe down to exit"}
         </p>
       </div>
     </div>

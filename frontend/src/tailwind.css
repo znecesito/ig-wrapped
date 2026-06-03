@@ -275,6 +275,56 @@
     z-index: 2;
   }
 
+  /* Now-playing chip — overrides global `button` styles from styles.css */
+  .wrapped-music-player__btn-mute {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.14);
+    color: #fff;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrapped-music-player__btn-mute:hover {
+    background: rgb(255 255 255 / 0.24);
+  }
+
+  .wrapped-music-player__btn-mute svg {
+    display: block;
+  }
+
+  .wrapped-music-player__art {
+    border-radius: 9999px;
+  }
+
+  .wrapped-music-player__art--playing img {
+    animation: wrapped-music-cover-spin 8s linear infinite;
+  }
+
+  @keyframes wrapped-music-cover-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapped-music-player__art--playing img {
+      animation: none;
+    }
+  }
+
   /* Rhythm slide — calendar-style weekday flip (CodePen calendar inspiration) */
   .rhythm-day-flip {
     width: min(100%, 16.5rem);

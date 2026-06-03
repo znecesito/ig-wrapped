@@ -1,4 +1,4 @@
-import { WRAPPED_AUDIO_TRACKS } from "../config/wrappedAudioTracks.js";
+import { WRAPPED_AUDIO_TRACKS, getTrackMetadata } from "../config/wrappedAudioTracks.js";
 
 const DEFAULT_VOLUME = 0.65;
 const MUTE_STORAGE_KEY = "ig-wrapped-audio-muted";
@@ -9,6 +9,7 @@ let playlistIndex = 0;
 let muted = false;
 let holdPaused = false;
 let active = false;
+const listeners = new Set();
 
 function prefersReducedMotion() {
   if (typeof window === "undefined" || !window.matchMedia) {
@@ -38,6 +39,17 @@ function writeStoredMutePreference(value) {
   } catch {
     /* ignore */
   }
+}
+
+function notifyListeners() {
+  const snapshot = getWrappedAudioState();
+  listeners.forEach((fn) => {
+    try {
+      fn(snapshot);
+    } catch (err) {
+      console.error("[wrapped-audio] listener error:", err);
+    }
+  });
 }
 
 /** Fisher–Yates shuffle (mutates copy). */
@@ -74,13 +86,21 @@ function getAudioElement() {
         playCurrentTrack();
       }
     });
+    audio.addEventListener("play", notifyListeners);
+    audio.addEventListener("pause", notifyListeners);
   }
   return audio;
+}
+
+function isPlaybackRunning() {
+  const el = audio;
+  return Boolean(active && el && !el.paused && !muted && !holdPaused);
 }
 
 function playCurrentTrack() {
   const el = getAudioElement();
   if (!active || !playlist.length) {
+    notifyListeners();
     return;
   }
 
@@ -95,6 +115,7 @@ function playCurrentTrack() {
   el.volume = DEFAULT_VOLUME;
 
   if (muted || holdPaused) {
+    notifyListeners();
     return;
   }
 
@@ -102,6 +123,29 @@ function playCurrentTrack() {
   if (playPromise?.catch) {
     playPromise.catch(() => {});
   }
+  notifyListeners();
+}
+
+export function getWrappedAudioState() {
+  const src = playlist[playlistIndex] ?? null;
+  const meta = getTrackMetadata(src);
+  const el = audio;
+
+  return {
+    active,
+    muted,
+    holdPaused,
+    playlistIndex,
+    trackUrl: src,
+    meta,
+    isPlaying: isPlaybackRunning()
+  };
+}
+
+export function subscribeWrappedAudio(listener) {
+  listeners.add(listener);
+  listener(getWrappedAudioState());
+  return () => listeners.delete(listener);
 }
 
 /**
@@ -135,6 +179,7 @@ export function stopWrappedPlaylist() {
     audio.removeAttribute("src");
     audio.load();
   }
+  notifyListeners();
 }
 
 export function isWrappedPlaylistActive() {
@@ -151,11 +196,12 @@ export function setWrappedAudioMuted(value) {
   if (audio) {
     audio.muted = muted;
   }
-  if (!muted && active && !holdPaused) {
-    playCurrentTrack();
-  } else if (muted && audio) {
+  if (muted && audio) {
     audio.pause();
+  } else if (!muted && active && !holdPaused) {
+    playCurrentTrack();
   }
+  notifyListeners();
 }
 
 export function toggleWrappedAudioMuted() {
@@ -167,11 +213,14 @@ export function toggleWrappedAudioMuted() {
 export function pauseWrappedAudioForHold() {
   holdPaused = true;
   audio?.pause();
+  notifyListeners();
 }
 
 export function resumeWrappedAudioFromHold() {
   holdPaused = false;
   if (active && !muted) {
     playCurrentTrack();
+  } else {
+    notifyListeners();
   }
 }

@@ -40,6 +40,10 @@ Also fine: [YouTube Audio Library](https://studio.youtube.com/) (filter Instrume
 | track-06.mp3 | Counting On Me | jan2fourth | https://pixabay.com/music/mainstream-hip-hop-april2sixer-counting-on-me-prodby-jan2fourth-115684/ | Pixabay Content License — free for commercial use; no attribution required |
 | track-07.mp3 | Heartbeats in the Rain | hasenchat | https://pixabay.com/music/rnb-heartbeats-in-the-rain-430688/ | Pixabay Content License — free for commercial use; no attribution required |
 
+## Cover art (mini player UI)
+
+Square images for the in-player music widget: **`covers/`** — see [`covers/README.md`](covers/README.md).
+
 ## Export tips
 
 - **Instrumental only** (no vocals) — keeps Wrapped readable.
