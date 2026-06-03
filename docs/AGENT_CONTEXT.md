@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-05-31 — **6-slide deck**; **Phase H (GSAP motion) shipped** on `feat/tailwind-foundation`. **Next: Phase I (music) or Phase K (merge to `main`).**
+**Last updated:** 2026-06-02 — **6-slide deck**; **Phase H shipped**; **Phase I (audio playlist) in progress** on `feat/tailwind-foundation`. **Next: drop MP3s in `frontend/public/audio/`, then Phase K (merge).**
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc). Spotify metrics research: [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 
@@ -85,11 +85,10 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 ## Roadmap — next sessions
 
-### **Phase I — Music layer** ← **NEXT (optional)**
+### **Phase I — Music layer** ← **IN PROGRESS**
 
-- Unlock audio on **Start Wrapped** (user gesture).
-- Short royalty-free loops keyed to rhythm/activity mood (4–5 files in `public/audio/`).
-- Mute toggle in player; hold pauses music.
+- **Shipped in code:** shuffled playlist on **Start Wrapped** (`wrappedAudio.js`), mute toggle in player, hold pauses music, `localStorage` mute preference, reshuffle when playlist ends.
+- **You add assets:** drop `track-01.mp3` … `track-05.mp3` into `frontend/public/audio/` (see `public/audio/README.md` for sources + license log).
 - Cannot use user’s real Spotify/IG music taste.
 
 ### **Phase J — Extra slides (optional)**
@@ -139,7 +138,7 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Default next work: **Phase I** (music) or **Phase K** (merge + QA) unless user reprioritizes.
+3. Default next work: add **audio MP3s**, then **Phase K** (merge + QA) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for player + screenshot legibility.
 6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

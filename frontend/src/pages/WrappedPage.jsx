@@ -13,6 +13,10 @@ import {
 import { buildWrappedInsights } from "../utils/wrappedInsights.js";
 import { PAGE_TITLE, WRAPPED_PAGE_LEDE, WRAPPED_PAGE_STATUS } from "../components/wrappedSlideClasses.js";
 import { renderWrappedSlide } from "./wrappedSlideContent.jsx";
+import {
+  startWrappedPlaylist,
+  stopWrappedPlaylist
+} from "../utils/wrappedAudio.js";
 
 export { WRAPPED_CARD_COUNT };
 
@@ -42,6 +46,7 @@ export default function WrappedPage() {
       setLoading(false);
       setCardIndex(0);
       setPlayerActive(false);
+      stopWrappedPlaylist();
       return undefined;
     }
 
@@ -123,11 +128,13 @@ export default function WrappedPage() {
   );
 
   const handleStart = useCallback(() => {
+    startWrappedPlaylist();
     setCardIndex(0);
     setPlayerActive(true);
   }, [setPlayerActive]);
 
   const handleExitPlayer = useCallback(() => {
+    stopWrappedPlaylist();
     setPlayerActive(false);
     setCardIndex(0);
   }, [setPlayerActive]);

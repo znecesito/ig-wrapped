@@ -28,8 +28,9 @@ export default function WrappedLobby({
     <section className="container wrapped-page">
       <h1 className={PAGE_TITLE}>Wrapped</h1>
       <p className={WRAPPED_PAGE_LEDE}>
-        Your Instagram recap as story cards — private, in your browser. Tap through like Stories, or
-        hold to pause. Screenshot any card to share.
+        Your Instagram recap as story cards — private, in your browser. Tap through like Stories,
+        hold to pause, or mute the soundtrack anytime. A shuffled playlist starts when you tap Start
+        Wrapped. Screenshot any card to share.
       </p>
 
       {handle ? (
