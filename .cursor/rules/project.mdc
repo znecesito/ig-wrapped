@@ -65,8 +65,8 @@ intro → activity → rhythm → **people** (rank chart) → **inbox** (notific
 | **J** | Optional extra slides (words, insights JSON) |
 | **0** | Done — landing docs (2026-06-09) |
 | **L** | Done — routing + landing shells (`feat/landing-page`) |
-| **M** ← next | Hero + trust strip + CTAs |
-| **N** | Product preview (6 slide teasers) |
+| **M** | Done — hero, trust strip, CTAs, landing nav |
+| **N** ← next | Product preview (6 slide teasers) |
 | **O** | How-it-works + embedded `ExportGuide` at `#how-to` |
 | **P** | FAQ + polish — merge candidate |
 | **Q** | Analytics instrumentation (optional, post-ship) |

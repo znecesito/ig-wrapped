@@ -45,6 +45,15 @@ body {
   font-size: 1rem;
 }
 
+a.top-nav__brand {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.top-nav__brand:hover {
+  color: #fff;
+}
+
 .top-nav__links {
   display: flex;
   flex-wrap: wrap;
@@ -102,6 +111,23 @@ body {
 .nav-link.is-active {
   background: #2563eb;
   border-color: #3b82f6;
+}
+
+.nav-link-cta {
+  background: linear-gradient(135deg, #e11d48, #ec4899);
+  border-color: #f43f5e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.nav-link-cta:hover {
+  filter: brightness(1.06);
+}
+
+.landing-hero__cta-secondary {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
 }
 
 .container {

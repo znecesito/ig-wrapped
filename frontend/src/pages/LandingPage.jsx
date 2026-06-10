@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import LandingHero from "../components/landing/LandingHero.jsx";
 import { LANDING_HASH_HOW_TO, scrollToLandingSection } from "../config/features.js";
 import { PAGE_TITLE } from "../components/wrappedSlideClasses.js";
 
@@ -23,7 +24,7 @@ function Placeholder({ children }) {
   return <p className="landing-section__placeholder">{children}</p>;
 }
 
-export default function LandingPage() {
+export default function LandingPage({ onNavigate }) {
   useEffect(() => {
     if (window.location.hash !== LANDING_HASH_HOW_TO) {
       return undefined;
@@ -34,11 +35,12 @@ export default function LandingPage() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  const goToWrapped = () => onNavigate("/wrapped");
+  const goToHowTo = () => onNavigate(LANDING_HASH_HOW_TO);
+
   return (
     <div className="landing-page">
-      <LandingSection id="hero" title="Hero">
-        <Placeholder>Phase M — headline, CTAs, trust strip, phone mock.</Placeholder>
-      </LandingSection>
+      <LandingHero onGetStarted={goToWrapped} onHowToExport={goToHowTo} />
 
       <LandingSection id="preview" title="What you get">
         <Placeholder>Phase N — six slide teasers (intro → privacy).</Placeholder>

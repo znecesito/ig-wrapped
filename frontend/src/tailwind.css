@@ -152,6 +152,96 @@
     @apply mt-3 rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm leading-relaxed text-muted;
   }
 
+  .landing-hero {
+    @apply border-b border-border bg-gradient-to-br from-[#fff5f7] via-surface to-[#fdf4ff];
+  }
+
+  .landing-hero .container {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .landing-hero__inner {
+    @apply grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(200px,280px)] md:gap-10 lg:grid-cols-[minmax(0,1fr)_300px];
+  }
+
+  .landing-hero__headline {
+    @apply m-0 font-display text-[clamp(1.65rem,5.5vw,2.75rem)] font-bold leading-[1.08] tracking-tight text-ink;
+  }
+
+  .landing-hero__subhead {
+    @apply m-0 mt-2 max-w-[36rem] text-[0.92rem] leading-snug text-muted sm:mt-3 sm:text-base sm:leading-relaxed;
+  }
+
+  .landing-hero__ctas {
+    @apply mt-4 flex flex-col gap-2.5 sm:mt-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3;
+  }
+
+  .landing-hero__cta-primary {
+    @apply w-full px-7 py-3.5 text-base sm:w-auto sm:py-4 sm:text-[1.05rem];
+  }
+
+  .landing-hero__cta-secondary {
+    @apply w-full rounded-pill border border-border-strong bg-surface-elevated px-7 py-3.5 text-[0.95rem] font-bold text-ink shadow-sm transition-[transform,background-color] duration-200 hover:bg-surface active:scale-[0.98] sm:w-auto;
+  }
+
+  .landing-hero__trust {
+    @apply m-0 mt-3 flex list-none flex-wrap items-center gap-x-1 gap-y-0.5 p-0 text-[0.72rem] font-semibold text-muted sm:mt-4 sm:text-[0.78rem];
+  }
+
+  .landing-hero__trust li {
+    @apply inline-flex items-center;
+  }
+
+  .landing-hero__trust-sep {
+    @apply mx-1.5 text-border-strong;
+  }
+
+  .landing-hero__mock {
+    @apply hidden justify-center md:flex;
+  }
+
+  .landing-hero__phone {
+    @apply relative w-full max-w-[260px] rounded-[1.75rem] border-[3px] border-ink/10 bg-ink p-1.5 shadow-[0_20px_50px_-12px_rgb(15_23_42/0.35)];
+    aspect-ratio: 9 / 16;
+  }
+
+  .landing-hero__phone-notch {
+    @apply absolute left-1/2 top-2 z-10 h-1.5 w-14 -translate-x-1/2 rounded-full bg-ink/25;
+  }
+
+  .landing-hero__phone-screen {
+    @apply flex h-full flex-col rounded-[1.35rem] bg-gradient-to-br from-brand via-[#f43f5e] to-brand-mid px-4 pb-6 pt-8 text-white;
+  }
+
+  .landing-hero__phone-progress {
+    @apply mb-auto flex gap-1;
+  }
+
+  .landing-hero__phone-segment {
+    @apply h-[3px] min-w-0 flex-1 rounded-pill bg-white/30;
+  }
+
+  .landing-hero__phone-segment.is-filled {
+    @apply bg-white;
+  }
+
+  .landing-hero__phone-eyebrow {
+    @apply m-0 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-white/80;
+  }
+
+  .landing-hero__phone-title {
+    @apply m-0 mt-1 font-display text-[1.65rem] font-extrabold leading-none tracking-tight;
+  }
+
+  .landing-hero__phone-handle {
+    @apply m-0 mt-1.5 text-sm font-semibold text-white/90;
+  }
+
+  .landing-hero__phone-lede {
+    @apply m-0 mt-3 text-[0.78rem] leading-snug text-white/85;
+  }
+
   /* Story deck frame width + card safe zones (used by WrappedStoryDeck / WrappedSlideChrome) */
   .wrapped-page {
     --wrapped-chrome: 200px;

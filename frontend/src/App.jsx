@@ -44,6 +44,14 @@ function AppInner() {
   }, []);
 
   const navigateTo = useCallback((path) => {
+    if (path.startsWith("#")) {
+      const sectionId = path.slice(1);
+      window.history.pushState({}, "", `/${path}`);
+      setLocation({ route: "/", hash: path });
+      requestAnimationFrame(() => scrollToLandingSection(sectionId, { behavior: "smooth" }));
+      return;
+    }
+
     if (path === "/guide" || path === LANDING_HASH_HOW_TO || path === `/${LANDING_HASH_HOW_TO}`) {
       window.history.pushState({}, "", `/${LANDING_HASH_HOW_TO}`);
       setLocation({ route: "/", hash: LANDING_HASH_HOW_TO });
@@ -64,35 +72,60 @@ function AppInner() {
       {showNav ? (
         <header className="top-nav">
           <div className="top-nav__inner">
-            <h1 className="top-nav__title font-bold text-nav-link-text">ig-wrapped</h1>
+            <a
+              href="/"
+              className="top-nav__title top-nav__brand font-bold text-nav-link-text"
+              onClick={(event) => {
+                event.preventDefault();
+                navigateTo("/");
+              }}
+            >
+              ig-wrapped
+            </a>
             <nav className="top-nav__links" aria-label="Primary">
-              {!onLanding ? (
-                <button
-                  type="button"
-                  className="nav-link"
-                  onClick={() => navigateTo("/")}
-                >
-                  Home
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className={route === "/wrapped" ? "nav-link is-active" : "nav-link"}
-                onClick={() => navigateTo("/wrapped")}
-              >
-                Wrapped
-              </button>
-              <button
-                type="button"
-                className={
-                  onLanding && locationHash === LANDING_HASH_HOW_TO
-                    ? "nav-link is-active"
-                    : "nav-link"
-                }
-                onClick={() => navigateTo(LANDING_HASH_HOW_TO)}
-              >
-                How to export
-              </button>
+              {onLanding ? (
+                <>
+                  <button type="button" className="nav-link" onClick={() => navigateTo("#preview")}>
+                    What you get
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      locationHash === LANDING_HASH_HOW_TO ? "nav-link is-active" : "nav-link"
+                    }
+                    onClick={() => navigateTo(LANDING_HASH_HOW_TO)}
+                  >
+                    How to export
+                  </button>
+                  <button
+                    type="button"
+                    className="nav-link nav-link-cta"
+                    onClick={() => navigateTo("/wrapped")}
+                  >
+                    Get started
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="nav-link" onClick={() => navigateTo("/")}>
+                    Home
+                  </button>
+                  <button
+                    type="button"
+                    className={route === "/wrapped" ? "nav-link is-active" : "nav-link"}
+                    onClick={() => navigateTo("/wrapped")}
+                  >
+                    Wrapped
+                  </button>
+                  <button
+                    type="button"
+                    className="nav-link"
+                    onClick={() => navigateTo(LANDING_HASH_HOW_TO)}
+                  >
+                    How to export
+                  </button>
+                </>
+              )}
               {files ? (
                 <>
                   <span className="nav-data-indicator">
@@ -109,7 +142,7 @@ function AppInner() {
         </header>
       ) : null}
 
-      {route === "/" ? <LandingPage /> : <WrappedPage />}
+      {route === "/" ? <LandingPage onNavigate={navigateTo} /> : <WrappedPage />}
     </main>
   );
 }
