@@ -2,7 +2,7 @@
 
 **Sources (May 2026):** [Spotify 2025 Wrapped UX announcement](https://newsroom.spotify.com/2025-12-03/2025-wrapped-user-experience/), [2024 Wrapped media kit](https://newsroom.spotify.com/media-kit/2024-wrapped/), [Music Ally 2024 breakdown](https://musically.com/2024/12/04/spotify-wrapped-2024-is-live-top-artists-albums-tracks-and-more/).
 
-**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Phase K (merge) = next session.**
+**Handoff:** Full phase roadmap and shipped state → [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md). **Wrapped SLC on `main`.** **Landing page (Phase L–R) = active work** on `feat/landing-page`.
 
 Visual reference (Spotify marketing): high-contrast collage, oversized year, bold outlines, grain texture, one stat per beat, share cards per datapoint. **Product visual direction for ig-wrapped is IG-native** (gradients, rose/purple, bold type) — borrow Spotify’s **narrative structure and motion**, not their brand palette.
 
@@ -113,7 +113,11 @@ Copy: `buildPeopleQuip()`, `buildDmBalanceSpotlight()`, rhythm/activity quips �
 
 ### Phase J — Extra slides / avatars (optional)
 
-### Phase K — Merge to `main` **← NEXT**
+### Phase K — Merge to `main` **Done**
+
+### Phase L–R — Landing page **← ACTIVE**
+
+- **Goal:** Conversion-focused `/` landing (hero, slide previews, embedded `ExportGuide` at `#how-to`, FAQ). `/wrapped` = lean product entry. See [`AGENT_CONTEXT.md`](AGENT_CONTEXT.md) for section map, locked decisions, and analytics event taxonomy (Phase Q).
 
 ---
 

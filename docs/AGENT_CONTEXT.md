@@ -1,6 +1,6 @@
 # Agent context (rolling)
 
-**Last updated:** 2026-06-03 — **6-slide deck**; **Phase H + I shipped** on `feat/tailwind-foundation`. **Next: Phase K (merge).**
+**Last updated:** 2026-06-09 — **Wrapped SLC shipped on `main`** (6-slide deck, GSAP, soundtrack). **Next: Phase L (landing page)** on branch `feat/landing-page`.
 
 Short "where we left off" for contributors and AI assistants. For invariant stack and tree, see [`.cursor/rules/project.mdc`](../.cursor/rules/project.mdc). Spotify metrics research: [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
 
@@ -8,20 +8,60 @@ Short "where we left off" for contributors and AI assistants. For invariant stac
 
 ## Branch and deploy
 
-- **Active branch:** `feat/tailwind-foundation` (ahead of `main`; Tailwind + Wrapped player + **6-slide** deck + GSAP + soundtrack).
-- **Vercel:** `main` → production; this branch → **preview URL** per push. Test `/wrapped` on preview, not only localhost.
-- **Recent work (Jun 2026):** Phase I soundtrack (7-track shuffle, mute, spinning cover disc); tap-to-advance player; progress bar synced to GSAP (`scaleX` via `quickSetter`); IG-style chrome under progress (disc + mute + ×); hold-to-pause with delayed hold so taps don’t stop audio.
+- **Production:** `main` — Wrapped player + lobby + 6 slides live on Vercel.
+- **Active work:** **`feat/landing-page`** (branch from `main`) — conversion-focused landing at `/`; preview URL per push.
+- **Vercel:** `main` → production; feature branches → **preview URL**. Test on preview, not only localhost.
+- **Phase 0 (this session):** Docs only — no landing code until Phase L.
 
 ---
 
-## Product focus (shipped UI)
+## Product focus (current vs planned)
 
-The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** only. [`App.jsx`](../frontend/src/App.jsx) renders `WrappedPage` or `GuidePage`; [`resolveRoute`](../frontend/src/config/features.js) sends `/` and legacy paths to **`/wrapped`**.
+### Shipped today (`main`)
 
-### Export ingest (unchanged)
+The app is **Wrapped-first**: nav shows **Wrapped** and **How to export**. [`App.jsx`](../frontend/src/App.jsx) renders `WrappedPage` or `GuidePage`; [`resolveRoute`](../frontend/src/config/features.js) sends `/` and legacy paths to **`/wrapped`**.
+
+Pre-load `/wrapped` duplicates marketing: title, lede, full `ExportGuide`, and `ExportPicker`. `/guide` is a near-duplicate of the guide + picker.
+
+### Planned (Phase L–P — landing page)
+
+| Route | Role |
+|-------|------|
+| **`/`** | **Landing** — hero, product preview, how-it-works, `#how-to` (embedded `ExportGuide`), FAQ, CTAs |
+| **`/wrapped`** | **Product** — load export → lobby → player (no duplicate guide on empty state) |
+| **`/guide`** | **Redirect** to `/#how-to` (preserve bookmarks) |
+
+**Locked landing decisions (do not regress without sign-off):**
+
+- **No export picker on landing** — picker stays on `/wrapped` only.
+- **Hero CTAs:** Primary → `/wrapped` (“Get your Wrapped”). Secondary → `#how-to` (“How to get your export”).
+- **Returning users** need a **fresh Meta export** for new activity; FAQ + how-to intro must say so (export links expire; re-request from Accounts Center).
+- **Visual direction:** IG-native tokens (rose/purple, Outfit/Playfair) — continuity with Wrapped slides, not generic SaaS.
+- **No fake global percentiles** on landing (same as product).
+- **Nav:** Logo → `/`; anchor links on landing; “Get started” → `/wrapped`. Remove top-level **How to export** tab (becomes in-page `#how-to` section). **Data loaded / Clear** unchanged; nav hidden only in story player.
+
+### Landing page sections (top → bottom)
+
+1. **Hero** — outcome headline, PAS subhead, phone mock, primary + secondary CTA, trust strip (local only · no upload · no account · JSON only).
+2. **What you get** — 6 teaser cards mapping to slides 0–5 (static mocks/screenshots; no live player on landing).
+3. **How it works** — 3 steps: Request export → Load ZIP → Play Wrapped.
+4. **`#how-to`** — existing [`ExportGuide.jsx`](../frontend/src/components/ExportGuide.jsx) embedded; intro line for re-export; sticky CTA “Ready? Get your Wrapped” → `/wrapped`.
+5. **FAQ** — export wait time, JSON vs HTML, screenshot sharing, Meta affiliation, re-export for new activity.
+6. **Final CTA band** → `/wrapped`.
+
+### Conversion frameworks (copy/design reference)
+
+- **AIDA** — Attention (hero) → Interest (preview) → Desire (slide teasers) → Action (CTAs).
+- **PAS** — Problem (no IG Wrapped) → Agitate (ZIP sits unused) → Solution (story cards in browser).
+- **Fogg Behavior Model** — Export lowers *ability*; landing raises *motivation* (preview) and *prompt* (clear CTAs).
+- **Trust-first** — Privacy above the fold; no account; client-only parsing.
+
+---
+
+## Export ingest (unchanged)
 
 - [`ExportPicker.jsx`](../frontend/src/components/ExportPicker.jsx) — ZIP (fflate, JSON only) or folder (`webkitdirectory`). [`exportIngest.js`](../frontend/src/utils/exportIngest.js). State in [`ExportDataContext.jsx`](../frontend/src/context/ExportDataContext.jsx).
-- [`ExportGuide.jsx`](../frontend/src/components/ExportGuide.jsx) + [`GuidePage.jsx`](../frontend/src/pages/GuidePage.jsx) at `/guide`. Screenshots: [`docs/export-guide-images.md`](export-guide-images.md).
+- [`ExportGuide.jsx`](../frontend/src/components/ExportGuide.jsx) — reuse on landing at `#how-to`; [`GuidePage.jsx`](../frontend/src/pages/GuidePage.jsx) deprecated after redirect. Screenshots: [`docs/export-guide-images.md`](export-guide-images.md).
 
 ### Wrapped flow (after export loads)
 
@@ -52,8 +92,6 @@ The live app is **Wrapped-only**: nav shows **Wrapped** and **How to export** on
 | 4 | **Inbox** | hero | tap | [`InboxNotificationStack.jsx`](../frontend/src/components/InboxNotificationStack.jsx) — stack + thread stats; [`buildDmBalanceSpotlight`](../frontend/src/utils/wrappedInsights.js) |
 | 5 | **Privacy** | trust | tap | Local-only outro |
 
-**Deck simplifications (2026-05):** Consolidated from earlier 10-slide prototype. Removed without product sign-off: feed personality slide, streak, busiest day, separate social spotlight + podium ranking, old standalone DM slide. Social + DM story now lives in **People** (rank chart) and **Inbox** (busiest thread).
-
 Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](../frontend/src/utils/wrappedInsights.js). People rank data: [`peopleRankHistory.js`](../frontend/src/utils/peopleRankHistory.js). Orchestration: [`wrappedData.js`](../frontend/src/utils/wrappedData.js).
 
 ### Motion (Phase H — shipped)
@@ -65,7 +103,7 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - **People slide caveat:** Chart layout math lives in [`peopleRankChartLayout.js`](../frontend/src/utils/peopleRankChartLayout.js) (plain JS). **Do not** import React components into the timeline module — caused a blank-slide crash when imports were broken.
 - **Reduced motion:** `prefers-reduced-motion: reduce` → static final states, no draw animation; soundtrack may start muted.
 
-### Locked UX decisions (do not regress)
+### Locked UX decisions — Wrapped (do not regress)
 
 - **Start Wrapped** before player (not auto-enter on load).
 - Warnings only in **lobby**; block Start until dismissed with layman “affects which slides”.
@@ -74,12 +112,39 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 - **Hold** pauses GSAP + soundtrack (after hold delay); **quick tap** does not pause audio.
 - **Tap only** for nav (no swipe left/right v1).
 - **Tap left** = previous; **tap right** = next.
-- **Nav hidden only in player**; `/guide` keeps nav.
+- **Nav hidden only in player**.
 - **Visual direction:** **IG-native** (rose/purple gradients, bold type) — **not** Spotify 2025 B/W/lime clone.
 - **No fake global percentiles**; export-scoped copy only.
 - **No** `html-to-image` / scroller Save unless dedicated export layout returns.
 - **Inbox quip** uses `SLIDE_INSIGHT_PUNCH_ON_DARK` (same bordered box as other hero slides).
 - **Inbox stats:** large hero `%` with smaller descriptive label underneath (not one inline sentence).
+
+---
+
+## Success metrics (landing funnel)
+
+**No analytics in repo today.** Document event names now; instrument in **Phase Q** (after landing ships).
+
+Micro-conversion funnel (no signup):
+
+```
+landing_view → cta_primary_click → wrapped_view → export_loaded → wrapped_start → wrapped_complete
+```
+
+| Event | When to fire | Purpose |
+|-------|----------------|---------|
+| `landing_view` | User hits `/` | Top-of-funnel volume |
+| `cta_primary_click` | Primary CTA → `/wrapped` | Intent to use product; prop `location`: `hero` \| `footer` \| `how_to_sticky` |
+| `cta_secondary_click` | Secondary CTA → `#how-to` | Needs export instructions first |
+| `how_to_section_view` | `#how-to` enters viewport (IntersectionObserver) | Scroll engagement without secondary click |
+| `wrapped_view` | `/wrapped` loads | Entered product surface |
+| `export_loaded` | `ExportDataContext` receives files | Hardest step — export + picker succeeded |
+| `wrapped_start` | Lobby “Start Wrapped” clicked | Full conversion into experience |
+| `wrapped_complete` | Last slide reached or exit after slide 5 | Depth (optional) |
+
+**Privacy rules for analytics:** No export contents, usernames, or filenames in events. Prefer cookieless providers (e.g. Plausible, Vercel Analytics). Disclose in FAQ if a third-party script is added.
+
+**Pre-launch QA:** Manual preview URL testing is enough for Phase L–P merge; analytics enables post-launch iteration.
 
 ---
 
@@ -96,28 +161,60 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | **H** | Done | GSAP timelines per slide; intro drop; activity stack; rhythm reveal; people line draw; inbox stack choreography; percent count-up; hold-to-pause sync |
 | **People + Inbox slides** | Done | Rank chart + notification stack slides replace older social/DM deck beats |
 | **I — Music** | Done | 7-track shuffle, mute, spinning disc chrome, hold-aware audio |
+| **K — Merge** | Done | `feat/tailwind-foundation` → `main` |
 
 ---
 
-## Roadmap — next sessions
+## Roadmap — landing page (Phase L–R)
 
-### **Phase J — Extra slides (optional)**
+### **Phase 0 — Documentation** ← **DONE (2026-06-09)**
 
-- `mostUsedWords.js` → word slide when export has captions/DM text.
-- `past_instagram_insights` when file present.
-- **Avatars:** `WrappedAvatarPodium` supports `row.imageUrl`; export has **your** `profile_photos.json` only — third-party faces need opt-in server/proxy (see research doc). **No Playwright by default.**
+Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 
-### **Phase K — Merge & ship** ← **NEXT**
+### **Phase L — Foundation (IA + routing)** ← **DONE (2026-06-09)**
 
-- PR `feat/tailwind-foundation` → `main`.
-- iPhone Safari: lobby → full playthrough → hold → mute → exit → screenshot test.
-- Remove dead [`WrappedStoryDeck.jsx`](../frontend/src/components/WrappedStoryDeck.jsx) if still unused.
-- Add per-track cover art (`covers/track-01.jpg` …) if desired beyond `default.jpg`.
-- Update production.
+- Branch `feat/landing-page` from `main`.
+- `features.js`: `/` → landing; `/guide` → `/#how-to`; `/wrapped` unchanged when data loaded.
+- `App.jsx`: `LandingPage` vs `WrappedPage`; nav skeleton.
+- `LandingPage.jsx`: section placeholders (`hero`, `preview`, `steps`, `how-to`, `faq`, `cta`).
+- `WrappedPage.jsx`: remove pre-load `ExportGuide` + marketing lede; focused load surface.
+- `GuidePage.jsx`: redirect path; hash scroll to `#how-to`.
+- **Exit:** `/` = shell; `/wrapped` = picker only; `/guide` → how-to; player/lobby unchanged.
+
+### **Phase M — Hero + trust** ← **NEXT**
+
+- `LandingHero`: headline, subhead, phone mock, dual CTAs, trust strip.
+- Nav: logo → `/`, anchors, “Get started” → `/wrapped`.
+
+### **Phase N — Product preview**
+
+- “What you get” — 6 static teasers for slides 0–5.
+- Outcome copy per card (no parser jargon).
+
+### **Phase O — How it works + How to export**
+
+- 3-step strip; `#how-to` wraps `ExportGuide`; re-export intro; sticky CTA → `/wrapped`.
+
+### **Phase P — FAQ + polish**
+
+- FAQ accordion; final CTA band; landing Tailwind layout; mobile + a11y pass.
+- **Exit:** Full scroll journey; iPhone Safari on Vercel preview — **merge candidate**.
+
+### **Phase Q — Analytics (optional, post-visual)**
+
+- `track()` helper + provider; events from table above; no PII.
+
+### **Phase R — Merge & ship**
+
+- PR `feat/landing-page` → `main`; regression QA on Wrapped flow; docs → “shipped”.
+
+### **Phase J — Extra slides (optional, parallel)**
+
+- `mostUsedWords.js` → word slide; `past_instagram_insights`; avatars — see research doc.
 
 ---
 
-## Key files (current)
+## Key files (current + planned landing)
 
 | Area | Files |
 |------|--------|
@@ -129,10 +226,13 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 | Inbox | `InboxNotificationStack.jsx`, `utils/messageFrequency.js` |
 | Rhythm | `RhythmDayFlip.jsx` |
 | Data | `wrappedData.js`, `wrappedInsights.js`, `wrappedExportWindow.js`, `socialInteractionGraph.js` |
+| Routing | `App.jsx`, `config/features.js` |
+| Export UI | `ExportPicker.jsx`, `ExportGuide.jsx`, `pages/GuidePage.jsx` (deprecate) |
+| **Landing (planned)** | `pages/LandingPage.jsx`, `components/landing/*` |
 | Styling | `tailwind.css`, `styles.css` |
 | Docs | `spotify-wrapped-research.md`, this file |
 
-**Legacy / unused:** `WrappedStoryDeck.jsx` — pre–Phase E scroller; delete in Phase K. `WrappedSpotlightHero.jsx`, `WrappedAvatarPodium.jsx` — still in repo; not used in current 6-slide deck.
+**Legacy / unused:** `WrappedStoryDeck.jsx` — pre–Phase E scroller; safe to delete. `WrappedSpotlightHero.jsx`, `WrappedAvatarPodium.jsx` — not in current 6-slide deck.
 
 ---
 
@@ -149,9 +249,9 @@ Content: [`wrappedSlideContent.jsx`](../frontend/src/pages/wrappedSlideContent.j
 
 ## For the next session
 
-1. Read this file + [`spotify-wrapped-research.md`](spotify-wrapped-research.md).
-2. Confirm branch `feat/tailwind-foundation` and latest Vercel preview.
-3. Default next work: **Phase K** (merge + QA) unless user reprioritizes.
+1. Read this file (landing phases L–R, locked decisions, metrics taxonomy).
+2. Create branch **`feat/landing-page`** from `main`.
+3. Default next work: **Phase M** (hero + trust) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
-5. Test on **real export** on iPhone Safari for player, audio, progress bar, and screenshot legibility.
+5. Test on **real export** on iPhone Safari for Wrapped regressions after landing changes.
 6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

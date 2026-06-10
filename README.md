@@ -11,6 +11,18 @@
 
 Visiting `/` or old paths like `/heatmap` redirects to **`/wrapped`**.
 
+### Coming soon: landing page (Phase L–P)
+
+Work on branch **`feat/landing-page`** will add:
+
+| Route | What it will do |
+| --- | --- |
+| `/` | **Landing** — hero, product preview, how-to section, FAQ, CTAs |
+| `/wrapped` | **Wrapped** — focused load surface (guide moves to landing) |
+| `/guide` | Redirects to `/#how-to` on the landing page |
+
+See [Development roadmap](#development-roadmap) and [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for phase details.
+
 ## How Wrapped works
 
 1. **Load export** — Choose ZIP or folder (see [Load your export](#load-your-export)).
@@ -44,7 +56,7 @@ On desktop, the background fills the browser; the card stays a centered phone-si
    - **Choose ZIP** — pick the `.zip` from Instagram (recommended on phone), or
    - **Choose folder** — pick the unzipped folder that contains `your_instagram_activity`.
 
-Parsing runs entirely in your browser.
+Parsing runs entirely in your browser. **Returning visitors** typically need a **new export** from Meta for activity since their last visit; download links expire after a few days.
 
 ## Project structure
 
@@ -67,7 +79,7 @@ Parsing runs entirely in your browser.
 
 ## Development roadmap
 
-Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge to `main`).
+**Wrapped SLC** is on **`main`**. **Landing page** work is planned on **`feat/landing-page`**.
 
 | Phase | Status | Summary |
 | --- | --- | --- |
@@ -78,9 +90,14 @@ Work is on branch **`feat/tailwind-foundation`** (preview on Vercel before merge
 | H Motion | Done | GSAP scene beats per slide (stack, chart draw, inbox stack) |
 | People + Inbox slides | Done | Rank chart + notification stack replace older social/DM beats |
 | I Music | Done | 7-track shuffle, mute, spinning cover disc in player chrome |
-| K Ship | Planned | Merge to `main` after iPhone QA |
+| K Ship | Done | Merged to `main` |
+| **0 Landing docs** | Done | IA, phases L–R, metrics taxonomy |
+| **L Foundation** | Next | Routing, landing shells, slim `/wrapped` empty state |
+| **M–P Landing UI** | Planned | Hero, preview, how-to section, FAQ, polish |
+| **Q Analytics** | Optional | Funnel events (no PII) after landing ships |
+| **R Ship landing** | Planned | Merge `feat/landing-page` → `main` |
 
-See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for the **6-slide** deck, locked UX, and next-session handoff.
+See [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) for locked landing decisions, section map, and success metrics.
 
 ## Run locally
 
@@ -92,7 +109,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` — you’ll land on Wrapped.
+Open `http://localhost:5173` — you’ll land on Wrapped (landing at `/` comes in Phase L).
 
 ### Backend (optional)
 
@@ -142,7 +159,7 @@ Root **`backend`**, start **`npm start`**, health at `GET /health`.
 
 ## For contributors / AI assistants
 
-- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (branch, 6-slide deck, Phase K next)
+- **Start here:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) (landing Phase L next, metrics taxonomy)
 - **Metrics / Spotify mapping:** [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md)
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
 

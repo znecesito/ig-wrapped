@@ -140,6 +140,18 @@
 }
 
 @layer components {
+  .landing-page {
+    @apply pb-16;
+  }
+
+  .landing-section {
+    @apply border-b border-border py-10;
+  }
+
+  .landing-section__placeholder {
+    @apply mt-3 rounded-lg border border-dashed border-border-strong bg-surface p-6 text-sm leading-relaxed text-muted;
+  }
+
   /* Story deck frame width + card safe zones (used by WrappedStoryDeck / WrappedSlideChrome) */
   .wrapped-page {
     --wrapped-chrome: 200px;
