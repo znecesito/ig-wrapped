@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import LandingHero from "../components/landing/LandingHero.jsx";
+import LandingPreview from "../components/landing/LandingPreview.jsx";
 import { LANDING_HASH_HOW_TO, scrollToLandingSection } from "../config/features.js";
 import { PAGE_TITLE } from "../components/wrappedSlideClasses.js";
 
@@ -43,7 +44,7 @@ export default function LandingPage({ onNavigate }) {
       <LandingHero onGetStarted={goToWrapped} onHowToExport={goToHowTo} />
 
       <LandingSection id="preview" title="What you get">
-        <Placeholder>Phase N — six slide teasers (intro → privacy).</Placeholder>
+        <LandingPreview />
       </LandingSection>
 
       <LandingSection id="steps" title="How it works">

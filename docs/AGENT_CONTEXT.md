@@ -186,11 +186,11 @@ Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 - `LandingHero`: headline, subhead, phone mock, dual CTAs, trust strip.
 - Nav: logo → `/`, anchors, “Get started” → `/wrapped`.
 
-### **Phase N — Product preview** ← **NEXT**
+### **Phase N — Product preview** ← **DONE (2026-06-09)**
 
 - “What you get” — 6 static teasers for slides 0–5.
 
-### **Phase O — How it works + How to export**
+### **Phase O — How it works + How to export** ← **NEXT**
 
 - 3-step strip; `#how-to` wraps `ExportGuide`; re-export intro; sticky CTA → `/wrapped`.
 
@@ -250,7 +250,7 @@ Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 
 1. Read this file (landing phases L–R, locked decisions, metrics taxonomy).
 2. Create branch **`feat/landing-page`** from `main`.
-3. Default next work: **Phase N** (product preview) unless user reprioritizes.
+3. Default next work: **Phase O** (how-it-works + export guide) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for Wrapped regressions after landing changes.
 6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

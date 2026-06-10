@@ -254,6 +254,180 @@
     @apply m-0 mt-3 text-[0.78rem] leading-snug text-white/85;
   }
 
+  .landing-preview__lede {
+    @apply m-0 mt-2 max-w-[40rem] text-[0.92rem] leading-relaxed text-muted sm:text-base;
+  }
+
+  .landing-preview__grid {
+    @apply m-0 mt-6 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3;
+  }
+
+  .landing-preview__card {
+    @apply flex flex-col overflow-hidden rounded-card border border-border bg-surface-elevated shadow-[0_8px_24px_-12px_rgb(15_23_42/0.18)];
+  }
+
+  .landing-preview__meta {
+    @apply flex flex-1 flex-col px-4 py-3.5 sm:px-4 sm:py-4;
+  }
+
+  .landing-preview__index {
+    @apply m-0 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-brand;
+  }
+
+  .landing-preview__title {
+    @apply m-0 mt-0.5 font-display text-[1.15rem] font-bold leading-tight text-ink;
+  }
+
+  .landing-preview__copy {
+    @apply m-0 mt-1.5 text-[0.84rem] leading-snug text-muted;
+  }
+
+  .landing-preview-teaser {
+    @apply relative flex aspect-[9/11] min-h-[11rem] flex-col overflow-hidden px-3 pb-3 pt-2;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--preview-accent) 12%, white) 0%,
+      color-mix(in srgb, var(--preview-accent) 6%, #f8fafc) 100%
+    );
+  }
+
+  .landing-preview-teaser.is-dark {
+    @apply text-white;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--preview-accent) 88%, #0f172a) 0%,
+      color-mix(in srgb, var(--preview-accent) 55%, #1e293b) 100%
+    );
+  }
+
+  .landing-preview-teaser--trust.is-dark {
+    background: linear-gradient(165deg, #64748b 0%, #334155 100%);
+  }
+
+  .landing-preview-teaser__progress {
+    @apply mb-2 flex shrink-0 gap-0.5;
+  }
+
+  .landing-preview-teaser__progress span {
+    @apply h-[2px] min-w-0 flex-1 rounded-pill bg-ink/15;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__progress span {
+    @apply bg-white/30;
+  }
+
+  .landing-preview-teaser__progress span.is-filled {
+    @apply bg-ink/70;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__progress span.is-filled {
+    @apply bg-white;
+  }
+
+  .landing-preview-teaser__eyebrow {
+    @apply m-0 text-[0.52rem] font-bold uppercase tracking-[0.12em] opacity-80;
+  }
+
+  .landing-preview-teaser__title {
+    @apply m-0 mt-0.5 font-display text-[1.1rem] font-extrabold leading-none;
+  }
+
+  .landing-preview-teaser__handle {
+    @apply m-0 mt-1 text-[0.68rem] font-semibold opacity-90;
+  }
+
+  .landing-preview-teaser__stack {
+    @apply mt-1 flex flex-1 flex-col justify-center gap-1.5;
+  }
+
+  .landing-preview-teaser__stack-row {
+    @apply grid grid-cols-[3.2rem_1fr] items-center gap-1;
+  }
+
+  .landing-preview-teaser__stack-label {
+    @apply text-[0.5rem] font-bold uppercase tracking-wide text-ink/70;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__stack-label {
+    @apply text-white/80;
+  }
+
+  .landing-preview-teaser__stack-track {
+    @apply h-2 overflow-hidden rounded-pill bg-ink/10;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__stack-track {
+    @apply bg-white/20;
+  }
+
+  .landing-preview-teaser__stack-fill {
+    @apply block h-full rounded-pill;
+  }
+
+  .landing-preview-teaser__stat {
+    @apply m-0 mt-2 text-center text-[0.62rem] font-extrabold text-ink;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__stat {
+    @apply text-white;
+  }
+
+  .landing-preview-teaser__rhythm {
+    @apply flex flex-1 flex-col items-center justify-center gap-2;
+  }
+
+  .landing-preview-teaser__week {
+    @apply flex gap-1;
+  }
+
+  .landing-preview-teaser__day {
+    @apply flex size-5 items-center justify-center rounded-md bg-ink/10 text-[0.5rem] font-bold text-ink/70;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__day {
+    @apply bg-white/15 text-white/80;
+  }
+
+  .landing-preview-teaser__day.is-peak {
+    @apply bg-[var(--preview-accent)] text-white;
+  }
+
+  .landing-preview-teaser__persona {
+    @apply m-0 font-display text-[0.82rem] font-bold;
+  }
+
+  .landing-preview-teaser__chart {
+    @apply mx-auto mt-2 h-auto w-[88%] text-[var(--preview-accent)];
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__chart {
+    @apply text-white;
+  }
+
+  .landing-preview-teaser__inbox {
+    @apply m-0 flex flex-1 list-none flex-col justify-center gap-1.5 p-0;
+  }
+
+  .landing-preview-teaser__notif {
+    @apply rounded-lg border border-ink/10 bg-white/90 px-2 py-1.5 text-[0.52rem] font-semibold leading-tight text-ink shadow-sm;
+  }
+
+  .landing-preview-teaser.is-dark .landing-preview-teaser__notif {
+    @apply border-white/20 bg-white/15 text-white;
+  }
+
+  .landing-preview-teaser__privacy {
+    @apply flex flex-1 flex-col items-center justify-center gap-1.5 text-center;
+  }
+
+  .landing-preview-teaser__lock {
+    @apply text-xl;
+  }
+
+  .landing-preview-teaser__privacy-line {
+    @apply m-0 max-w-[8rem] text-[0.68rem] font-bold leading-snug;
+  }
+
   /* Story deck frame width + card safe zones (used by WrappedStoryDeck / WrappedSlideChrome) */
   .wrapped-page {
     --wrapped-chrome: 200px;
