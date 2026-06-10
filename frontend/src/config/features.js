@@ -40,5 +40,15 @@ export function normalizeAppLocation(pathname, hash = "") {
  * @param {{ behavior?: ScrollBehavior }} [options]
  */
 export function scrollToLandingSection(sectionId, { behavior = "smooth" } = {}) {
-  document.getElementById(sectionId)?.scrollIntoView({ behavior, block: "start" });
+  const el = document.getElementById(sectionId);
+  if (!el) {
+    return;
+  }
+
+  const nav = document.querySelector(".top-nav");
+  const gap = 12;
+  const offset = (nav?.offsetHeight ?? 72) + gap;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+
+  window.scrollTo({ top: Math.max(0, top), behavior });
 }

@@ -144,6 +144,18 @@
     @apply pb-16;
   }
 
+  .landing-section,
+  .landing-hero {
+    scroll-margin-top: calc(5.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  @media (max-width: 640px) {
+    .landing-section,
+    .landing-hero {
+      scroll-margin-top: calc(9.5rem + env(safe-area-inset-top, 0px));
+    }
+  }
+
   .landing-section {
     @apply border-b border-border py-10;
   }
