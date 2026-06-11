@@ -20,6 +20,8 @@ frontend/public/export-guide/
 
 Block **3. Load into ig-wrapped** is text only (Choose ZIP on `/wrapped`; success = “Data loaded” + Start Wrapped).
 
+**Status (2026-06-09):** Both PNGs are in the repo — redacted and annotated (badges **a–d** on image 1). Re-edit in Photopea using the playbook below if Meta UI changes.
+
 ---
 
 ## Phase 2 — redact + annotations (manual, Photopea only)
@@ -211,13 +213,11 @@ Optional rename (requires updating paths in `ExportGuide.jsx`):
 
 ## Phase 2 checklist
 
-- [ ] Photopea: old markup removed or fresh screenshots used
-- [ ] PII redacted (handle, email, photo) on both PNGs
-- [ ] Rings: 2 px `#e11d48`, 8 px corners, ≤ 4 on image 1
-- [ ] Badges: a, b, c, d on image 1; Download ring on image 2
-- [ ] Exported ~750–900 px wide, reasonable file size (&lt; ~500 KB each if possible)
-- [ ] Verified on mobile landing `#how-to`
-- [ ] Committed and pushed
+- [x] Photopea: annotated screenshots in repo
+- [x] PII redacted (handle, email, photo) on both PNGs
+- [x] Badges: a, b, c, d on image 1; Download ring on image 2
+- [x] Captions in `ExportGuide.jsx` match badge letters
+- [ ] Re-verify after any PNG edit on mobile landing `#how-to`
 
 ---
 
