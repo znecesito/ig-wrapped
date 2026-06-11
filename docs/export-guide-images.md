@@ -15,184 +15,231 @@ frontend/public/export-guide/
 
 | File | Guide block | What it shows |
 | --- | --- | --- |
-| `phone/03-notification-email.png` | **1. Set up your export** | Single Meta screen with annotated callouts: **2c** Export to device, **2d** JSON, **2e** date range, **3** notification email. User taps **Start export**. |
+| `phone/03-notification-email.png` | **1. Set up your export** | Single Meta screen with annotated callouts: **a** Export to device, **b** notification email, **c** date range, **d** JSON. User taps **Start export**. |
 | `phone/04c-download-button.png` | **2. Wait, then download** | **Export your information** with **Available downloads** card and **Download** highlighted. |
 
 Block **3. Load into ig-wrapped** is text only (Choose ZIP on `/wrapped`; success = “Data loaded” + Start Wrapped).
 
 ---
 
-## Phase 2 — redact + professional annotations (manual)
+## Phase 2 — redact + annotations (manual, Photopea only)
 
-**This step is manual.** The repo cannot auto-redact or auto-redesign your PNGs — an agent should not paint over or regenerate Meta UI. You edit the real captures in **Photopea** and/or **Figma**, then replace the two files in `frontend/public/export-guide/phone/`.
+**This step is manual.** The repo cannot auto-redact or redesign your PNGs. Use **[Photopea](https://www.photopea.com)** (free, browser — works like Photoshop) for the full workflow: clean up, redact, annotate, export. No Figma account required.
 
-**Why manual tools?**
+**Why manual?** Real Meta UI must stay accurate; AI redraws fake screens. You control PII before anything is public.
 
-| Task | Why not AI / code |
+### What you need
+
+| Item | Notes |
 | --- | --- |
-| Redaction | Must stay pixel-accurate Meta UI; blur boxes need human placement |
-| Annotations | Highlights must align to real controls; AI redraws fake Instagram screens |
-| Export | You control PII before anything is pushed to a public repo |
-
-**Recommended free stack**
-
-| Tool | Use for |
-| --- | --- |
-| **[Figma](https://figma.com)** (free) | **Best for professional annotations** — consistent strokes, numbered badges, export @2x PNG |
-| **[Photopea](https://www.photopea.com)** (free, browser) | Redaction, removing old pink marks, clone/heal, quick exports |
-| **Phone screenshot** (optional) | Fresh capture **without** old annotations = cleanest starting point |
-
-Use **Figma** if you want polished callouts. Use **Photopea only** if you just need redaction + simple rounded rectangles.
-
----
+| [Photopea](https://www.photopea.com) | Chrome/Safari; allow clipboard if paste screenshots |
+| Source PNGs or fresh phone screenshots | Clean capture without markup is easiest |
+| Brand color | `#e11d48` (rose) for rings and badges |
+| ~30–45 min | Both images, first time |
 
 ### Annotation style (match ig-wrapped)
 
-Keep callouts **minimal** — one emphasis per control, same system on both images.
+| Token | Value |
+| --- | --- |
+| Ring stroke | **2 px**, `#e11d48`, rounded corners **8 px** |
+| Ring fill (optional) | `#e11d48` at **15% opacity** |
+| Badge | Circle **22 px**, fill `#e11d48`, label **white** **11 px bold** |
+| Badge labels (image 1) | **a**, **b**, **c**, **d** — matches `ExportGuide.jsx` captions |
+| Image 2 | One ring around **Download** only (no badge required) |
 
-| Token | Value | Use |
+Keep **≤ 4** callouts on image 1. No huge arrows or neon colors.
+
+---
+
+## Photopea-only workflow (overview)
+
+```
+Open PNG in Photopea
+        ↓
+[Optional] Remove old pink marks / labels (Clone Stamp)
+        ↓
+Redact PII on copy of screenshot layer
+        ↓
+New folder "annotations" — rings + badges (vector shapes)
+        ↓
+Export As → PNG
+        ↓
+Replace files in frontend/public/export-guide/phone/
+        ↓
+Verify localhost /#how-to → commit
+```
+
+---
+
+## Photopea basics (one-time setup)
+
+1. Go to [photopea.com](https://www.photopea.com) → **File → Open** → pick your screenshot.
+2. Open the **Layers** panel (right side). If you don’t see it: **Window → Layers**.
+3. **Rename** the background layer to `screenshot` (double-click the layer name).
+4. **Duplicate** the screenshot layer (**Layer → Duplicate Layer**) → name the copy `screenshot redacted`. Work on the copy; keep the original hidden as backup (click the eye icon).
+5. For all annotation shapes, use **new layers** above `screenshot redacted` so you can nudge rings without touching the UI.
+
+**Useful shortcuts (Mac / Windows)**
+
+| Action | Mac | Windows |
 | --- | --- | --- |
-| Accent | `#e11d48` | Ring / badge fill (brand rose) |
-| Ring stroke | 2–3 px, `#e11d48` | Rounded rect around a row (Export to device, JSON, etc.) |
-| Ring fill | `#e11d48` at **12–18% opacity** | Optional soft tint inside ring |
-| Badge | 20–24 px circle, fill `#e11d48`, text **white** 11–12 px bold | Step number in corner of ring |
-| Download emphasis | 3 px vertical bars or full rounded rect on **Download** button only | Image 2 |
-
-**Numbering (pick one and stay consistent)**
-
-- **Option A — Keep guide labels:** badges **2c**, **2d**, **2e**, **3** (matches current `ExportGuide.jsx` captions).
-- **Option B — Simpler:** badges **1–4** top-to-bottom on image 1 only — if you choose this, update the figcaption in `ExportGuide.jsx` to match.
-
-**Do not:** heavy drop shadows, neon colors, arrows crossing the whole screen, or more than **four** callouts on image 1.
+| Zoom | Cmd + / Cmd − | Ctrl + / Ctrl − |
+| Undo | Cmd + Z | Ctrl + Z |
+| Free Transform (resize shape) | Cmd + T | Ctrl + T |
+| Sample for Clone Stamp | Option + click | Alt + click |
 
 ---
 
-### Workflow overview
+## Step A — Remove old markup (if reusing current PNGs)
 
-```
-[Optional: new clean screenshot from phone]
-        ↓
-Redact PII (Photopea or Figma)
-        ↓
-Remove old hand-drawn pink / text (clone stamp or start from clean capture)
-        ↓
-Add Figma annotation layers
-        ↓
-Export PNG → replace files in public/export-guide/phone/
-        ↓
-Verify on localhost /#how-to
-        ↓
-Commit (only after redaction)
-```
+Skip this if you took a **fresh screenshot** with no pink lines or text.
+
+1. Select layer **`screenshot redacted`**.
+2. Toolbar → **Clone Stamp** (stamp icon).
+3. Top bar: brush **~25 px**, hardness **0%**, opacity **100%**.
+4. **Option/Alt + click** on clean gray/white UI near a pink line to sample.
+5. Paint over old pink underlines and handwritten labels.
+6. For tricky edges, use a smaller brush and sample often.
+
+**Heal Brush** (band-aid icon) also works on flat backgrounds — click and drag over small marks.
 
 ---
 
-### Step-by-step — Image 1 (`03-notification-email.png`)
+## Step B — Redact PII
 
-**Goal:** One screen — export to device, JSON, date range, notification email — with four clear callouts + visible **Start export**.
+On layer **`screenshot redacted`**, hide anything that identifies you:
 
-#### A. Start clean
-
-1. **Best:** Take a **new screenshot** from Instagram with **no** markup (same screen as today).
-2. **Or:** Open the existing PNG in Photopea and remove old pink underlines and **2c / 2d / 2e / 3** text using **Clone Stamp** (toolbar, hold Alt to sample nearby background).
-
-#### B. Redact PII (Photopea or Figma)
-
-Redact anything that identifies you:
-
-| Area | Action |
+| Area | Photopea method |
 | --- | --- |
-| Profile photo | Optional blur or generic gray circle |
-| Display name / @handle | Blur or solid bar `#e2e8f0` |
-| Email in **Notify** row | Blur or replace with `you@example.com` in same font (Figma text overlay) |
+| Profile photo | Rectangular marquee around face → **Filter → Blur → Gaussian Blur** → radius **15–25** |
+| Display name / @handle | Marquee → blur **or** add layer above, fill selection with `#e2e8f0` (**Edit → Fill** → color `#e2e8f0`) |
+| Email in **Notify** row | Marquee over email → blur **or** paint `#f1f5f9` rectangle on a new layer |
 
-**Photopea:** Rectangular marquee → **Filter → Blur → Gaussian Blur** (radius ~20), or new layer filled `#f1f5f9` over the text.
+**Solid bar (cleaner than heavy blur):**
 
-#### C. Annotate in Figma (professional)
+1. **New layer** (name it `redaction`).
+2. Rectangular marquee over text.
+3. **Edit → Fill** → `#e2e8f0` → OK.
+4. **Select → Deselect**.
 
-1. **File → New design** → frame width **390 px** (iPhone logical width) or match your screenshot width.
-2. **Place image:** drag PNG onto canvas (**File → Place embedded** or paste).
-3. Lock the screenshot layer.
-4. For each target row, add a **rounded rectangle** (corner radius ~8 px):
-   - **Stroke only:** `#e11d48`, 2 px, no fill — **or** stroke + 15% rose fill.
-   - Size the rect to the **value row** (e.g. “JSON”, “Last year”), not the whole card.
-5. Add a **number badge** (ellipse 22 px, fill `#e11d48`, white label) anchored top-left of each ring:
-   - **2c** → “Export to Device · Once” row  
-   - **2d** → “JSON” under Format  
-   - **2e** → “Last year” (or your date range) under Date range  
-   - **3** → “Notify” / email row  
-6. **Do not** ring “Start export” unless you want a fifth callout — the caption already tells users to tap it.
-7. Select frame → **Export** → PNG, **2x** if available → save as `03-notification-email.png`.
-
-#### D. Check at phone size
-
-Zoom to ~360 px wide. Labels must stay readable; rings must not overlap each other.
+Repeat for both images. Image 2: redact profile photo and @handle on the download card; date range is optional.
 
 ---
 
-### Step-by-step — Image 2 (`04c-download-button.png`)
+## Step C — Draw professional rings (rounded rectangles)
 
-**Goal:** Show **Available downloads** and make **Download** obvious.
+Do this on **new layers** above redactions. One layer per ring (easier to edit) or one layer named `rings`.
 
-#### A. Clean + redact
+### Single callout ring
 
-Same as image 1: fresh capture or clone away old pink bars on **Download**.
+1. Toolbar → **Rectangle tool** (U). Top bar: **Shape**, not Path or Pixels.
+2. Set **Fill** to empty (white square with red slash) or `#e11d48` at 15% opacity:
+   - Click the fill swatch → set color `#e11d48` → opacity **15%**.
+3. Set **Stroke** to `#e11d48`, width **2 px**.
+4. Set corner radius (top bar) **8 px** (rounded rectangle).
+5. Drag a box around the target **value** (e.g. the word **JSON**), not the entire card.
+6. **Move tool** (V) to reposition. **Cmd/Ctrl + T** to resize.
 
-Redact:
+### Number badge (a, b, c, d)
 
-| Area | Action |
+1. **New layer** → name `badge a` (etc.).
+2. Toolbar → **Ellipse tool** (U) → **Shape**.
+3. Fill `#e11d48`, no stroke. Hold **Shift** while dragging a **~22 px** circle (place at top-left corner of the ring, slightly overlapping).
+4. Toolbar → **Type tool** (T) → click on the circle → type **a** (small label).
+5. Character panel: **Arial** or **Inter** if available, **11 px**, **Bold**, color **white**, centered.
+6. If text sits on its own layer, merge badge + text: select both layers → **Layer → Merge Layers**.
+
+Duplicate the badge layer for **b**, **c**, **d** (faster than redrawing):
+
+1. Right-click badge layer → **Duplicate Layer**.
+2. **Move tool** → drag to next ring.
+3. Double-click text with Type tool → change to **b**, etc.
+
+---
+
+## Image 1 — `03-notification-email.png`
+
+**Four rings + four badges:**
+
+| Badge | Ring around |
 | --- | --- |
-| Profile photo / @handle | Same as image 1 |
-| Date range line | OK to keep if no PII; blur if it bothers you |
+| **a** | “Export to Device · Once” row |
+| **b** | Notify / email row |
+| **c** | “Last year” (or your date range) under Date range |
+| **d** | “JSON” under Format |
 
-#### B. Annotate in Figma
+Leave **Start export** unmarked — the guide caption already mentions it.
 
-1. Place screenshot on locked layer.
-2. **One** callout on the **Download** button:
-   - Rounded rect hugging the button (stroke `#e11d48` 2 px), **or**
-   - Two vertical rose bars left/right of button (like your current emphasis, but straight 3 px vectors).
-3. Optional single badge **“Download”** or no badge — the UI already says Download.
-4. Export PNG → `04c-download-button.png`.
+**Export:**
 
----
+1. **Image → Trim** → only if you added canvas padding; usually skip.
+2. **File → Export As → PNG**.
+3. Check **width** ~750–900 px (resize with **Image → Image Size** if your source is huge — keep aspect ratio).
+4. Save as `03-notification-email.png`.
+5. Copy into `frontend/public/export-guide/phone/`.
 
-### Photopea-only shortcut (redaction + simple rings)
-
-If you skip Figma:
-
-1. Open PNG in Photopea.
-2. Redact (above).
-3. **New layer** for each ring: **Rectangle select** → **Edit → Stroke** (2 px, `#e11d48`) → corner radius via **Select → Modify → Smooth** or draw rounded rect with shape tool.
-4. **Type tool** for small white-on-rose badges (duplicate layer style for consistency).
-5. **File → Export As → PNG**.
-
-Rings will look less polished than Figma but acceptable for v1.
+**QA at 360 px width:** badges readable, rings don’t overlap, PII gone.
 
 ---
 
-### Replace files in the repo
+## Image 2 — `04c-download-button.png`
 
-1. Overwrite (same names, no code change):
+**One ring** around the **Download** button in Available downloads.
+
+1. Same rectangle tool settings (rose stroke 2 px, 8 px radius, optional 15% fill).
+2. Hug the button edges with a few pixels padding.
+3. Skip a badge unless you want a tiny “↓” — the button label is enough.
+4. **File → Export As → PNG** → `04c-download-button.png` → replace in repo.
+
+---
+
+## Step D — Replace files and verify
+
+1. Overwrite:
    - `frontend/public/export-guide/phone/03-notification-email.png`
    - `frontend/public/export-guide/phone/04c-download-button.png`
-2. Optional rename (requires updating `ExportGuide.jsx` paths):
-   - `01-export-setup.png`
-   - `02-download-ready.png`
-3. Run `cd frontend && npm run dev` → `/#how-to` → confirm both images load, text still matches rings.
-4. **Commit only redacted files** — never push username/email to a public remote.
+2. `cd frontend && npm run dev` → open `http://localhost:5173/#how-to`.
+3. Confirm both images load, captions still match badge numbers.
+4. **Commit only after redaction** — never push unredacted handle/email to a public remote.
+
+Optional rename (requires updating paths in `ExportGuide.jsx`):
+
+- `01-export-setup.png`
+- `02-download-ready.png`
 
 ---
 
-### Phase 2 checklist
+## Phase 2 checklist
 
-- [ ] PII redacted on both PNGs (handle, email, photo if needed)
-- [ ] Old hand-drawn markup removed or replaced
-- [ ] Callouts use consistent rose `#e11d48` system
-- [ ] Image 1: four callouts (2c, 2d, 2e, 3) or relabeled 1–4 + caption updated
-- [ ] Image 2: Download clearly emphasized
-- [ ] Exported ~750–900 px wide PNG, reasonable file size (&lt; ~500 KB each if possible)
+- [ ] Photopea: old markup removed or fresh screenshots used
+- [ ] PII redacted (handle, email, photo) on both PNGs
+- [ ] Rings: 2 px `#e11d48`, 8 px corners, ≤ 4 on image 1
+- [ ] Badges: a, b, c, d on image 1; Download ring on image 2
+- [ ] Exported ~750–900 px wide, reasonable file size (&lt; ~500 KB each if possible)
 - [ ] Verified on mobile landing `#how-to`
 - [ ] Committed and pushed
+
+---
+
+## Troubleshooting (Photopea)
+
+| Problem | Fix |
+| --- | --- |
+| Rectangle draws filled black | Top bar: switch to **Shape**; set fill to empty or 15% rose |
+| Can’t see new shapes | Check Layers — shape may be below screenshot; drag layer up |
+| Text too big | Type tool → highlight → 11 px bold |
+| Export looks blurry | Don’t upscale; export at native screenshot width |
+| Blur redaction looks messy | Use solid `#e2e8f0` bar on separate layer instead |
+
+---
+
+## Alternative: Figma (optional)
+
+If you prefer a design tool later, the same style tokens apply (rose rings, badges). Figma is optional — **Photopea alone is enough** for redaction + professional-enough annotations.
+
+1. New frame → place embedded PNG → lock layer.
+2. Rounded rectangle + ellipse badges → export PNG @2x.
+3. Same file names and checklist as above.
 
 ---
 
@@ -200,7 +247,7 @@ Rings will look less polished than Figma but acceptable for v1.
 
 - **Format**: `.png`, ~750–900 px wide for phone captures.
 - **Display**: CSS class `export-guide__shot--guide` — `clamp(260px, 92%, 420px)` wide so annotated screenshots stay readable on mobile.
-- **Captions**: `figcaption` under each image maps label numbers (2c, 2d, etc.) to plain English.
+- **Captions**: `figcaption` under each image maps badge letters (a, b, c, d) to plain English.
 - **Privacy**: do not commit unredacted username/email to a public repo.
 
 ## Adding a screenshot later

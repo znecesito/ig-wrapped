@@ -197,7 +197,7 @@ Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 
 ### **Phase 2 — Export guide assets (manual)** ← **playbook done; you run the tools**
 
-- Full steps: [`export-guide-images.md`](export-guide-images.md) — **Photopea** (redact + optional simple rings) or **Figma** (recommended for pro annotations). Agent does not edit PNGs; replace files locally when done.
+- Full steps: [`export-guide-images.md`](export-guide-images.md) — **Photopea-only** playbook (redact, clone old marks, shape-tool rings, badges, export). Figma optional. Agent does not edit PNGs; replace files locally when done.
 - Gate: do not merge landing to `main` with unredacted username/email in PNGs.
 
 ### **Phase P — FAQ + polish** ← **NEXT**

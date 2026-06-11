@@ -148,6 +148,10 @@ export default function WrappedPage() {
       <section className="container wrapped-page">
         <h1 className={PAGE_TITLE}>Wrapped</h1>
         <p className={WRAPPED_PAGE_STATUS}>Load your Instagram export to continue.</p>
+        <p className="landing-how-to__intro mt-4">
+          <strong>Returning?</strong> Request a fresh export for activity since your last visit — Meta
+          download links expire after a few days. An old ZIP won&apos;t include your latest activity.
+        </p>
         <div className="card export-picker-card mt-4">
           <h2 className="export-picker-card__title">Load your export</h2>
           <ExportPicker />

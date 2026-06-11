@@ -796,37 +796,16 @@ button:disabled {
   font-size: 0.95rem;
 }
 
-.export-guide__must {
-  margin: 0 0 1rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: 8px;
-  border: 1px solid #fcd34d;
-  background: #fffbeb;
-}
-
-.export-guide__must-title {
-  margin: 0 0 0.45rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #92400e;
-}
-
-.export-guide__must-list {
-  margin: 0;
-  padding-left: 1.15rem;
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: #78350f;
-}
-
 .export-guide__block {
   margin-top: 1.15rem;
   padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
+}
+
+.export-guide__block--first {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .export-guide__block-title {

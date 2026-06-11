@@ -6,11 +6,6 @@ import { cn } from "../../lib/utils.js";
 export default function LandingHowTo({ onGetStarted }) {
   return (
     <div className="landing-how-to">
-      <p className="landing-how-to__intro">
-        <strong>Returning?</strong> Request a fresh export for activity since your last visit — Meta
-        download links expire after a few days. Pick JSON, not HTML.
-      </p>
-
       <ExportGuide hideTitle />
 
       <div className="landing-how-to__cta-bar">

@@ -17,13 +17,6 @@ function GuideShot({ src, alt, caption, modifier }) {
   );
 }
 
-const NON_NEGOTIABLES = [
-  "Export to device — not “Transfer to a service”",
-  "Format JSON — not HTML",
-  "Date range about 6 months to 1 year",
-  "Use an email you check — Meta can take hours or days"
-];
-
 export default function ExportGuide({ hideTitle = false }) {
   return (
     <div className="export-guide card">
@@ -32,21 +25,8 @@ export default function ExportGuide({ hideTitle = false }) {
           How to get your Instagram export
         </h2>
       )}
-      <p className="export-guide__lede muted">
-        Wrapped runs in your browser on iPhone or Android. Pick the ZIP from Instagram, or the
-        unzipped folder. Your export is not uploaded for Wrapped.
-      </p>
 
-      <div className="export-guide__must">
-        <p className="export-guide__must-title">Before you start</p>
-        <ul className="export-guide__must-list">
-          {NON_NEGOTIABLES.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-
-      <section className="export-guide__block" aria-labelledby="export-guide-setup">
+      <section className="export-guide__block export-guide__block--first" aria-labelledby="export-guide-setup">
         <h3 id="export-guide-setup" className="export-guide__block-title">
           1. Set up your export
         </h3>
@@ -61,7 +41,7 @@ export default function ExportGuide({ hideTitle = false }) {
           alt="Instagram export setup screen showing export to device, JSON format, date range, and notification email"
           modifier="export-guide__shot--guide"
           caption={
-            "On this screen: Export to device (2c), JSON format (2d), date range (2e), and notification email (3). Tap Start export when everything matches."
+            "On this screen: Export to device (a), notification email (b), date range (c), and JSON format (d). Tap Start export when everything matches."
           }
         />
       </section>
