@@ -45,6 +45,15 @@ body {
   font-size: 1rem;
 }
 
+a.top-nav__brand {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.top-nav__brand:hover {
+  color: #fff;
+}
+
 .top-nav__links {
   display: flex;
   flex-wrap: wrap;
@@ -102,6 +111,23 @@ body {
 .nav-link.is-active {
   background: #2563eb;
   border-color: #3b82f6;
+}
+
+.nav-link-cta {
+  background: linear-gradient(135deg, #e11d48, #ec4899);
+  border-color: #f43f5e;
+  color: #fff;
+  font-weight: 700;
+}
+
+.nav-link-cta:hover {
+  filter: brightness(1.06);
+}
+
+.landing-hero__cta-secondary {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
 }
 
 .container {
@@ -770,6 +796,46 @@ button:disabled {
   font-size: 0.95rem;
 }
 
+.export-guide__block {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.export-guide__block--first {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.export-guide__block-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.export-guide__block-lede {
+  margin: 0 0 0.55rem;
+  line-height: 1.5;
+  font-size: 0.92rem;
+  color: #334155;
+}
+
+.export-guide__block-lede:last-of-type {
+  margin-bottom: 0.65rem;
+}
+
+.export-guide__done {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
 .export-guide__tabs {
   display: flex;
   gap: 0.5rem;
@@ -834,8 +900,9 @@ button:disabled {
   background: #f8fafc;
 }
 
-.export-guide__shot--wide img {
-  width: clamp(260px, 75%, 520px);
+.export-guide__shot--wide img,
+.export-guide__shot--guide img {
+  width: clamp(260px, 92%, 420px);
 }
 
 .export-guide__shot figcaption {

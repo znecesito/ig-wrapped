@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import ExportGuide from "../components/ExportGuide.jsx";
 import ExportPicker from "../components/ExportPicker.jsx";
 import WrappedLobby from "../components/WrappedLobby.jsx";
 import WrappedStoryPlayer from "../components/WrappedStoryPlayer.jsx";
@@ -11,7 +10,7 @@ import {
   loadWrappedBaseline
 } from "../utils/wrappedData.js";
 import { buildWrappedInsights } from "../utils/wrappedInsights.js";
-import { PAGE_TITLE, WRAPPED_PAGE_LEDE, WRAPPED_PAGE_STATUS } from "../components/wrappedSlideClasses.js";
+import { PAGE_TITLE, WRAPPED_PAGE_STATUS } from "../components/wrappedSlideClasses.js";
 import { renderWrappedSlide } from "./wrappedSlideContent.jsx";
 import {
   startWrappedPlaylist,
@@ -148,11 +147,12 @@ export default function WrappedPage() {
     return (
       <section className="container wrapped-page">
         <h1 className={PAGE_TITLE}>Wrapped</h1>
-        <p className={WRAPPED_PAGE_LEDE}>
-          Your Instagram year in story cards — private, in your browser. Load your export below.
+        <p className={WRAPPED_PAGE_STATUS}>Load your Instagram export to continue.</p>
+        <p className="landing-how-to__intro mt-4">
+          <strong>Returning?</strong> Request a fresh export for activity since your last visit — Meta
+          download links expire after a few days. An old ZIP won&apos;t include your latest activity.
         </p>
-        <ExportGuide />
-        <div className="card export-picker-card">
+        <div className="card export-picker-card mt-4">
           <h2 className="export-picker-card__title">Load your export</h2>
           <ExportPicker />
         </div>

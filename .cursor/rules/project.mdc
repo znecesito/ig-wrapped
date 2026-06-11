@@ -15,72 +15,82 @@ alwaysApply: true
 ## Run (local)
 
 - **Backend (optional):** `cd backend` → `npm install` → `npm run dev` → `http://localhost:4000`
-- **Frontend:** `cd frontend` → `npm install` → `npm run dev` → `http://localhost:5173` (opens **Wrapped**; `/` redirects to `/wrapped`)
+- **Frontend:** `cd frontend` → `npm install` → `npm run dev` → `http://localhost:5173` (`/` = landing on **`feat/landing-page`**; `main` still redirects `/` → `/wrapped`)
 
 ## Hosting
 
 - **Frontend:** Vercel — root **`frontend`**, output `dist`.
 - **Backend:** Render optional — root **`backend`**, `npm start`.
 - **`VITE_API_URL`** — legacy Non-Followers only; baked at build time on Vercel.
-- **Branches:** `main` = production; feature work (e.g. **`feat/tailwind-foundation`**) uses **preview URLs** before merge.
+- **Branches:** `main` = production (Wrapped-only today); **`feat/landing-page`** = landing preview.
 - **SPA:** `frontend/vercel.json` rewrites to `index.html`.
 
-## Shipped product (UI)
+## Shipped product — `feat/landing-page` (preview; not on `main` yet)
 
-- **Routes:** [`App.jsx`](frontend/src/App.jsx) — **`/wrapped`**, **`/guide`** only; [`resolveRoute`](frontend/src/config/features.js) maps legacy paths to `/wrapped`.
-- **Nav:** Wrapped | How to export | Data loaded / Clear — **hidden only during story player** ([`WrappedPlayerContext`](frontend/src/context/WrappedPlayerContext.jsx)).
-- **Export ingest:** [`ExportPicker.jsx`](frontend/src/components/ExportPicker.jsx) → [`exportIngest.js`](frontend/src/utils/exportIngest.js) → [`ExportDataContext.jsx`](frontend/src/context/ExportDataContext.jsx).
+### Routes
+
+| Route | Role |
+|-------|------|
+| **`/`** | Landing — hero, preview, steps, `#how-to` (export guide), FAQ/CTA placeholders |
+| **`/wrapped`** | Load export (returning notice) → lobby → 6-slide player |
+| **`/guide`** | Redirect to `/#how-to` |
+
+[`App.jsx`](frontend/src/App.jsx) · [`features.js`](frontend/src/config/features.js)
+
+### Landing (L–O done)
+
+- **Hero:** [`LandingHero.jsx`](frontend/src/components/landing/LandingHero.jsx)
+- **Preview:** [`LandingPreview.jsx`](frontend/src/components/landing/LandingPreview.jsx) — 6 slide teasers
+- **Steps:** [`LandingHowItWorks.jsx`](frontend/src/components/landing/LandingHowItWorks.jsx)
+- **How-to:** [`LandingHowTo.jsx`](frontend/src/components/landing/LandingHowTo.jsx) + [`ExportGuide.jsx`](frontend/src/components/ExportGuide.jsx) — phone-only, 2 PNGs (badges **a–d**)
+- **Returning notice:** on `/wrapped` only, not landing
 
 ### Wrapped flow (export loaded)
 
-1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — lede, parse warnings with layman slide impact ([`parseWarningImpact.js`](frontend/src/utils/parseWarningImpact.js)), **Start Wrapped** (blocked until warnings acknowledged).
-2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — full-screen; GSAP-synced progress segments (`scaleX`); tap right/next left/back; hold-to-pause (GSAP + audio, ~220ms hold delay); **tap-to-advance** (`WRAPPED_AUTO_ADVANCE` in [`wrappedPlayer.js`](frontend/src/config/wrappedPlayer.js)); top chrome: spinning cover disc + mute + × ([`WrappedMusicPlayer.jsx`](frontend/src/components/WrappedMusicPlayer.jsx)); exit × / Escape / swipe-down → lobby. Desktop: full-width backdrop, centered 9:16 card. **Screenshot** any card for Stories — no in-app Save.
+1. **Lobby** [`WrappedLobby.jsx`](frontend/src/components/WrappedLobby.jsx) — warnings, **Start Wrapped**.
+2. **Story player** [`WrappedStoryPlayer.jsx`](frontend/src/components/WrappedStoryPlayer.jsx) — GSAP progress, tap nav, hold pause, soundtrack, 9:16 card.
 
 ### Six slides (0–5)
 
-intro → activity → rhythm → **people** (rank chart) → **inbox** (notification stack + busiest thread) → privacy. `WRAPPED_CARD_COUNT = 6`. Content: [`wrappedSlideContent.jsx`](frontend/src/pages/wrappedSlideContent.jsx). Insights: [`wrappedInsights.js`](frontend/src/utils/wrappedInsights.js). Motion: [`wrappedSlideTimeline.js`](frontend/src/utils/wrappedSlideTimeline.js). Data: [`wrappedData.js`](frontend/src/utils/wrappedData.js). Handoff: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md).
+intro → activity → rhythm → people → inbox → privacy. `WRAPPED_CARD_COUNT = 6`.
 
 ### Product constraints
 
-- Client-only parsing; export not uploaded for Wrapped.
-- **IG-native** visuals (not Spotify brand clone). **No fake global percentiles.**
-- No `html-to-image` / scroller Save unless dedicated export layout.
-- People chart layout math in [`peopleRankChartLayout.js`](frontend/src/utils/peopleRankChartLayout.js) — timeline must not import React chart components.
+- Client-only parsing; export not uploaded.
+- **IG-native** visuals; **no fake global percentiles.**
+- People chart layout in [`peopleRankChartLayout.js`](frontend/src/utils/peopleRankChartLayout.js) — timeline must not import React chart components.
 
-## Roadmap (next sessions)
+## Roadmap
 
 | Phase | Focus |
 |-------|--------|
-| **F** | Done — IG-native templates (hero/data/trust), player backdrop, lobby CTA |
-| **G** | Done — activity + rhythm beats; deck restructure |
-| **H** | Done — GSAP scene choreography synced to slide durations |
-| **People + Inbox** | Done — rank chart slide + notification stack slide |
-| **I** | Done — 7-track shuffle, mute, spinning disc chrome (`wrappedAudio.js`, `public/audio/`) |
-| **J** | Optional extra slides (words, insights JSON) |
-| **K** ← next | Merge `feat/tailwind-foundation` → `main`, cleanup |
+| **F–I, K** | Done on `main` — Wrapped SLC |
+| **L–O** | Done on `feat/landing-page` — landing + export guide |
+| **Guide assets** | Done — 2 redacted phone PNGs |
+| **P** ← next | FAQ + final CTA — merge candidate |
+| **Q** | Analytics (optional) |
+| **R** | Merge `feat/landing-page` → `main` |
+| **J** | Optional extra slides |
 
-Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/spotify-wrapped-research.md`](docs/spotify-wrapped-research.md).
+Details: [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md), [`docs/export-guide-images.md`](docs/export-guide-images.md).
 
 ## Folder map
 
 - **`frontend/src/`**
-  - **`App.jsx`** — nav + routes; wraps `WrappedPlayerProvider`
-  - **`context/`** — `ExportDataContext.jsx`, `WrappedPlayerContext.jsx`
+  - **`App.jsx`** — nav + routes
+  - **`pages/`** — `LandingPage.jsx`, `WrappedPage.jsx`, `wrappedSlideContent.jsx`
+  - **`components/landing/`** — `LandingHero`, `LandingPreview`, `LandingHowItWorks`, `LandingHowTo`, teasers
+  - **`components/`** — Wrapped player, `ExportGuide.jsx`, `ExportPicker.jsx`, charts, etc.
   - **`config/`** — `features.js`, `wrappedPlayer.js`, `wrappedAudioTracks.js`
-  - **`components/`** — `WrappedLobby.jsx`, `WrappedStoryPlayer.jsx`, `WrappedMusicPlayer.jsx`, `WrappedSlideChrome.jsx`, `WrappedSlideErrorBoundary.jsx`, `PeopleRankChart.jsx`, `InboxNotificationStack.jsx`, `RhythmDayFlip.jsx`, `DropDownText.jsx`, `ExportPicker.jsx`, `ExportGuide.jsx`; `WrappedStoryDeck.jsx` (**legacy**, unused)
-  - **`hooks/`** — `useWrappedAudioState.js`
-  - **`pages/`** — `WrappedPage.jsx`, `wrappedSlideContent.jsx`, `GuidePage.jsx`; legacy analysis pages (not routed)
-  - **`utils/`** — `wrappedData.js`, `wrappedInsights.js`, `wrappedSlideTimeline.js`, `wrappedAudio.js`, `peopleRankHistory.js`, `peopleRankChartLayout.js`, `parseWarningImpact.js`, parsers (`commentHeatmap.js`, etc.)
-  - **`lib/`** — `utils.js` (`cn`), `tokens.js`
-  - **`tailwind.css`**, **`styles.css`**, **`vite.config.js`**
-- **`docs/AGENT_CONTEXT.md`** — rolling handoff (read first for AI)
+  - **`utils/`** — `wrappedData.js`, `wrappedSlideTimeline.js`, parsers, etc.
+- **`docs/AGENT_CONTEXT.md`** — read first for AI handoff
 
 ## Conventions
 
 - Focused diffs; no unrelated refactors.
-- Extend parsers via patterns in **`commentHeatmap.js`** / **`socialInteractionGraph.js`**.
-- **One animation library:** GSAP only (already in `package.json`).
-- Quips on hero/dark slides use `SLIDE_INSIGHT_PUNCH_ON_DARK` (bordered box).
+- Extend parsers via **`commentHeatmap.js`** / **`socialInteractionGraph.js`** patterns.
+- **GSAP only** for motion.
+- Quips on dark slides: `SLIDE_INSIGHT_PUNCH_ON_DARK`.
 
 ## API (backend, optional)
 

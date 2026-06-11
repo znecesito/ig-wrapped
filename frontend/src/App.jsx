@@ -1,60 +1,131 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ExportDataProvider, useExportData } from "./context/ExportDataContext.jsx";
 import { WrappedPlayerProvider, useWrappedPlayer } from "./context/WrappedPlayerContext.jsx";
-import { resolveRoute } from "./config/features.js";
-import GuidePage from "./pages/GuidePage.jsx";
+import {
+  LANDING_HASH_HOW_TO,
+  normalizeAppLocation,
+  resolveRoute,
+  scrollToLandingSection
+} from "./config/features.js";
+import LandingPage from "./pages/LandingPage.jsx";
 import WrappedPage from "./pages/WrappedPage.jsx";
+
+function applyNormalizedLocation({ pathname, hash }) {
+  const url = `${pathname}${hash}`;
+  if (`${window.location.pathname}${window.location.hash}` !== url) {
+    window.history.replaceState({}, "", url);
+  }
+}
+
+function readLocationFromWindow() {
+  const { pathname, hash, shouldReplace } = normalizeAppLocation(
+    window.location.pathname,
+    window.location.hash
+  );
+  if (shouldReplace) {
+    applyNormalizedLocation({ pathname, hash });
+  }
+  return { route: resolveRoute(pathname), hash };
+}
 
 function AppInner() {
   const { files, clearFiles } = useExportData();
   const { isPlayerActive } = useWrappedPlayer();
-  const [route, setRoute] = useState(() => resolveRoute(window.location.pathname));
+  const [location, setLocation] = useState(readLocationFromWindow);
+  const { route, hash: locationHash } = location;
 
   useEffect(() => {
     const syncRoute = () => {
-      const target = resolveRoute(window.location.pathname);
-      if (window.location.pathname !== target) {
-        window.history.replaceState({}, "", target);
-      }
-      setRoute(target);
+      setLocation(readLocationFromWindow());
     };
 
-    syncRoute();
     window.addEventListener("popstate", syncRoute);
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
 
-  function navigateTo(path) {
-    const target = resolveRoute(path);
-    if (window.location.pathname !== target) {
-      window.history.pushState({}, "", target);
+  const navigateTo = useCallback((path) => {
+    if (path.startsWith("#")) {
+      const sectionId = path.slice(1);
+      window.history.pushState({}, "", `/${path}`);
+      setLocation({ route: "/", hash: path });
+      requestAnimationFrame(() => scrollToLandingSection(sectionId, { behavior: "smooth" }));
+      return;
     }
-    setRoute(target);
-  }
+
+    if (path === "/guide" || path === LANDING_HASH_HOW_TO || path === `/${LANDING_HASH_HOW_TO}`) {
+      window.history.pushState({}, "", `/${LANDING_HASH_HOW_TO}`);
+      setLocation({ route: "/", hash: LANDING_HASH_HOW_TO });
+      requestAnimationFrame(() => scrollToLandingSection("how-to", { behavior: "smooth" }));
+      return;
+    }
+
+    const target = resolveRoute(path);
+    window.history.pushState({}, "", target);
+    setLocation({ route: target, hash: "" });
+  }, []);
 
   const showNav = !isPlayerActive;
+  const onLanding = route === "/";
 
   return (
     <main className="app-shell">
       {showNav ? (
         <header className="top-nav">
           <div className="top-nav__inner">
-            <h1 className="top-nav__title font-bold text-nav-link-text">ig-wrapped</h1>
+            <a
+              href="/"
+              className="top-nav__title top-nav__brand font-bold text-nav-link-text"
+              onClick={(event) => {
+                event.preventDefault();
+                navigateTo("/");
+              }}
+            >
+              ig-wrapped
+            </a>
             <nav className="top-nav__links" aria-label="Primary">
-              <button
-                type="button"
-                className={route === "/wrapped" ? "nav-link is-active" : "nav-link"}
-                onClick={() => navigateTo("/wrapped")}
-              >
-                Wrapped
-              </button>
-              <button
-                type="button"
-                className={route === "/guide" ? "nav-link is-active" : "nav-link"}
-                onClick={() => navigateTo("/guide")}
-              >
-                How to export
-              </button>
+              {onLanding ? (
+                <>
+                  <button type="button" className="nav-link" onClick={() => navigateTo("#preview")}>
+                    What you get
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      locationHash === LANDING_HASH_HOW_TO ? "nav-link is-active" : "nav-link"
+                    }
+                    onClick={() => navigateTo(LANDING_HASH_HOW_TO)}
+                  >
+                    How to export
+                  </button>
+                  <button
+                    type="button"
+                    className="nav-link nav-link-cta"
+                    onClick={() => navigateTo("/wrapped")}
+                  >
+                    Get started
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="nav-link" onClick={() => navigateTo("/")}>
+                    Home
+                  </button>
+                  <button
+                    type="button"
+                    className={route === "/wrapped" ? "nav-link is-active" : "nav-link"}
+                    onClick={() => navigateTo("/wrapped")}
+                  >
+                    Wrapped
+                  </button>
+                  <button
+                    type="button"
+                    className="nav-link"
+                    onClick={() => navigateTo(LANDING_HASH_HOW_TO)}
+                  >
+                    How to export
+                  </button>
+                </>
+              )}
               {files ? (
                 <>
                   <span className="nav-data-indicator">
@@ -71,7 +142,7 @@ function AppInner() {
         </header>
       ) : null}
 
-      {route === "/guide" ? <GuidePage /> : <WrappedPage />}
+      {route === "/" ? <LandingPage onNavigate={navigateTo} /> : <WrappedPage />}
     </main>
   );
 }
