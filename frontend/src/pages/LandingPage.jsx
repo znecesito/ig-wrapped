@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import LandingHero from "../components/landing/LandingHero.jsx";
+import LandingHowItWorks from "../components/landing/LandingHowItWorks.jsx";
+import LandingHowTo from "../components/landing/LandingHowTo.jsx";
 import LandingPreview from "../components/landing/LandingPreview.jsx";
 import { LANDING_HASH_HOW_TO, scrollToLandingSection } from "../config/features.js";
 import { PAGE_TITLE } from "../components/wrappedSlideClasses.js";
@@ -48,11 +50,11 @@ export default function LandingPage({ onNavigate }) {
       </LandingSection>
 
       <LandingSection id="steps" title="How it works">
-        <Placeholder>Phase O — request export → load ZIP → play Wrapped.</Placeholder>
+        <LandingHowItWorks />
       </LandingSection>
 
       <LandingSection id="how-to" title="How to get your export">
-        <Placeholder>Phase O — embedded ExportGuide + re-export note.</Placeholder>
+        <LandingHowTo onGetStarted={goToWrapped} />
       </LandingSection>
 
       <LandingSection id="faq" title="FAQ">

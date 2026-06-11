@@ -61,7 +61,7 @@ Pre-load `/wrapped` duplicates marketing: title, lede, full `ExportGuide`, and `
 ## Export ingest (unchanged)
 
 - [`ExportPicker.jsx`](../frontend/src/components/ExportPicker.jsx) — ZIP (fflate, JSON only) or folder (`webkitdirectory`). [`exportIngest.js`](../frontend/src/utils/exportIngest.js). State in [`ExportDataContext.jsx`](../frontend/src/context/ExportDataContext.jsx).
-- [`ExportGuide.jsx`](../frontend/src/components/ExportGuide.jsx) — reuse on landing at `#how-to`; [`GuidePage.jsx`](../frontend/src/pages/GuidePage.jsx) deprecated after redirect. Screenshots: [`docs/export-guide-images.md`](export-guide-images.md).
+- [`ExportGuide.jsx`](../frontend/src/components/ExportGuide.jsx) — phone-only, **2 annotated screenshots** at `#how-to`; [`docs/export-guide-images.md`](export-guide-images.md). Phase 2: redact PII before merge.
 
 ### Wrapped flow (after export loads)
 
@@ -190,11 +190,17 @@ Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 
 - “What you get” — 6 static teasers for slides 0–5.
 
-### **Phase O — How it works + How to export** ← **NEXT**
+### **Phase O — How it works + How to export** ← **DONE (2026-06-09)**
 
 - 3-step strip; `#how-to` wraps `ExportGuide`; re-export intro; sticky CTA → `/wrapped`.
+- **Guide Phase 1 (2026-06-09):** phone-only, 2-screenshot model; non-negotiables strip; no desktop tab; text-only load + success (no `data-loaded.png`).
 
-### **Phase P — FAQ + polish**
+### **Phase 2 — Export guide assets (manual)** ← **playbook done; you run the tools**
+
+- Full steps: [`export-guide-images.md`](export-guide-images.md) — **Photopea** (redact + optional simple rings) or **Figma** (recommended for pro annotations). Agent does not edit PNGs; replace files locally when done.
+- Gate: do not merge landing to `main` with unredacted username/email in PNGs.
+
+### **Phase P — FAQ + polish** ← **NEXT**
 
 - FAQ accordion; final CTA band; landing Tailwind layout; mobile + a11y pass.
 - **Exit:** Full scroll journey; iPhone Safari on Vercel preview — **merge candidate**.
@@ -250,7 +256,7 @@ Update `AGENT_CONTEXT.md`, `project.mdc`, `README.md`, `.cursorrules`. No code.
 
 1. Read this file (landing phases L–R, locked decisions, metrics taxonomy).
 2. Create branch **`feat/landing-page`** from `main`.
-3. Default next work: **Phase O** (how-it-works + export guide) unless user reprioritizes.
+3. Default next work: **Phase P** (FAQ + polish) unless user reprioritizes.
 4. User prefers **lowercase casual commit messages**; **do not push** unless asked.
 5. Test on **real export** on iPhone Safari for Wrapped regressions after landing changes.
 6. **`WRAPPED_CARD_COUNT === 6`** — do not assume 10 slides from older docs.

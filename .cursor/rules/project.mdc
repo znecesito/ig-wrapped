@@ -67,8 +67,8 @@ intro → activity → rhythm → **people** (rank chart) → **inbox** (notific
 | **L** | Done — routing + landing shells (`feat/landing-page`) |
 | **M** | Done — hero, trust strip, CTAs, landing nav |
 | **N** | Done — product preview (6 slide teasers) |
-| **O** ← next | How-it-works + embedded `ExportGuide` at `#how-to` |
-| **P** | FAQ + polish — merge candidate |
+| **O** | Done — how-it-works + embedded `ExportGuide` at `#how-to` |
+| **P** ← next | FAQ + final CTA polish — merge candidate |
 | **Q** | Analytics instrumentation (optional, post-ship) |
 | **R** | Merge landing → `main` |
 

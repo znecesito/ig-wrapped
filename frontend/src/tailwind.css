@@ -254,6 +254,50 @@
     @apply m-0 mt-3 text-[0.78rem] leading-snug text-white/85;
   }
 
+  .landing-steps__lede {
+    @apply m-0 mt-2 max-w-[40rem] text-[0.92rem] leading-relaxed text-muted sm:text-base;
+  }
+
+  .landing-steps__list {
+    @apply m-0 mt-6 grid list-none gap-4 p-0 sm:grid-cols-3 sm:gap-5;
+  }
+
+  .landing-steps__item {
+    @apply flex gap-3 rounded-card border border-border bg-surface-elevated p-4 shadow-[0_4px_16px_-10px_rgb(15_23_42/0.2)] sm:flex-col sm:gap-2.5 sm:p-5;
+  }
+
+  .landing-steps__number {
+    @apply flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-mid text-sm font-extrabold text-white shadow-[0_4px_12px_-4px_rgb(225_29_72/0.5)];
+  }
+
+  .landing-steps__body {
+    @apply min-w-0;
+  }
+
+  .landing-steps__title {
+    @apply m-0 font-display text-[1.05rem] font-bold leading-tight text-ink sm:text-[1.1rem];
+  }
+
+  .landing-steps__copy {
+    @apply m-0 mt-1.5 text-[0.84rem] leading-snug text-muted;
+  }
+
+  .landing-how-to__intro {
+    @apply m-0 mt-2 max-w-[42rem] rounded-lg border border-amber-200/80 bg-amber-50/90 px-3.5 py-3 text-[0.88rem] leading-relaxed text-ink sm:text-[0.92rem];
+  }
+
+  .landing-how-to .export-guide {
+    @apply mt-5;
+  }
+
+  .landing-how-to__cta-bar {
+    @apply sticky bottom-0 z-[5] -mx-1 mt-6 border-t border-border/80 bg-gradient-to-t from-surface from-65% to-transparent px-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-4;
+  }
+
+  .landing-how-to__cta {
+    @apply w-full px-7 py-3.5 text-base sm:w-auto;
+  }
+
   .landing-preview__lede {
     @apply m-0 mt-2 max-w-[40rem] text-[0.92rem] leading-relaxed text-muted sm:text-base;
   }
