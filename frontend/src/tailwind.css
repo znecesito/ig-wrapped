@@ -145,13 +145,15 @@
   }
 
   .landing-section,
-  .landing-hero {
+  .landing-hero,
+  .landing-cta {
     scroll-margin-top: calc(5.5rem + env(safe-area-inset-top, 0px));
   }
 
   @media (max-width: 640px) {
     .landing-section,
-    .landing-hero {
+    .landing-hero,
+    .landing-cta {
       scroll-margin-top: calc(9.5rem + env(safe-area-inset-top, 0px));
     }
   }
@@ -296,6 +298,83 @@
 
   .landing-how-to__cta {
     @apply w-full px-7 py-3.5 text-base sm:w-auto;
+  }
+
+  .landing-faq__lede {
+    @apply m-0 mt-2 max-w-[42rem] text-[0.92rem] leading-relaxed text-muted sm:text-base;
+  }
+
+  .landing-faq__list {
+    @apply m-0 mt-6 grid gap-2.5 p-0;
+  }
+
+  .landing-faq__item {
+    @apply relative overflow-hidden rounded-card border border-border bg-surface-elevated shadow-[0_4px_16px_-12px_rgb(15_23_42/0.16)];
+  }
+
+  .landing-faq__question {
+    @apply relative cursor-pointer list-none px-4 py-3.5 pr-10 text-[0.95rem] font-bold leading-snug text-ink transition-colors duration-150 hover:bg-surface sm:px-5 sm:py-4 sm:text-base;
+    min-height: 2.75rem;
+  }
+
+  .landing-faq__question::-webkit-details-marker {
+    display: none;
+  }
+
+  .landing-faq__question::after {
+    content: "+";
+    @apply absolute right-4 top-1/2 -translate-y-1/2 text-[1.25rem] font-normal leading-none text-muted sm:right-5;
+  }
+
+  .landing-faq__item[open] .landing-faq__question::after {
+    content: "−";
+    @apply text-brand;
+  }
+
+  .landing-faq__item[open] .landing-faq__question {
+    @apply border-b border-border bg-surface;
+  }
+
+  .landing-faq__answer {
+    @apply m-0 px-4 py-3.5 text-[0.88rem] leading-relaxed text-muted sm:px-5 sm:py-4 sm:text-[0.92rem];
+  }
+
+  .landing-cta {
+    @apply border-t border-border bg-gradient-to-br from-brand via-[#f43f5e] to-brand-mid py-12 text-white sm:py-14;
+  }
+
+  .landing-cta__inner {
+    @apply flex flex-col items-center text-center;
+  }
+
+  .landing-cta__headline {
+    @apply m-0 font-display text-[clamp(1.65rem,5vw,2.35rem)] font-bold leading-tight tracking-tight text-white;
+  }
+
+  .landing-cta__copy {
+    @apply m-0 mt-3 max-w-[36rem] text-[0.92rem] leading-relaxed text-white/90 sm:mt-4 sm:text-base;
+  }
+
+  .landing-cta__actions {
+    @apply mt-6 flex w-full max-w-md flex-col gap-2.5 sm:mt-7 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3;
+  }
+
+  .landing-cta__primary {
+    @apply w-full bg-white px-7 py-3.5 text-base text-brand shadow-[0_10px_28px_-8px_rgb(15_23_42/0.35)] hover:enabled:brightness-100 hover:enabled:shadow-[0_14px_32px_-6px_rgb(15_23_42/0.4)] sm:w-auto sm:py-4 sm:text-[1.05rem];
+    background-image: none;
+  }
+
+  .landing-cta__secondary {
+    @apply w-full rounded-pill border border-white/35 bg-white/10 px-7 py-3.5 text-[0.95rem] font-bold text-white backdrop-blur-sm transition-[transform,background-color] duration-200 hover:bg-white/20 active:scale-[0.98] sm:w-auto;
+  }
+
+  .landing-cta__trust {
+    @apply m-0 mt-5 flex list-none flex-wrap justify-center gap-x-1 gap-y-0.5 p-0 text-[0.72rem] font-semibold text-white/80 sm:mt-6 sm:text-[0.78rem];
+  }
+
+  .landing-cta__trust li + li::before {
+    content: "·";
+    @apply mx-1.5 text-white/50;
   }
 
   .landing-preview__lede {

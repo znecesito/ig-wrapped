@@ -1,4 +1,6 @@
 import React, { useEffect } from "react";
+import LandingFaq from "../components/landing/LandingFaq.jsx";
+import LandingFinalCta from "../components/landing/LandingFinalCta.jsx";
 import LandingHero from "../components/landing/LandingHero.jsx";
 import LandingHowItWorks from "../components/landing/LandingHowItWorks.jsx";
 import LandingHowTo from "../components/landing/LandingHowTo.jsx";
@@ -21,10 +23,6 @@ function LandingSection({ id, title, children }) {
       </div>
     </section>
   );
-}
-
-function Placeholder({ children }) {
-  return <p className="landing-section__placeholder">{children}</p>;
 }
 
 export default function LandingPage({ onNavigate }) {
@@ -58,12 +56,10 @@ export default function LandingPage({ onNavigate }) {
       </LandingSection>
 
       <LandingSection id="faq" title="FAQ">
-        <Placeholder>Phase P — export wait time, JSON vs HTML, sharing, re-export.</Placeholder>
+        <LandingFaq />
       </LandingSection>
 
-      <LandingSection id="cta" title="Get your Wrapped">
-        <Placeholder>Phase P — final CTA band → /wrapped.</Placeholder>
-      </LandingSection>
+      <LandingFinalCta onGetStarted={goToWrapped} onHowToExport={goToHowTo} />
     </div>
   );
 }
