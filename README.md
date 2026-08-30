@@ -88,3 +88,4 @@ Open `http://localhost:5173` — on **`feat/landing-page`**, `/` is the landing 
 
 - **Handoff:** [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md) — Phase **P** next on `feat/landing-page`
 - **Conventions:** [`.cursor/rules/project.mdc`](.cursor/rules/project.mdc)
+<!-- git connectivity test: 2026-08-29 -->
